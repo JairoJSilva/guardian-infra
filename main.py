@@ -41,6 +41,8 @@ def cmd_simulate_pod(args):
         exit_code=args.exit_code,
         restarts=args.restarts
     )
+    if getattr(args, "contrato", None):
+        event.details["contrato"] = args.contrato
     handle_incident(event, parent_issue=args.parent, dry_run=args.dry_run)
 
 def cmd_simulate_pipeline(args):
@@ -51,6 +53,8 @@ def cmd_simulate_pipeline(args):
         stage=args.stage,
         error_type=args.error_type
     )
+    if getattr(args, "contrato", None):
+        event.details["contrato"] = args.contrato
     handle_incident(event, parent_issue=args.parent, dry_run=args.dry_run)
 
 def cmd_scan_k8s(args):
@@ -118,6 +122,7 @@ def main():
     p_pod.add_argument("--exit-code", type=int, default=1, help="Exit Code do container")
     p_pod.add_argument("--restarts", type=int, default=8, help="Número de reinicializações")
     p_pod.add_argument("--parent", default="OPS-236", help="Issue de referência/pai para vincular")
+    p_pod.add_argument("--contrato", default=None, help="Força contrato FLOWTI (ex: INTERNO, DENTALIS, MAIDA (GCP))")
     p_pod.add_argument("--dry-run", action="store_true", help="Gera análise e template sem postar no Jira")
 
     # simulate-pipeline
@@ -127,6 +132,7 @@ def main():
     p_pipe.add_argument("--stage", default="docker-build", help="Estágio da pipeline com falha")
     p_pipe.add_argument("--error-type", default="DockerBuildConflict", help="Tipo do erro")
     p_pipe.add_argument("--parent", default="OPS-236", help="Issue de referência/pai para vincular")
+    p_pipe.add_argument("--contrato", default=None, help="Força contrato FLOWTI (ex: INTERNO, DENTALIS, MAIDA (GCP))")
     p_pipe.add_argument("--dry-run", action="store_true", help="Gera análise e template sem postar no Jira")
 
     # scan-k8s

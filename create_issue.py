@@ -32,13 +32,23 @@ def create_issue(summary: str, description: str = "", project_key: str = "OPS", 
         "reporter": {"name": JIRA_USER}
     }
 
-    # Se for informado o contrato (ex: DENTALIS, ID 22300 no customfield_30118)
-    if contrato:
-        contrato_map = {
-            "DENTALIS": {"id": "22300", "value": "DENTALIS"}
-        }
-        if contrato.upper() in contrato_map:
-            fields["customfield_30118"] = contrato_map[contrato.upper()]
+    # Contrato FLOWTI (customfield_30118) - padrão INTERNO (22514)
+    contrato_map = {
+        "INTERNO": {"id": "22514", "value": "INTERNO"},
+        "DENTALIS": {"id": "22300", "value": "DENTALIS"},
+        "DENTALIS (SNOW FLAKE)": {"id": "22500", "value": "DENTALIS (SNOW FLAKE)"},
+        "FARMACIA DIGITAL (AWS)": {"id": "22502", "value": "FARMACIA DIGITAL (AWS)"},
+        "GIF": {"id": "22517", "value": "GIF"},
+        "MAIDA (DIGITAL OCEAN AKAMAI)": {"id": "22303", "value": "MAIDA (DIGITAL OCEAN AKAMAI)"},
+        "MAIDA (GCP)": {"id": "22301", "value": "MAIDA (GCP)"},
+        "MAIDA (LEGADO AWS)": {"id": "22302", "value": "MAIDA (LEGADO AWS)"},
+        "MAIDA BI CLOUDOPS (AZURE/OCI)": {"id": "22501", "value": "MAIDA BI CLOUDOPS (AZURE/OCI)"},
+    }
+    target_contrato = (contrato or "INTERNO").upper()
+    if target_contrato in contrato_map:
+        fields["customfield_30118"] = contrato_map[target_contrato]
+    else:
+        fields["customfield_30118"] = contrato_map["INTERNO"]
 
     payload = {"fields": fields}
 

@@ -53,6 +53,22 @@ class JiraClient:
         self.cache[fingerprint] = time.time()
         self._save_cache()
 
+    def _fetch_parent_contract(self, parent_key: str) -> Optional[Dict[str, str]]:
+        """Consulta o chamado pai no Jira para herdar o campo de Contrato FLOWTI."""
+        if not self.user or not self.password:
+            return None
+        try:
+            url = f"{self.base_url}/rest/api/2/issue/{parent_key}?fields={Config.JIRA_CUSTOMFIELD_CONTRATO_ID}"
+            res = requests.get(url, auth=(self.user, self.password), timeout=10)
+            if res.status_code == 200:
+                fields = res.json().get("fields", {})
+                contrato_obj = fields.get(Config.JIRA_CUSTOMFIELD_CONTRATO_ID)
+                if contrato_obj and isinstance(contrato_obj, dict) and "id" in contrato_obj and "value" in contrato_obj:
+                    return {"id": contrato_obj["id"], "value": contrato_obj["value"]}
+        except Exception as e:
+            print(f"[GuardianOps] Aviso: Falha ao inspecionar contrato do chamado pai {parent_key}: {e}")
+        return None
+
     def create_incident_issue(
         self,
         event: IncidentEvent,
@@ -80,11 +96,25 @@ class JiraClient:
         if self.user:
             fields["reporter"] = {"name": self.user}
 
-        # Contrato FLOWTI (ex: DENTALIS, ID 22300 no customfield_30118)
+        # Resolução inteligente de Contrato FLOWTI:
+        # 1. Contrato explícito no resultado da análise
+        # 2. Contrato explícito nos detalhes do evento (ex: label de Pod ou flag CLI)
+        # 3. Herança do chamado pai (se houver parent_issue_key)
+        # 4. Mapeamento heurístico por namespace, projeto ou identificador
+        # 5. Fallback padrão: INTERNO (ID 22514)
+        contract = None
         if analysis.contract_field:
-            fields[Config.JIRA_CUSTOMFIELD_CONTRATO_ID] = analysis.contract_field
-        elif Config.JIRA_CONTRATO_DEFAULT in Config.CONTRATO_MAP:
-            fields[Config.JIRA_CUSTOMFIELD_CONTRATO_ID] = Config.CONTRATO_MAP[Config.JIRA_CONTRATO_DEFAULT]
+            contract = analysis.contract_field
+        elif event.details.get("contrato"):
+            contract = Config.resolve_contract(event.details["contrato"])
+        elif parent_issue_key and not Config.DRY_RUN:
+            contract = self._fetch_parent_contract(parent_issue_key)
+
+        if not contract:
+            context_hint = f"{event.namespace_or_project} {event.identifier}"
+            contract = Config.resolve_contract(context_hint)
+
+        fields[Config.JIRA_CUSTOMFIELD_CONTRATO_ID] = contract
 
         payload = {"fields": fields}
 
@@ -96,6 +126,7 @@ class JiraClient:
             print(f"Título    : {analysis.summary}")
             print(f"Prioridade: {analysis.priority.value}")
             print(f"Tipo      : {analysis.issue_type}")
+            print(f"Contrato  : {contract.get('value')} (ID: {contract.get('id')})")
             print(f"Labels    : {analysis.labels}")
             print("-" * 60)
             print("DESCRIÇÃO FORMATADA (Jira Markup - UTF-8):")

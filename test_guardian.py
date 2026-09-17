@@ -83,6 +83,29 @@ def test_suite():
     assert Config.READ_ONLY_MODE is True
     print("  [✓] Modo SOMENTE-LEITURA garantido: Nenhuma ação corretiva direta habilitada.")
 
+    # 6. Validação da Resolução de Contratos FLOWTI
+    print("\n[TESTE 6] Validação da Resolução Inteligente de Contratos...")
+    # Padrão / Fallback
+    c_default = Config.resolve_contract()
+    assert c_default["id"] == "22514"
+    assert c_default["value"] == "INTERNO"
+
+    # Heurística por namespace/projeto
+    c_dentalis = Config.resolve_contract("portal-dentalis-backend")
+    assert c_dentalis["id"] == "22300"
+    assert c_dentalis["value"] == "DENTALIS"
+
+    c_farmacia = Config.resolve_contract("farmacia-digital-app")
+    assert c_farmacia["id"] == "22502"
+
+    c_maida_gcp = Config.resolve_contract("maida-gcp-service")
+    assert c_maida_gcp["id"] == "22301"
+
+    c_infra = Config.resolve_contract("kube-system / ingress-controller")
+    assert c_infra["id"] == "22514"
+    assert c_infra["value"] == "INTERNO"
+    print("  [✓] Resolução de Contratos testada: Default INTERNO (22514) e roteamento de clientes ativos!")
+
     print("\n" + "=" * 60)
     print("🎉 TODOS OS TESTES FORAM CONCLUÍDOS COM SUCESSO!")
     print("=" * 60)
