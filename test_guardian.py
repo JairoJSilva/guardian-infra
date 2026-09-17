@@ -16,6 +16,7 @@ from guardian_ops.models import IncidentEvent, FailureSource, IncidentPriority
 from guardian_ops.analyzer import GuardianAnalyzer
 from guardian_ops.jira_client import JiraClient
 from guardian_ops.k8s_scanner import K8sScanner
+from guardian_ops.docker_scanner import DockerScanner
 from guardian_ops.pipeline_listener import PipelineMock
 
 def test_suite():
@@ -105,6 +106,21 @@ def test_suite():
     assert c_infra["id"] == "22514"
     assert c_infra["value"] == "INTERNO"
     print("  [✓] Resolução de Contratos testada: Default INTERNO (22514) e roteamento de clientes ativos!")
+
+    # 7. Validação de Diagnóstico e RCA de Container Docker Local
+    print("\n[TESTE 7] Simulação e RCA de Container Docker Local...")
+    docker_event = DockerScanner.create_mock_docker_failure(
+        container_name="flowti-app",
+        failure_type="CrashLoopBackOff",
+        exit_code=1,
+        restarts=4
+    )
+    analysis_docker = analyzer.analyze(docker_event, reference_code="OPS-GUARDIAN-TEST")
+    assert "flowti-app" in analysis_docker.summary
+    assert analysis_docker.priority == IncidentPriority.ALTA
+    assert "docker logs" in analysis_docker.remediation_procedure
+    assert "SOMENTE-LEITURA" in analysis_docker.jira_description
+    print("  [✓] Análise de Container Docker Local e Comandos de Remediação validados com sucesso!")
 
     print("\n" + "=" * 60)
     print("🎉 TODOS OS TESTES FORAM CONCLUÍDOS COM SUCESSO!")

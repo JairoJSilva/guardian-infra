@@ -30,6 +30,7 @@ RUN useradd -u 10001 -m guardian && chown -R guardian:guardian /app
 # Copia código da aplicação
 COPY --chown=guardian:guardian guardian_ops /app/guardian_ops
 COPY --chown=guardian:guardian main.py /app/main.py
+COPY --chown=guardian:guardian apresentacao-guardianops.html /app/apresentacao-guardianops.html
 
 # Alterna para o usuário não-root
 USER 10001
@@ -41,5 +42,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8080/healthz || exit 1
 
-# Comando padrão: inicia servidor webhook
-CMD ["python3", "main.py", "webhook", "--port", "8080"]
+# Comando padrão: inicia observador de containers locais com listener de webhook integrado
+CMD ["python3", "main.py", "watch", "--interval", "15", "--webhook-port", "8080"]

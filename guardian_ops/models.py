@@ -6,6 +6,7 @@ from datetime import datetime
 class FailureSource(str, Enum):
     KUBERNETES_POD = "KUBERNETES_POD"
     PIPELINE_CI_CD = "PIPELINE_CI_CD"
+    DOCKER_CONTAINER = "DOCKER_CONTAINER"
 
 class IncidentPriority(str, Enum):
     CRITICA = "Crítica"

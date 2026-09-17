@@ -15,6 +15,8 @@ class GuardianAnalyzer:
             return self._analyze_pod_failure(event, reference_code)
         elif event.source == FailureSource.PIPELINE_CI_CD:
             return self._analyze_pipeline_failure(event, reference_code)
+        elif event.source == FailureSource.DOCKER_CONTAINER:
+            return self._analyze_docker_failure(event, reference_code)
         else:
             return self._analyze_generic_failure(event, reference_code)
 
@@ -280,6 +282,132 @@ kubectl get nodes -o wide
             rollback_plan=rollback,
             jira_description=description,
             labels=["gerado-por-ia", "guardian-ops", "pipeline-failure"]
+        )
+
+    def _analyze_docker_failure(self, event: IncidentEvent, reference_code: str) -> AnalysisResult:
+        container_name = event.identifier
+        failure_type = event.failure_type.upper()
+        restarts = event.restart_count or 0
+        exit_code = event.exit_code
+        image = event.details.get("image", "unknown-image")
+
+        # 1. Caso OOMKilled
+        if "OOMKILLED" in failure_type or exit_code == 137:
+            priority = IncidentPriority.ALTA
+            title = f"Incidente Local: Container '{container_name}' encerrado por OOMKilled (Exit Code 137)"
+            category = "Docker Workload / Esgotamento de Memória (Host Local)"
+            root_cause = (
+                f"O container Docker local *{container_name}* excedeu o limite de memória estipulado ou causou esgotamento de recursos no host. "
+                "O kernel Linux acionou o OOM-Killer finalizando o processo com Exit Code 137."
+            )
+            remediation = f"""1. Inspecionar o consumo de memória do container:
+{{code:bash}}
+docker stats --no-stream {container_name}
+docker inspect {container_name} | grep -i memory
+{{code}}
+2. Verificar se há vazamento de memória ou alocação excessiva nas configurações de ambiente (.env).
+3. Aumentar o limite de memória alocado no docker-compose.yml se aplicável."""
+            acceptance = f"* Container *{container_name}* iniciado e mantido em execução estável sem acionamento de OOM."
+            rollback = f"docker-compose restart {container_name}"
+
+        # 2. Caso CrashLoop / Falha de Inicialização
+        elif "CRASHLOOP" in failure_type or (restarts > 0 and exit_code != 0):
+            priority = IncidentPriority.ALTA
+            title = f"Incidente Local: Container '{container_name}' em falha de inicialização (Exit Code: {exit_code})"
+            category = "Docker Workload / Falha de Execução de Aplicação"
+            root_cause = (
+                f"O container *{container_name}* encerrou com código de saída {exit_code} (Reinicializações: {restarts}). "
+                "Causas típicas: Falha de conexão de banco de dados (MySQL offline ou credenciais divergentes), "
+                "erro fatal de sintaxe/dependência no código montado via volume, ou permissões de arquivo incorretas."
+            )
+            remediation = f"""1. Visualizar os últimos logs do container:
+{{code:bash}}
+docker logs --tail=100 {container_name}
+{{code}}
+2. Verificar o status dos containers dependentes na rede:
+{{code:bash}}
+docker-compose ps
+{{code}}
+3. Validar se variáveis de conexão no .env estão apontando para o host/porta corretos.
+4. Reiniciar o serviço após ajuste:
+{{code:bash}}
+docker-compose up -d --build {container_name}
+{{code}}"""
+            acceptance = f"* Container *{container_name}* atinge status {{running}} e atende requisições."
+            rollback = f"docker-compose logs --tail=50 {container_name}"
+
+        # 3. Caso Healthcheck Unhealthy
+        elif "HEALTH" in failure_type:
+            priority = IncidentPriority.ALTA
+            title = f"Alerta Local: Healthcheck do container '{container_name}' falhou (Unhealthy)"
+            category = "Docker Workload / Falha de Health Probe"
+            root_cause = (
+                f"O comando de healthcheck interno do container *{container_name}* falhou reiteradamente. "
+                "A aplicação interna pode ter travado ou a porta local não está respondendo."
+            )
+            remediation = f"""1. Verificar o log exato de saída do healthcheck:
+{{code:bash}}
+docker inspect --format '{{{{range .State.Health.Log}}}}{{{{.Output}}}}{{{{end}}}}' {container_name}
+{{code}}
+2. Checar conectividade interna via curl no container:
+{{code:bash}}
+docker exec -it {container_name} curl -I http://localhost
+{{code}}"""
+            acceptance = f"* Container *{container_name}* retorna para status {{healthy}}."
+            rollback = f"docker-compose restart {container_name}"
+
+        # 4. Caso Genérico de Container
+        else:
+            priority = IncidentPriority.MEDIA
+            title = f"Alerta Local: Container '{container_name}' em estado anômalo ({event.failure_type})"
+            category = "Docker Workload / Diagnóstico de Container Local"
+            root_cause = (
+                f"Detectada anomalia no container local *{container_name}*. "
+                f"Motivo: *{event.failure_type}*. Detalhes: {event.error_message or 'Verificar logs anexos'}."
+            )
+            remediation = f"""1. Inspecionar logs e status do container:
+{{code:bash}}
+docker logs --tail=100 {container_name}
+docker inspect {container_name}
+{{code}}"""
+            acceptance = f"* Container *{container_name}* restaurado para operação regular."
+            rollback = f"docker-compose up -d {container_name}"
+
+        impacted_table = f"""|| Ambiente || Container || Imagem || Motivo da Falha || Exit Code || Reinicializações ||
+| Local (Docker) | {{{{ {container_name} }}}} | {{{{ {image} }}}} | *{event.failure_type}* | {exit_code if exit_code is not None else 'N/A'} | {restarts} |"""
+
+        procedure_text = f"""> *AVISO DE GOVERNANÇA:* O *GuardianOps* atua exclusivamente em modo de *SOMENTE-LEITURA* (Read-Only). Nenhuma modificação automática foi realizada nos containers locais. A equipe responsável deve executar o roteiro abaixo manualmente:
+
+{remediation}"""
+
+        description = build_jira_description(
+            reference=reference_code,
+            date_str=event.timestamp,
+            environment="Ambiente Local (Docker)",
+            title=title,
+            issue_type="Solicitação de serviço",
+            priority=priority.value,
+            category=category,
+            root_cause_explanation=root_cause,
+            evidence_snippet=event.logs_snippet or event.error_message,
+            impacted_assets_table=impacted_table,
+            remediation_procedure=procedure_text,
+            acceptance_criteria=acceptance,
+            rollback_plan=rollback
+        )
+
+        return AnalysisResult(
+            summary=title,
+            priority=priority,
+            category=category,
+            issue_type="Solicitação de serviço",
+            root_cause=root_cause,
+            impacted_asset_summary=f"Container {container_name} ({image})",
+            remediation_procedure=procedure_text,
+            acceptance_criteria=acceptance,
+            rollback_plan=rollback,
+            jira_description=description,
+            labels=["gerado-por-ia", "guardian-ops", "docker-local"]
         )
 
     def _analyze_generic_failure(self, event: IncidentEvent, reference_code: str) -> AnalysisResult:
