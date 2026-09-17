@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GuardianOps (v1.0) — Apresentação Executiva & Arquitetura</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #030014 0%, #0d001a 50%, #020014 100%);
+      --card-bg: rgba(255, 255, 255, 0.035);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --card-hover-border: rgba(23, 225, 229, 0.45);
+      --text-main: #FFFFFF;
+      --text-muted: rgba(255, 255, 255, 0.60);
+      --text-sub: rgba(255, 255, 255, 0.88);
+      --accent: #17E1E5;
+      --accent-purple: #B678FF;
+      --accent-glow: rgba(23, 225, 229, 0.25);
+      --btn-gradient: linear-gradient(45deg, rgba(49, 43, 217, 0.75), rgba(127, 0, 245, 0.75));
+      --btn-gradient-hover: linear-gradient(45deg, rgba(65, 58, 245, 0.95), rgba(145, 25, 255, 0.95));
+      --title-gradient: linear-gradient(45deg, #17E1E5 0%, #B678FF 100%);
+      --shadow: 0 12px 40px rgba(0, 0, 0, 0.65);
+      --success: #10B981;
+      --warning: #F59E0B;
+      --danger: #EF4444;
+      --info: #3B82F6;
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.6;
+      padding: 2.5rem 1.5rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Glowing Orbs */
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      filter: blur(140px);
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0.38;
+    }
+
+    body::before {
+      top: -120px;
+      left: -120px;
+      background: rgba(23, 225, 229, 0.3);
+    }
+
+    body::after {
+      bottom: -120px;
+      right: -120px;
+      background: rgba(127, 0, 245, 0.3);
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 2.5rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--title-gradient);
+    }
+
+    .header-titles h1 {
+      font-size: 2.4rem;
+      font-weight: 800;
+      background: var(--title-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .header-titles p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+
+    .header-badges {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.9rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      border: 1px solid transparent;
+      text-transform: uppercase;
+    }
+
+    .badge-primary {
+      background: rgba(23, 225, 229, 0.12);
+      border-color: rgba(23, 225, 229, 0.4);
+      color: var(--accent);
+    }
+
+    .badge-purple {
+      background: rgba(182, 120, 255, 0.12);
+      border-color: rgba(182, 120, 255, 0.4);
+      color: var(--accent-purple);
+    }
+
+    .badge-warning {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: var(--warning);
+    }
+
+    .badge-success {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: var(--success);
+    }
+
+    /* Governance Banner */
+    .governance-card {
+      background: rgba(245, 158, 11, 0.05);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-left: 4px solid var(--warning);
+      border-radius: var(--radius);
+      padding: 1.5rem 2rem;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1.25rem;
+    }
+
+    .gov-icon {
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .gov-content h3 {
+      font-size: 1.15rem;
+      color: var(--warning);
+      margin-bottom: 0.4rem;
+      font-weight: 700;
+    }
+
+    .gov-content p {
+      color: var(--text-sub);
+      font-size: 0.95rem;
+    }
+
+    /* Grid Layout */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      box-shadow: var(--shadow);
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .card:hover {
+      border-color: var(--card-hover-border);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-icon {
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .card p {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      margin-bottom: 1rem;
+    }
+
+    .card ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .card li {
+      color: var(--text-sub);
+      font-size: 0.9rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .card li::before {
+      content: '▹';
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    /* Architecture Flow Box */
+    .flow-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(24px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 2.25rem;
+      margin-bottom: 2.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    .flow-steps {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      margin-top: 1.5rem;
+      position: relative;
+    }
+
+    .flow-step {
+      flex: 1;
+      min-width: 220px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      text-align: center;
+      position: relative;
+      transition: all 0.25s ease;
+    }
+
+    .flow-step:hover {
+      border-color: var(--accent);
+      background: rgba(23, 225, 229, 0.04);
+    }
+
+    .flow-step-num {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #000000;
+      font-weight: 800;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .flow-step h4 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 0.5rem 0 0.4rem;
+      color: var(--text-main);
+    }
+
+    .flow-step p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .arrow-divider {
+      color: var(--accent-purple);
+      font-size: 1.5rem;
+      font-weight: bold;
+      opacity: 0.8;
+    }
+
+    /* Jira Preview Card */
+    .jira-preview {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .jira-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #334155;
+      margin-bottom: 1.5rem;
+    }
+
+    .jira-key {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+
+    .jira-body {
+      background: #090d16;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 1.5rem;
+      font-size: 0.92rem;
+      color: #e2e8f0;
+      line-height: 1.7;
+    }
+
+    .jira-tag {
+      background: #1e293b;
+      border: 1px solid #475569;
+      color: #cbd5e1;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+    }
+
+    .jira-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.85rem;
+    }
+
+    .jira-table th {
+      background: #1e293b;
+      color: #94a3b8;
+      text-align: left;
+      padding: 0.6rem 0.8rem;
+      border: 1px solid #334155;
+    }
+
+    .jira-table td {
+      padding: 0.6rem 0.8rem;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+    }
+
+    pre code {
+      font-family: 'JetBrains Mono', monospace;
+      background: #020617;
+      color: #38bdf8;
+      display: block;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid #1e293b;
+      font-size: 0.83rem;
+      overflow-x: auto;
+      margin: 0.75rem 0;
+    }
+
+    /* Command Matrix */
+    .code-box {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-top: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.86rem;
+      color: #38bdf8;
+      overflow-x: auto;
+    }
+
+    .code-comment {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    /* Sections & Scroll Layout */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #030014;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent);
+    }
+
+    .section-block {
+      margin-bottom: 3.5rem;
+    }
+
+    .section-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .section-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--accent);
+      background: rgba(23, 225, 229, 0.1);
+      border: 1px solid rgba(23, 225, 229, 0.3);
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      margin-bottom: 0.6rem;
+    }
+
+    .section-header h2 {
+      font-size: 1.65rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 0.35rem;
+      letter-spacing: -0.3px;
+    }
+
+    .section-header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .section-divider {
+      border: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14), transparent);
+      margin: 3.5rem 0;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 2.5rem 0 1rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      margin-top: 3rem;
+    }
+
+    @media (max-width: 768px) {
+      body { padding: 1.25rem 1rem; }
+      .header-card { padding: 1.5rem; }
+      .header-titles h1 { font-size: 1.8rem; }
+      .arrow-divider { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- Header -->
+    <header class="header-card">
+      <div class="header-titles">
+        <h1>🛡️ GuardianOps <span>(v1.0)</span></h1>
+        <p>Agente Autônomo de Observabilidade, Diagnóstico de Causa-Raiz (RCA) & Abertura de Chamados</p>
+      </div>
+      <div class="header-badges">
+        <span class="badge badge-warning">Modo: Somente-Leitura</span>
+        <span class="badge badge-primary">UTF-8 Garantido</span>
+        <span class="badge badge-purple">Anti-Spam Cooldown</span>
+        <span class="badge badge-success">Validação Local Pronta</span>
+      </div>
+    </header>
+
+    <!-- Governance Alert -->
+    <div class="governance-card">
+      <div class="gov-icon">⚠️</div>
+      <div class="gov-content">
+        <h3>Diretriz de Segurança e Governança (v1.0)</h3>
+        <p>O <strong>GuardianOps</strong> atua estritamente em modo <strong>SOMENTE-LEITURA (Read-Only)</strong>. Ele analisa evidências, formula o RCA e abre o chamado no Jira com a sugestão de correção passo a passo, mas <strong>não executa ações corretivas em hipótese alguma</strong>. Nesta etapa inicial, <strong>não foi implantado em nenhum cluster de produção</strong>, rodando e sendo testado de forma segura e local.</p>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 1: VISÃO GERAL & BENEFÍCIOS -->
+    <section class="section-block" id="visao-geral">
+      <div class="section-header">
+        <span class="section-tag">01 &bull; Visão Geral & Benefícios</span>
+        <h2>Workloads, Pipelines CI/CD & Governança</h2>
+        <p>Monitoramento contínuo com isolamento institucional, integridade UTF-8 e proteção contra fadiga de alertas.</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">☸️</div>
+            <div class="card-title">Workloads Kubernetes</div>
+          </div>
+          <p>Monitora falhas e anomalias no ciclo de vida de Pods e Containers.</p>
+          <ul>
+            <li><strong>CrashLoopBackOff:</strong> loops e falhas de inicialização.</li>
+            <li><strong>OOMKilled (Exit 137):</strong> limites estourados de memória.</li>
+            <li><strong>ImagePullBackOff:</strong> tags incorretas ou secret ausente.</li>
+            <li><strong>Failed Probes:</strong> timeouts em Liveness/Readiness.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">🚀</div>
+            <div class="card-title">Pipelines CI/CD</div>
+          </div>
+          <p>Recebe webhooks de falha do GitLab CI e GitHub Actions em tempo real.</p>
+          <ul>
+            <li>Falhas em compilação Docker e dependências.</li>
+            <li>Quebras em testes unitários e de integração.</li>
+            <li>Bloqueios em auditorias de segurança (Trivy/Sonar).</li>
+            <li>Identificação exata de Commit, Branch e Pipeline ID.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">🛡️</div>
+            <div class="card-title">Anti-Spam & UTF-8</div>
+          </div>
+          <p>Qualidade institucional e proteção contra inundações no Jira.</p>
+          <ul>
+            <li><strong>Cooldown de 60min:</strong> 1 único chamado por incidente.</li>
+            <li><strong>Assinatura Fingerprint:</strong> deduplicação via hash MD5.</li>
+            <li><strong>UTF-8 Estrito:</strong> preserva acentos e emojis sem quebras.</li>
+            <li><strong>Vínculo Automático:</strong> relaciona a issue ao chamado pai.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- SEÇÃO 2: FLUXO OPERACIONAL -->
+    <section class="section-block" id="fluxo-operacional">
+      <div class="section-header">
+        <span class="section-tag">02 &bull; Fluxo Operacional</span>
+        <h2>Ciclo de Vida da Análise ao Acionamento</h2>
+        <p>Fluxo linear e automatizado: da identificação da anomalia à publicação estruturada no Jira.</p>
+      </div>
+
+      <div class="flow-card">
+        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem; color: var(--accent);">Fluxo Automatizado de Análise e Notificação</h3>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Do momento da falha até a abertura estruturada do chamado no Jira</p>
+
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="flow-step-num">1</div>
+            <div style="font-size: 1.6rem; margin-top: 0.5rem;">⚡</div>
+            <h4>Detecção de Falha</h4>
+            <p>K8s Scanner identifica pod anômalo ou Webhook do GitLab CI recebe notificação de falha.</p>
+          </div>
+
+          <div class="arrow-divider">➔</div>
+
+          <div class="flow-step">
+            <div class="flow-step-num">2</div>
+            <div style="font-size: 1.6rem; margin-top: 0.5rem;">🔍</div>
+            <h4>Deduplicação & RCA</h4>
+            <p>Calcula o Fingerprint (evita spam de chamados) e analisa logs, exit codes e eventos de nós.</p>
+          </div>
+
+          <div class="arrow-divider">➔</div>
+
+          <div class="flow-step">
+            <div class="flow-step-num">3</div>
+            <div style="font-size: 1.6rem; margin-top: 0.5rem;">📝</div>
+            <h4>Síntese Estruturada</h4>
+            <p>Gera o Diagnóstico, Tabela de Ativos, Passo a Passo técnico, Critérios de Aceite e Rollback.</p>
+          </div>
+
+          <div class="arrow-divider">➔</div>
+
+          <div class="flow-step">
+            <div class="flow-step-num">4</div>
+            <div style="font-size: 1.6rem; margin-top: 0.5rem;">🎫</div>
+            <h4>Abertura no Jira</h4>
+            <p>Transmite payload em UTF-8 para o Jira REST API v2 e vincula ao chamado pai (ex: OPS-236).</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- SEÇÃO 3: PADRÃO DO CHAMADO (JIRA) -->
+    <section class="section-block" id="padrao-jira">
+      <div class="section-header">
+        <span class="section-tag">03 &bull; Chamado Modelo (Jira)</span>
+        <h2>Aparência e Estrutura do Chamado Criado</h2>
+        <p>Exemplo visual real do ticket gerado pela automação contendo causa-raiz, ativos impactados e plano de ação.</p>
+      </div>
+
+      <div class="jira-preview">
+        <div class="jira-header-bar">
+          <div>
+            <span class="jira-key">OPS-582</span> — <strong style="color: #fff;">Incidente: Pod 'portal-flowti-backend' em CrashLoopBackOff</strong>
+          </div>
+          <span class="badge badge-warning">Alta</span>
+        </div>
+
+        <div class="jira-body">
+          <p><strong>Referência:</strong> OPS-GUARDIAN &nbsp;|&nbsp; <strong>Data:</strong> 17/09/2026 11:27:07 &nbsp;|&nbsp; <strong>Ambiente:</strong> AWS Produção (EKS)</p>
+          <p><strong>Origem:</strong> Gerado por I.A. 🤖 (GuardianOps 🛡️) &nbsp;|&nbsp; <strong>Rótulos:</strong> <span class="jira-tag">gerado-por-ia</span> <span class="jira-tag">guardian-ops</span> <span class="jira-tag">k8s-failure</span></p>
+
+          <hr style="border: 0; border-top: 1px solid #334155; margin: 1rem 0;">
+
+          <h3 style="color: #38bdf8; margin: 1rem 0 0.5rem;">1. Diagnóstico & Análise de Causa Raiz (RCA)</h3>
+          <p>O processo principal do container <strong>flowti-api</strong> está falhando imediatamente após a inicialização (Exit Code: 1). O Kubelet tentou reiniciar o container repetidamente (8 reinicializações), ativando a política de espera exponencial (<em>back-off delay</em>). Causa raiz identificada: Falha de conexão com PostgreSQL por timeout de rede.</p>
+
+          <pre><code>[2026-09-17 11:20:04] ERROR [DatabasePool] Connection to PostgreSQL at 'db-prod.internal:5432' failed: Connection timed out.
+org.postgresql.util.PSQLException: The connection attempt timed out after 5000ms.
+[2026-09-17 11:20:05] SYSTEM [Process] Exited with status code 1.</code></pre>
+
+          <h3 style="color: #38bdf8; margin: 1.25rem 0 0.5rem;">2. Ativos Impactados</h3>
+          <table class="jira-table">
+            <thead>
+              <tr>
+                <th>Namespace</th>
+                <th>Nome do Pod</th>
+                <th>Container</th>
+                <th>Motivo da Falha</th>
+                <th>Reinicializações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>producao</td>
+                <td><span class="jira-tag">portal-flowti-backend-69b7bf656b-x82d9</span></td>
+                <td><span class="jira-tag">flowti-api</span></td>
+                <td><strong style="color: #ef4444;">CrashLoopBackOff</strong></td>
+                <td>8</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3 style="color: #38bdf8; margin: 1.25rem 0 0.5rem;">3. Procedimento de Correção Sugerido (Step-by-Step)</h3>
+          <div style="background: rgba(245, 158, 11, 0.1); border-left: 3px solid #f59e0b; padding: 0.75rem 1rem; margin-bottom: 0.75rem; font-size: 0.85rem; color: #fde68a;">
+            <strong>AVISO DE GOVERNANÇA:</strong> O GuardianOps atua exclusivamente em modo de <strong>SOMENTE-LEITURA</strong>. A equipe deve executar as etapas abaixo manualmente:
+          </div>
+          <ol style="margin-left: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <li>Visualizar os logs da última execução: <code>kubectl logs portal-flowti-backend -n producao -c flowti-api --previous --tail=100</code></li>
+            <li>Inspecionar os eventos do ciclo de vida: <code>kubectl describe pod portal-flowti-backend -n producao</code></li>
+            <li>Validar Secrets e ConfigMaps de banco de dados no namespace: <code>kubectl get configmaps,secrets -n producao</code></li>
+            <li>Corrigir credencial/host de conexão e aplicar nova revisão via repositório Git.</li>
+          </ol>
+
+          <h3 style="color: #38bdf8; margin: 1.25rem 0 0.5rem;">4. Critérios de Aceite</h3>
+          <ul style="margin-left: 1.5rem;">
+            <li>Pod estabilizado em status <code>Running</code> com <code>1/1 Ready</code>.</li>
+            <li>Contador de reinicializações cessa o incremento.</li>
+          </ul>
+
+          <h3 style="color: #38bdf8; margin: 1.25rem 0 0.5rem;">5. Plano de Rollback</h3>
+          <p>Reverter para a versão estável anterior: <code>kubectl rollout undo deployment/portal-flowti-backend -n producao</code></p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- SEÇÃO 4: COMANDOS & TESTES LOCAIS -->
+    <section class="section-block" id="comandos-testes">
+      <div class="section-header">
+        <span class="section-tag">04 &bull; Comandos & Testes Locais</span>
+        <h2>Validação em Ambiente de Desenvolvimento</h2>
+        <p>Simulações em modo Dry-Run (sem envio real) e comandos de disparo assistido.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">🧪</div>
+            <div class="card-title">Testes e Simulações (Dry-Run)</div>
+          </div>
+          <p>Execute testes sem alterar ou enviar nada ao Jira:</p>
+          <div class="code-box">
+            <span class="code-comment"># Bateria automatizada (UTF-8, Cooldown, RCA)</span><br>
+            .venv/bin/python3 test_guardian.py<br><br>
+            <span class="code-comment"># Simular CrashLoopBackOff</span><br>
+            .venv/bin/python3 main.py simulate-pod --dry-run<br><br>
+            <span class="code-comment"># Simular OOMKilled (Exit Code 137)</span><br>
+            .venv/bin/python3 main.py simulate-pod --type OOMKilled --exit-code 137 --dry-run<br><br>
+            <span class="code-comment"># Simular Falha de Pipeline CI/CD</span><br>
+            .venv/bin/python3 main.py simulate-pipeline --dry-run
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">🎯</div>
+            <div class="card-title">Operação & Disparo Real</div>
+          </div>
+          <p>Comandos para disparo de chamados reais ou escuta contínua:</p>
+          <div class="code-box">
+            <span class="code-comment"># Testar autenticação com o Jira</span><br>
+            .venv/bin/python3 main.py test-jira<br><br>
+            <span class="code-comment"># Criar chamado real de Pod vinculado ao pai</span><br>
+            .venv/bin/python3 main.py simulate-pod --parent OPS-236<br><br>
+            <span class="code-comment"># Criar chamado real de Pipeline vinculado ao pai</span><br>
+            .venv/bin/python3 main.py simulate-pipeline --parent OPS-236<br><br>
+            <span class="code-comment"># Subir listener de Webhook do GitLab (porta 8080)</span><br>
+            .venv/bin/python3 main.py webhook --port 8080 --dry-run
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- SEÇÃO 5: PREPARAÇÃO K8S -->
+    <section class="section-block" id="preparacao-k8s">
+      <div class="section-header">
+        <span class="section-tag">05 &bull; Arquitetura Kubernetes</span>
+        <h2>Prontidão para Implantação Segura em Cluster</h2>
+        <p>Manifestos preparados com RBAC somente-leitura, rolling update e containers sem privilégios de root.</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">📜</div>
+            <div class="card-title">RBAC Somente-Leitura</div>
+          </div>
+          <p>Garante segurança operacional absoluta.</p>
+          <ul>
+            <li>ServiceAccount dedicado: <code>guardian-ops-sa</code>.</li>
+            <li>ClusterRole restrito a <code>get</code>, <code>list</code>, <code>watch</code>.</li>
+            <li>Zero permissões de mutação em Pods ou Deployments.</li>
+            <li>Manifesto: <code>k8s/rbac-readonly.yaml</code>.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">🚀</div>
+            <div class="card-title">Deployment Zero-Downtime</div>
+          </div>
+          <p>Pronto para alta disponibilidade quando for para o cluster.</p>
+          <ul>
+            <li>Mínimo de <strong>2 réplicas</strong> ativas.</li>
+            <li>Estratégia <code>RollingUpdate</code> (Zero Indisponibilidade).</li>
+            <li>Liveness & Readiness probes no <code>/healthz</code>.</li>
+            <li>Manifesto: <code>k8s/deployment.yaml</code>.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">🐳</div>
+            <div class="card-title">Container Não-Root</div>
+          </div>
+          <p>Em conformidade com as melhores práticas de hardening.</p>
+          <ul>
+            <li>Usuário interno não-root: UID <code>10001</code> (<code>guardian</code>).</li>
+            <li>Base Python 3.12-slim com imagem leve.</li>
+            <li>Healthcheck integrado na imagem Docker.</li>
+            <li>Arquivo: <code>Dockerfile</code>.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <p>🛡️ <strong>GuardianOps</strong> &bull; Engenharia de Plataforma & Observabilidade Flowti &bull; 2026</p>
+    </footer>
+
+  </div>
+</body>
+</html>

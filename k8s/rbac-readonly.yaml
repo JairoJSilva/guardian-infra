@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: guardian-ops-sa
+  namespace: observability
+  labels:
+    app.kubernetes.io/name: guardian-ops
+    app.kubernetes.io/part-of: guardian-platform
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: guardian-ops-readonly
+  labels:
+    app.kubernetes.io/name: guardian-ops
+    app.kubernetes.io/part-of: guardian-platform
+rules:
+  # Permissões estritamente de SOMENTE-LEITURA para auditoria de falhas
+  # NENHUMA permissão de escrita, exclusão ou mutação (create, update, delete, patch)
+  - apiGroups: [""]
+    resources:
+      - pods
+      - pods/log
+      - pods/status
+      - events
+      - namespaces
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+      - replicasets
+      - statefulsets
+      - daemonsets
+    verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: guardian-ops-readonly-binding
+  labels:
+    app.kubernetes.io/name: guardian-ops
+subjects:
+  - kind: ServiceAccount
+    name: guardian-ops-sa
+    namespace: observability
+roleRef:
+  kind: ClusterRole
+  name: guardian-ops-readonly
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guardian-ops
+  namespace: observability
+  labels:
+    app: guardian-ops
+    app.kubernetes.io/name: guardian-ops
+    app.kubernetes.io/component: error-observer
+    app.kubernetes.io/part-of: guardian-platform
+spec:
+  # Mínimo de 2 réplicas para suportar Rolling Updates com Zero Downtime
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: guardian-ops
+  template:
+    metadata:
+      labels:
+        app: guardian-ops
+        app.kubernetes.io/name: guardian-ops
+    spec:
+      serviceAccountName: guardian-ops-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      containers:
+        - name: guardian-ops
+          image: registry.flowti.com.br/ops/guardian-ops:v1.0.0
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: guardian-ops-config
+            - secretRef:
+                name: guardian-ops-secret
+          ports:
+            - name: http-webhook
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http-webhook
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http-webhook
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 2
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: guardian-ops-service
+  namespace: observability
+  labels:
+    app: guardian-ops
+    app.kubernetes.io/name: guardian-ops
+spec:
+  type: ClusterIP
+  selector:
+    app: guardian-ops
+  ports:
+    - name: http-webhook
+      port: 8080
+      targetPort: http-webhook
+      protocol: TCP
