@@ -91,7 +91,8 @@ class Config:
     # GuardianOps Operational Settings
     DRY_RUN: bool = _get_bool("GUARDIAN_DRY_RUN", default=False)
     COOLDOWN_MINUTES: int = int(os.getenv("GUARDIAN_COOLDOWN_MINUTES", "60"))
-    CACHE_FILE: Path = Path(__file__).resolve().parent.parent / os.getenv("GUARDIAN_CACHE_FILE", "guardian_cache.json")
+    _env_cache = os.getenv("GUARDIAN_CACHE_FILE")
+    CACHE_FILE: Path = Path(_env_cache) if _env_cache else Path(__file__).resolve().parent.parent / "guardian_cache.json"
     DEFAULT_ENVIRONMENT: str = os.getenv("GUARDIAN_ENVIRONMENT", "AWS Produção").strip()
 
     # Webhook Server (para pipelines CI/CD)

@@ -1,0 +1,103 @@
+# =============================================================================
+# GuardianOps v2.0 — Docker Compose (Modo Local / On-Demand)
+# =============================================================================
+# Uso:
+#   docker-compose up guardian          → Modo Watch (observador contínuo)
+#   docker-compose run --rm guardian-cli orchestrate --dry-run ...
+#   docker-compose run --rm guardian-cli list-agents
+#   docker-compose run --rm guardian-cli test-jira
+#
+# O volume do kubeconfig permite que o agente acesse clusters remotos
+# com as mesmas credenciais que você usa localmente.
+# =============================================================================
+
+services:
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # guardian — Modo Observador Contínuo (Watch + Webhook listener)
+  # Roda em background, monitora containers locais e aceita webhooks
+  # ──────────────────────────────────────────────────────────────────────────
+  guardian:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: guardianops:v2.0
+    container_name: guardianops_watch
+    user: root
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - GUARDIAN_DRY_RUN=${GUARDIAN_DRY_RUN:-false}
+      - GUARDIAN_COOLDOWN_MINUTES=${GUARDIAN_COOLDOWN_MINUTES:-60}
+      - GUARDIAN_ENVIRONMENT=${GUARDIAN_ENVIRONMENT:-Produção}
+      - GUARDIAN_CACHE_FILE=/app/cache/guardian_cache.json
+      - PYTHONIOENCODING=utf-8
+      - LANG=C.UTF-8
+    volumes:
+      # Socket Docker (somente-leitura) para monitorar containers locais
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # kubeconfig local para conectar em clusters remotos
+      - ${HOME}/.kube:/home/guardian/.kube:ro
+      # Persistência do cache de deduplicação de chamados
+      - guardian_cache:/app/cache
+    ports:
+      - "${WEBHOOK_PORT:-8088}:8080"
+    command:
+      - "python3"
+      - "main.py"
+      - "watch"
+      - "--interval"
+      - "${GUARDIAN_SCAN_INTERVAL:-30}"
+      - "--webhook-port"
+      - "8080"
+      - "--targets"
+      - "${GUARDIAN_TARGETS:-}"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - guardianops_net
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # guardian-cli — Modo On-Demand (execução pontual via docker run)
+  # Exemplo: docker-compose run --rm guardian-cli orchestrate --dry-run ...
+  # ──────────────────────────────────────────────────────────────────────────
+  guardian-cli:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: guardianops:v2.0
+    container_name: guardianops_cli
+    user: root
+    env_file:
+      - .env
+    environment:
+      - GUARDIAN_DRY_RUN=${GUARDIAN_DRY_RUN:-true}
+      - GUARDIAN_CACHE_FILE=/app/cache/guardian_cache.json
+      - PYTHONIOENCODING=utf-8
+      - LANG=C.UTF-8
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${HOME}/.kube:/home/guardian/.kube:ro
+      - guardian_cache:/app/cache
+    entrypoint: ["python3", "main.py"]
+    # Sem restart — é on-demand
+    profiles:
+      - cli
+    networks:
+      - guardianops_net
+
+# ──────────────────────────────────────────────────────────────────────────────
+volumes:
+  guardian_cache:
+    driver: local
+    name: guardianops_cache
+
+networks:
+  guardianops_net:
+    driver: bridge
+    name: guardianops_network

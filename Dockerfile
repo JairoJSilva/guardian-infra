@@ -25,7 +25,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Cria usuário não-root por boas práticas de segurança K8s
-RUN useradd -u 10001 -m guardian && chown -R guardian:guardian /app
+RUN useradd -u 10001 -m guardian && mkdir -p /app/cache && chown -R guardian:guardian /app
 
 # Copia código da aplicação
 COPY --chown=guardian:guardian guardian_ops /app/guardian_ops

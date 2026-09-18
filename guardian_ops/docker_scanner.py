@@ -157,10 +157,14 @@ class DockerScanner:
                 anomaly_reason = f"Container '{name}' em loop de reinicialização (Exit Code: {exit_code}, Restarts: {restart_count})."
                 failure_type = "CrashLoopBackOff"
 
-            # 3. Caso Exited com erro inesperado
-            elif status == "exited" and exit_code != 0 and prev_status != "exited":
-                anomaly_reason = f"Container '{name}' encerrou inesperadamente com código de erro {exit_code}."
-                failure_type = f"ExitCode_{exit_code}"
+            # 3. Caso Exited (parada inesperada ou crash)
+            elif status == "exited" and prev_status not in ("", "exited"):
+                if exit_code != 0:
+                    anomaly_reason = f"Container '{name}' encerrou inesperadamente com código de erro {exit_code}."
+                    failure_type = f"ExitCode_{exit_code}"
+                else:
+                    anomaly_reason = f"Container '{name}' que estava ativo foi encerrado/parado inesperadamente (Status: exited, ExitCode: 0)."
+                    failure_type = "ContainerStopped"
 
             # 4. Caso Healthcheck Unhealthy
             elif health_status == "unhealthy" and prev.get("health_status") != "unhealthy":

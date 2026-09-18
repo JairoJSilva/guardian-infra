@@ -15,22 +15,99 @@ from guardian_ops.k8s_scanner import K8sScanner
 from guardian_ops.docker_scanner import DockerScanner
 from guardian_ops.pipeline_listener import PipelineMock, run_webhook_server
 
+# Sistema de Agentes Especializados (v2.0)
+from guardian_ops.agents.orchestrator_agent import OrchestratorBotAgent
+
+
+def _incident_event_to_payload(event: IncidentEvent) -> dict:
+    """
+    Converte um IncidentEvent (formato legado) para o payload dict
+    usado pelo OrchestratorBotAgent e seus agentes especialistas.
+    """
+    source_map = {
+        "KUBERNETES_POD":  "kubernetes",
+        "DOCKER_CONTAINER": "docker",
+        "PIPELINE_CI_CD":  "pipeline",
+    }
+    return {
+        "source":         source_map.get(event.source.value, "kubernetes"),
+        "failure_type":   event.failure_type,
+        "component":      event.identifier,
+        "namespace":      event.namespace_or_project,
+        "container":      event.container_or_stage or "app",
+        "environment":    event.environment,
+        "error_message":  event.error_message or "",
+        "logs":           event.logs_snippet or "",
+        "restart_count":  event.restart_count or 0,
+        "exit_code":      event.exit_code,
+        "details":        event.details or {},
+    }
+
+
 def handle_incident(event: IncidentEvent, parent_issue: str = None, dry_run: bool = False):
-    """Processa um incidente: analisa a falha e abre o chamado no Jira."""
+    """
+    Processa um incidente de forma AUTÔNOMA:
+      1. Converte o evento para payload do sistema multi-agente
+      2. Aciona o OrchestratorBotAgent → roteia para agentes especialistas
+      3. Consolida o diagnóstico e abre o chamado no Jira automaticamente
+    """
     print("\n" + "═" * 65)
-    print(f"🛡️  [GuardianOps] INCIDENTE DETECTADO: {event.failure_type}")
-    print(f"   Origem: {event.source.value} | Alvo: {event.identifier}")
-    print(f"   Escopo: {event.namespace_or_project} | Container/Stage: {event.container_or_stage}")
+    print(f"🛡️  [GuardianOps v2.0] INCIDENTE DETECTADO — AGENTES ACIONADOS")
+    print(f"   Tipo     : {event.failure_type}")
+    print(f"   Alvo     : {event.identifier}  ({event.source.value})")
+    print(f"   Escopo   : {event.namespace_or_project} | {event.container_or_stage}")
+    print(f"   Ambiente : {event.environment}")
     print("═" * 65)
 
     if dry_run:
         Config.DRY_RUN = True
 
-    analyzer = GuardianAnalyzer()
-    analysis = analyzer.analyze(event)
+    # ── Fase 1: Diagnóstico pelo sistema multi-agente ────────────────────────
+    payload = _incident_event_to_payload(event)
+    orchestrator = OrchestratorBotAgent()
+    agent_result = orchestrator.build_jira_payload(payload)
+
+    # ── Fase 2: Montar AnalysisResult compatível com JiraClient ─────────────
+    priority_map = {
+        "LOW":      "Baixa",
+        "MEDIUM":   "Média",
+        "HIGH":     "Alta",
+        "CRITICAL": "Alta",
+    }
+    from guardian_ops.models import AnalysisResult, IncidentPriority
+    priority_str = priority_map.get(agent_result["severity"], "Média")
+    priority_enum = {
+        "Baixa": IncidentPriority.BAIXA,
+        "Média": IncidentPriority.MEDIA,
+        "Alta":  IncidentPriority.ALTA,
+    }.get(priority_str, IncidentPriority.MEDIA)
+
+    analysis = AnalysisResult(
+        summary=agent_result["summary"],
+        priority=priority_enum,
+        category=f"GuardianOps Multi-Agent / {agent_result.get('failure_type', event.failure_type)}",
+        issue_type="Solicitação de serviço",
+        root_cause=agent_result["root_cause"],
+        impacted_asset_summary=f"{event.identifier} ({event.namespace_or_project})",
+        remediation_procedure=agent_result["description"],
+        acceptance_criteria="\n".join(
+            f"* {s}" for s in (agent_result.get("validation_steps") or ["Componente operando normalmente."])
+        ),
+        rollback_plan="Reverter para a versão estável anterior se aplicável.",
+        jira_description=agent_result["description"],
+        labels=agent_result.get("labels", ["gerado-por-ia", "guardian-ops", "multi-agent"]),
+    )
+
+    # ── Fase 3: Resolver contrato e abrir chamado no Jira ───────────────────
+    context_hint = f"{event.namespace_or_project} {event.identifier}"
+    analysis.contract_field = Config.resolve_contract(context_hint)
 
     jira = JiraClient()
     result = jira.create_incident_issue(event, analysis, parent_issue_key=parent_issue)
+
+    if result:
+        print(f"\n[✓] Chamado aberto por [{', '.join(agent_result.get('agents_triggered', []))}]")
+
     return result
 
 def cmd_simulate_pod(args):
@@ -162,6 +239,116 @@ def cmd_test_jira(args):
     except Exception as e:
         print(f"[!] Erro ao conectar no Jira: {e}")
 
+
+def cmd_orchestrate(args):
+    """
+    Aciona o OrchestratorBotAgent com um payload customizado via CLI.
+    O orquestrador detecta automaticamente quais agentes especialistas acionar.
+    """
+    import json
+
+    print("\n" + "═" * 65)
+    print("🤖  [GuardianOps v2.0] SISTEMA MULTI-AGENTE ATIVADO")
+    print("═" * 65)
+
+    # Montar payload a partir dos argumentos CLI
+    payload: dict = {
+        "source":        args.source,
+        "failure_type":  args.failure_type,
+        "component":     args.component,
+        "namespace":     args.namespace,
+        "container":     args.container,
+        "environment":   args.environment,
+        "error_message": args.error_message or "",
+        "logs":          args.logs or "",
+        "details":       {},
+    }
+
+    # Exibir payload de entrada
+    print(f"  Componente    : {payload['component']}")
+    print(f"  Fonte         : {payload['source']}")
+    print(f"  Tipo de Falha : {payload['failure_type']}")
+    print(f"  Ambiente      : {payload['environment']}")
+    print("═" * 65)
+
+    orchestrator = OrchestratorBotAgent()
+    result = orchestrator.build_jira_payload(payload)
+
+    print("\n" + "═" * 65)
+    print("📋  RESULTADO DO ORQUESTRADOR:")
+    print("═" * 65)
+    print(f"Título      : {result['summary']}")
+    print(f"Severidade  : {result['severity']}")
+    print(f"Prioridade  : {result['priority']}")
+    print(f"Agentes     : {', '.join(result['agents_triggered'])}")
+    print("─" * 65)
+
+    if args.dry_run:
+        print("\n[DRY-RUN] Descrição do chamado (Wiki Markup Jira):")
+        print("─" * 65)
+        print(result["description"])
+        print("═" * 65)
+        print("[DRY-RUN] Chamado NÃO enviado ao Jira (modo simulação).")
+    else:
+        print("\n[*] Enviando chamado ao Jira via JiraClient...")
+        # Integrar com o JiraClient existente
+        from guardian_ops.models import IncidentEvent, FailureSource
+        try:
+            source_map = {
+                "kubernetes": FailureSource.KUBERNETES_POD,
+                "docker":     FailureSource.DOCKER_CONTAINER,
+                "pipeline":   FailureSource.PIPELINE_CI_CD,
+            }
+            source_enum = source_map.get(args.source.lower(), FailureSource.KUBERNETES_POD)
+            event = IncidentEvent(
+                source=source_enum,
+                identifier=payload["component"],
+                namespace_or_project=payload["namespace"],
+                failure_type=payload["failure_type"],
+                environment=payload["environment"],
+                container_or_stage=payload["container"],
+                error_message=payload["error_message"],
+                logs_snippet=payload["logs"],
+            )
+            from guardian_ops.models import AnalysisResult, IncidentPriority
+            priority_map = {"LOW": IncidentPriority.BAIXA, "MEDIUM": IncidentPriority.MEDIA,
+                            "HIGH": IncidentPriority.ALTA, "CRITICAL": IncidentPriority.ALTA}
+            analysis = AnalysisResult(
+                summary=result["summary"],
+                priority=priority_map.get(result["severity"], IncidentPriority.MEDIA),
+                category="GuardianOps Multi-Agent / Diagnóstico Autônomo",
+                issue_type="Solicitação de serviço",
+                root_cause=result["root_cause"],
+                impacted_asset_summary=payload["component"],
+                remediation_procedure=result["description"],
+                acceptance_criteria="\n".join(f"* {s}" for s in (result.get("validation_steps") or ["Componente operando normalmente."])),
+                rollback_plan="Reverter para a versão estável anterior se aplicável.",
+                jira_description=result["description"],
+                labels=result["labels"],
+            )
+            jira = JiraClient()
+            jira_result = jira.create_incident_issue(event, analysis, parent_issue_key=args.parent)
+            if jira_result:
+                print(f"[✓] Chamado aberto: {jira_result.get('key', 'N/A')}")
+        except Exception as e:
+            print(f"[!] Erro ao criar chamado: {e}")
+            print("[!] Tente com --dry-run para testar sem enviar ao Jira.")
+
+
+def cmd_list_agents(args):
+    """Lista todos os agentes especialistas registrados no orquestrador."""
+    print("\n" + "═" * 65)
+    print("🤖  [GuardianOps v2.0] AGENTES ESPECIALISTAS REGISTRADOS:")
+    print("═" * 65)
+    for agent_info in OrchestratorBotAgent.list_agents():
+        print(f"  ✓ {agent_info}")
+    print("═" * 65)
+    print(f"  Total: {len(OrchestratorBotAgent.SPECIALIST_AGENTS)} agentes especialistas")
+    print(f"  + 1 Orquestrador: [{OrchestratorBotAgent.AGENT_ID}] {OrchestratorBotAgent.AGENT_NAME}")
+    print("═" * 65)
+
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="GuardianOps - Monitor e Analisador de Falhas de Aplicações e Pipelines",
@@ -233,6 +420,43 @@ def main():
     p_wt.add_argument("--parent", default="OPS-236", help="Issue de referência/pai para vincular")
     p_wt.add_argument("--dry-run", action="store_true", help="Modo simulação sem postar no Jira")
 
+    # -------------------------------------------------------------------------
+    # NOVOS COMANDOS — Sistema Multi-Agente (v2.0)
+    # -------------------------------------------------------------------------
+
+    # orchestrate — Acionar o orquestrador com payload customizado
+    p_orch = subparsers.add_parser(
+        "orchestrate",
+        help="[v2.0] Aciona o OrchestratorBotAgent com os 5 agentes especializados"
+    )
+    p_orch.add_argument("--source", default="kubernetes",
+                        choices=["kubernetes", "docker", "pipeline", "database", "application"],
+                        help="Fonte/origem do evento de falha")
+    p_orch.add_argument("--failure-type", default="CrashLoopBackOff",
+                        help="Tipo da falha (ex: CrashLoopBackOff, OOMKilled, Deadlock, NullPointerException)")
+    p_orch.add_argument("--component", default="target-app",
+                        help="Nome do componente/pod/container/serviço afetado")
+    p_orch.add_argument("--namespace", default="default",
+                        help="Namespace K8s ou projeto (se aplicável)")
+    p_orch.add_argument("--container", default="app",
+                        help="Nome do container ou stage afetado")
+    p_orch.add_argument("--environment", default="Produção",
+                        help="Ambiente (ex: Produção, Staging, Homologação)")
+    p_orch.add_argument("--error-message", default=None,
+                        help="Mensagem de erro ou stack trace resumido")
+    p_orch.add_argument("--logs", default=None,
+                        help="Trecho de logs do componente (para evidência no chamado)")
+    p_orch.add_argument("--parent", default="OPS-236",
+                        help="Issue de referência/pai para vincular no Jira")
+    p_orch.add_argument("--dry-run", action="store_true",
+                        help="Exibe o chamado formatado sem enviar ao Jira")
+
+    # list-agents — Listar agentes registrados
+    subparsers.add_parser(
+        "list-agents",
+        help="[v2.0] Lista todos os agentes especialistas registrados no GuardianOps"
+    )
+
     args = parser.parse_args()
 
     if not args.command:
@@ -253,6 +477,12 @@ def main():
         cmd_webhook(args)
     elif args.command == "watch":
         cmd_watch(args)
+    # v2.0 — Agentes Especializados
+    elif args.command == "orchestrate":
+        cmd_orchestrate(args)
+    elif args.command == "list-agents":
+        cmd_list_agents(args)
 
 if __name__ == "__main__":
     main()
+
