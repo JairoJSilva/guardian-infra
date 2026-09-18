@@ -4,3 +4,5 @@ __pycache__/
 .venv/
 guardian_cache.json
 cache/
+/guardian
+/targets.json
