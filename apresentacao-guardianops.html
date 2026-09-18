@@ -691,7 +691,41 @@
           <hr style="border: 0; border-top: 1px solid #334155; margin: 1rem 0;">
 
           <h3 style="color: #38bdf8; margin: 1rem 0 0.5rem;">1. Diagnóstico & Análise de Causa Raiz (RCA)</h3>
-          <p>O processo principal do container <strong>flowti-api</strong> está falhando imediatamente após a inicialização (Exit Code: 1). O Kubelet tentou reiniciar o container repetidamente (8 reinicializações), ativando a política de espera exponencial (<em>back-off delay</em>). Causa raiz identificada: Falha de conexão com PostgreSQL por timeout de rede.</p>
+          <p>O processo principal do container <strong>guardian-api</strong> está falhando imediatamente após a inicialização (Exit Code: 1). O Kubelet tentou reiniciar o container repetidamente (8 reinicializações), ativando a política de espera exponencial (<em>back-off delay</em>). Causa raiz identificada: Falha de conexão com PostgreSQL por timeout de rede.</p>
+
+          <!-- Tabela com Metadados da Issue -->
+          <table class="jira-meta-table">
+            <tbody>
+              <tr>
+                <th>Namespace:</th>
+                <td><span class="jira-tag">producao</span></td>
+                <th>Pod Afetado:</th>
+                <td><span class="jira-tag">guardian-core-backend-69b7bf656b-x82d9</span></td>
+                <th>Container:</th>
+                <td><span class="jira-tag">guardian-api</span></td>
+              </tr>
+              <tr>
+                <th>Severidade / Prioridade:</th>
+                <td><span class="jira-tag" style="background: rgba(239, 68, 68, 0.2); color: #EF4444; border-color: rgba(239, 68, 68, 0.4);">Alta</span></td>
+                <th>Tipo de Item:</th>
+                <td>Solicitação de serviço</td>
+                <th>Componente / Label:</th>
+                <td><span class="jira-tag">kubernetes-incident</span> <span class="jira-tag">crashloopbackoff</span></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Ações Sugeridas -->
+          <h4 style="color: var(--accent); margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 1rem;">📋 Ações Imediatas Sugeridas pelo Agente:</h4>
+          <ul style="color: var(--text-sub); font-size: 0.95rem; margin-left: 1.5rem; margin-bottom: 1rem; line-height: 1.8;">
+            <li>Visualizar os logs da última execução: <code>kubectl logs guardian-core-backend -n producao -c guardian-api --previous --tail=100</code></li>
+            <li>Inspecionar os eventos do ciclo de vida: <code>kubectl describe pod guardian-core-backend -n producao</code></li>
+            <li>Verificar conectividade com o banco de dados: <code>nc -zv postgres-service 5432</code></li>
+          </ul>
+
+          <!-- Procedimento de Rollback -->
+          <h4 style="color: var(--warning); margin-top: 1rem; margin-bottom: 0.5rem; font-size: 1rem;">🔄 Plano de Reversão Rápida (Rollback):</h4>
+          <p>Reverter para a versão estável anterior: <code>kubectl rollout undo deployment/guardian-core-backend -n producao</code></p>
 
           <pre><code>[2026-09-17 11:20:04] ERROR [DatabasePool] Connection to PostgreSQL at 'db-prod.internal:5432' failed: Connection timed out.
 org.postgresql.util.PSQLException: The connection attempt timed out after 5000ms.
@@ -848,7 +882,7 @@ org.postgresql.util.PSQLException: The connection attempt timed out after 5000ms
 
     <!-- Footer -->
     <footer>
-      <p>🛡️ <strong>GuardianOps</strong> &bull; Engenharia de Plataforma & Observabilidade Flowti &bull; 2026</p>
+      <p>🛡️ <strong>Guardian</strong> &bull; Engenharia de Plataforma & Observabilidade Autônoma &bull; 2026</p>
     </footer>
 
   </div>
