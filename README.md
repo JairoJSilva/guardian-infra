@@ -1,93 +1,155 @@
-# 🛡️ GuardianOps (v1.0) - Observador & Analisador de Falhas de Aplicações e Pipelines
+# 🛡️ GuardianOps (v2.0) — Sistema Multi-Agente de Observabilidade & RCA
 
-O **GuardianOps** é um componente inteligente desenhado para monitorar e capturar falhas em aplicações (Pods do Kubernetes) e esteiras de CI/CD (Pipelines GitLab/GitHub), analisando a causa-raiz (RCA) e abrindo chamados técnicos detalhados e padronizados no Jira.
+O **GuardianOps v2.0** é uma plataforma inteligente e autônoma de observabilidade, diagnóstico de causa-raiz (RCA) e abertura automatizada de chamados técnicos no **Jira**.
+
+Executando localmente como um container Docker de baixo consumo ou como daemon no Kubernetes, o GuardianOps monitora containers locais, pods de clusters remotos e esteiras de CI/CD. Quando uma falha é detectada, o **OrchestratorBot** aciona um esquadrão de **agentes especialistas** para diagnosticar o incidente, sintetizar o impacto e abrir um chamado com procedimentos detalhados de correção.
 
 ---
 
-## 🔒 Princípio de Segurança Mandatório (v1.0)
+## 🔒 Princípio de Segurança Mandatório (Read-Only)
 
 > [!IMPORTANT]
 > **Modo Estritamente Somente-Leitura (Read-Only):**  
-> Nesta primeira versão, o GuardianOps **NÃO executa ações corretivas em hipótese alguma**. Ele atua exclusivamente como diagnosticador, sintetizador de causa-raiz e emissor de chamados com sugestão de procedimento passo a passo para o operador humano.
+> O GuardianOps opera 100% em modo somente-leitura. Ele **NÃO executa ações destrutivas, correções cegas ou reinicializações não supervisionadas** nos ambientes monitorados. Sua função é diagnosticar com precisão técnica cirúrgica, classificar a severidade e fornecer o procedimento passo a passo pronto para o operador humano validar e aplicar.
 
 ---
 
-## ✨ Principais Capacidades
+## 🤖 Esquadrão de Agentes Especialistas (v2.0)
 
-1. **Diagnóstico Automatizado de Workloads K8s**:
-   - `CrashLoopBackOff` (Identificação de erros de inicialização, conexão de banco, secrets faltantes).
-   - `OOMKilled` (Detecção de estouro de limites de memória `limits.memory` e exit code 137).
-   - `ImagePullBackOff` / `ErrImagePull` (Detecção de tags incorretas, registros inacessíveis ou segredos de pull).
-   - `FailedLivenessProbe` / `FailedReadinessProbe` (Falhas de probes de saúde HTTP/TCP).
-2. **Diagnóstico de Falhas em Pipelines CI/CD**:
-   - Recebe webhooks do GitLab CI / GitHub Actions com status `failed`.
-   - Analisa o estágio que falhou (`build`, `test`, `docker-build`, `deploy`).
-   - Extrai trechos de logs do runner e sintetiza a causa do bloqueio.
-3. **Padrão Institucional de Chamados no Jira**:
-   - Resumo claro e objetivo do incidente.
-   - Diagnóstico & Análise de Causa Raiz (RCA).
-   - Tabela de ativos impactados (Namespace, Pod, Container, Status).
-   - Procedimento de correção passo a passo com comandos recomendados (`kubectl describe`, `kubectl logs`, etc.).
-   - Critérios de aceite e plano de rollback.
-   - Vínculo automático a chamados pais/referência (ex: `OPS-236`).
-4. **Integridade de Codificação UTF-8**:
-   - Todo tráfego HTTP é transmitido com `charset=utf-8` e `ensure_ascii=False`, preservando 100% da acentuação em português (`á`, `é`, `ç`, `ã`) e emojis (`🛡️`, `🤖`, `📌`, `⚠️`) sem quebrar a formatação no Jira Server/Data Center.
-5. **Deduplicação & Anti-Spam de Chamados (Cooldown)**:
-   - Se um pod estiver em loop de reinicialização (`CrashLoopBackOff`), o GuardianOps gera uma assinatura (_fingerprint_) única e aplica um cooldown configurável (padrão: 60 minutos), evitando a criação de dezenas de chamados repetidos para o mesmo incidente.
+O GuardianOps adota uma arquitetura multi-agente determinística (sem custos de API ou dependência de serviços externos). Cada agente possui domínio aprofundado sobre sua camada:
+
+| Agente | ID | Especialidade & Cobertura |
+| :--- | :--- | :--- |
+| **🌐 DevOps & Cloud Native** | `agent-devops-cloudnative` | **Kubernetes** (OOMKilled, CrashLoopBackOff, ImagePull, Probes, PVC Pending), **Docker** (saúde, parada de containers, socket), **IaC** (Terraform, OpenTofu, Ansible) e **Pipelines CI/CD** (GitLab CI, GitHub Actions). |
+| **💾 Database & Data Systems** | `agent-database-specialist` | **Bancos Relacionais e NoSQL** (MySQL, PostgreSQL, MongoDB, Redis, Elasticsearch). Identifica exaustão de conexões, deadlocks, transações longas, queries lentas e falhas em migrações (Flyway, Alembic, Prisma). |
+| **🧪 QA Senior & Automation** | `agent-qa-senior` | **Garantia de Qualidade & Testes**: Regressões críticas, quebra de contratos de API (REST/GraphQL), testes intermitentes (*flaky tests*), cobertura de testes e templates de cenários BDD/Gherkin prontos para automação. |
+| **⚡ FullStack Developer** | `agent-fullstack-developer` | **Camada de Aplicação & Código**: Exceções não tratadas (NullPointer, TypeError), vazamento de memória (*heap leak*), problemas de CORS, falhas assíncronas (unhandled promises), segurança OWASP (SQLi/XSS) e erros de autenticação (401/403). |
+| **🎯 Orchestrator Bot** | `agent-orchestrator` | **Orquestrador Central**: Analisa os sintomas do incidente, roteia para os especialistas relevantes (acionando diagnósticos combinados quando necessário), consolida o relatório unificado e envia para o Jira. |
 
 ---
 
-## 🚀 Como Executar e Testar Localmente (Sem subir no cluster)
+## 🏗️ Arquitetura de Execução Local (Container Docker)
 
-### 1. Pré-requisitos e Ativação do Ambiente
-```bash
-# Entrar no diretório
-cd /home/jairosjunior/Documentos/Jairo/automação-jira
+A arquitetura recomendada para desenvolvimento e sustentação operacional consiste em rodar o GuardianOps localmente na sua máquina via **Docker Compose**:
 
-# O ambiente virtual já está configurado em .venv
-source .venv/bin/activate
+```
+ ┌─────────────────────────────────────────────────────────┐
+ │                   MÁQUINA LOCAL (HOST)                  │
+ │                                                         │
+ │   ┌────────────────┐  ┌────────────────┐                │
+ │   │   flowti-app   │  │  flowti-mysql  │  ...containers │
+ │   └────────┬───────┘  └────────┬───────┘                │
+ │            │                   │                        │
+ │            └─────────┬─────────┘                        │
+ │                      ▼                                  │
+ │             /var/run/docker.sock (:ro)                  │
+ │                      │                                  │
+ │   ┌──────────────────┴──────────────────────────────┐   │
+ │   │  Container: guardianops_watch (v2.0)            │   │
+ │   │                                                 │   │
+ │   │  ┌───────────────────────────────────────────┐  │   │
+ │   │  │ DockerScanner (Varredura Contínua)        │  │   │
+ │   │  └─────────────────────┬─────────────────────┘  │   │
+ │   │                        ▼                        │   │
+ │   │  ┌───────────────────────────────────────────┐  │   │
+ │   │  │ OrchestratorBotAgent                     │  │   │
+ │   │  │   ├── DevOpsAgent                         │  │   │
+ │   │  │   ├── DatabaseAgent                       │  │   │
+ │   │  │   ├── FullStackAgent                      │  │   │
+ │   │  │   └── QAAgent                             │  │   │
+ │   │  └─────────────────────┬─────────────────────┘  │   │
+ │   │                        ▼                        │   │
+ │   │  ┌───────────────────────────────────────────┐  │   │
+ │   │  │ JiraClient (UTF-8 + Deduplicação/Cooldown)│  │   │
+ │   │  └─────────────────────┬─────────────────────┘  │   │
+ │   │                        │                        │   │
+ │   │  ~/.kube (:ro)         │                        │   │
+ │   └────────┬───────────────┼────────────────────────┘   │
+ └────────────┼───────────────┼────────────────────────────┘
+              │               │ HTTPS
+              ▼               ▼
+     Clusters K8s Remotos    Jira Data Center (Projeto OPS)
 ```
 
-### 2. Testar Conexão com o Jira
-Valida suas credenciais e endpoint do Jira configurados no `.env`:
-```bash
-python3 main.py test-jira
+### Por que esta é a melhor opção?
+1. **Acesso Nativo e Seguro ao Docker**: O container acessa o `/var/run/docker.sock` em modo somente-leitura. Qualquer falha ou parada inesperada de container é detectada em segundos.
+2. **Ponte com Clusters K8s Remotos**: Montando o volume do `${HOME}/.kube`, o GuardianOps inspeciona pods de clusters remotos usando as mesmas permissões do seu `kubectl` local.
+3. **Persistência Segura de Cache**: O cache de deduplicação é persistido em volume Docker (`guardian_cache`), evitando chamados repetidos para o mesmo incidente.
+4. **Sem Conflito de Portas**: O webhook listener roda na porta interna `8080` e é exposto na porta `8088` do host, deixando a porta `8080` livre para suas aplicações locais (`flowti-app`).
+
+---
+
+## 🚀 Como Executar
+
+### 1. Configurar Variáveis de Ambiente
+Crie ou verifique o arquivo `.env` na raiz do projeto:
+```env
+JIRA_BASE_URL=https://jira.mv.com.br
+JIRA_USER=seu.usuario
+JIRA_PASSWORD=sua_senha_ou_token
 ```
 
-### 3. Simulação de Falha de Pod K8s (Dry-Run ou Real)
-Gera a análise e formatação completa sem criar chamado no Jira:
+### 2. Iniciar o Observador Contínuo (Modo Recomendado)
 ```bash
-# Simula CrashLoopBackOff (Modo Dry-Run)
-python3 main.py simulate-pod --dry-run
+# Construir a imagem com o esquadrão de agentes
+docker build -t guardianops:v2.0 .
 
-# Simula OOMKilled (Modo Dry-Run)
-python3 main.py simulate-pod --type OOMKilled --exit-code 137 --dry-run
+# Iniciar em segundo plano
+docker compose up -d guardian
+
+# Visualizar logs em tempo real
+docker compose logs -f guardian
 ```
 
-Para enviar o chamado de verdade ao Jira vinculado ao pai:
+### 3. Testar a Detecção Automática
+Em outro terminal, pare qualquer container monitorado:
 ```bash
-python3 main.py simulate-pod --parent OPS-236
+# Exemplo: simulando queda de container
+docker stop flowti-phpmyadmin
+```
+Em até 30 segundos, o GuardianOps identificará o evento `ContainerStopped`, convocará os agentes especialistas, gerará a análise e abrirá o chamado automaticamente no Jira!
+
+Para restabelecer o container de teste:
+```bash
+docker start flowti-phpmyadmin
 ```
 
-### 4. Simulação de Falha de Pipeline CI/CD
-```bash
-# Simula falha no estágio docker-build (Modo Dry-Run)
-python3 main.py simulate-pipeline --dry-run
+---
 
-# Envia chamado real para o Jira
-python3 main.py simulate-pipeline --project "flowti/portal-paciente" --parent OPS-236
+## 🛠️ Modos de Uso e Comandos CLI
+
+O GuardianOps oferece ferramentas para simulação, testes e chamadas pontuais sob demanda:
+
+### Listar os Agentes Ativos e Suas Capacidades
+```bash
+# Via container CLI:
+docker compose run --rm guardian-cli list-agents
+
+# Ou diretamente no Python local:
+python3 main.py list-agents
 ```
 
-### 5. Iniciar o Webhook Listener para Pipelines
-Inicia o servidor HTTP para receber webhooks reais do GitLab CI:
+### Orquestrar Diagnóstico Manual Multi-Agente
 ```bash
-python3 main.py webhook --port 8080 --dry-run
+# Diagnóstico de banco com agentes DevOps + Database
+docker compose run --rm guardian-cli orchestrate \
+  --source DOCKER_CONTAINER \
+  --failure-type ConnectionRefused \
+  --component flowti-mysql \
+  --container mysql \
+  --logs "ERROR 2002 (HY000): Can't connect to local MySQL server through socket" \
+  --dry-run
 ```
-Endpoint configurável no GitLab: `http://<IP_DO_GUARDIAN>:8080/webhook/gitlab`
 
-### 6. Executar Bateria de Testes Automatizada
+### Testar Conexão com o Jira
 ```bash
-python3 test_guardian.py
+docker compose run --rm guardian-cli test-jira
+```
+
+### Script Utilitário Interativo (`guardian.sh`)
+Para facilitar a operação no dia a dia, use o script interativo com menu:
+```bash
+./guardian.sh
 ```
 
 ---
@@ -95,32 +157,38 @@ python3 test_guardian.py
 ## 📦 Estrutura do Projeto
 
 ```
-automação-jira/
+guardian-infra/
 ├── guardian_ops/
-│   ├── __init__.py           # Versão e metadados
-│   ├── config.py             # Variáveis de ambiente e segurança
-│   ├── models.py             # Modelos de dados (IncidentEvent, AnalysisResult)
-│   ├── analyzer.py           # Motor de RCA e sugestões analíticas
-│   ├── jira_client.py        # Cliente Jira com UTF-8 estrito e Anti-Spam
-│   ├── templates.py          # Gerador de marcação Jira padrão
-│   ├── k8s_scanner.py        # Scanner e gerador de mocks de Pods K8s
-│   └── pipeline_listener.py  # Webhook server e mocks de pipelines
-├── k8s/                      # Manifestos para implantação futura no Cluster
-│   ├── rbac-readonly.yaml    # ServiceAccount e ClusterRole estritamente Read-Only
-│   ├── configmap-secret.yaml # ConfigMap e Secret com credenciais
-│   └── deployment.yaml       # Deployment (2 réplicas) + Service ClusterIP
-├── Dockerfile                # Imagem container não-root otimizada
-├── main.py                   # CLI principal de operação e simulação
-├── test_guardian.py          # Bateria de testes unitários e de integração
-└── requirements.txt          # Dependências mínimas (requests, python-dotenv)
+│   ├── agents/                   # 🤖 Esquadrão Multi-Agente (v2.0)
+│   │   ├── __init__.py
+│   │   ├── base_agent.py         # Definições base, enums e formatador Jira Wiki
+│   │   ├── devops_agent.py       # Agente DevOps, K8s, Docker e IaC
+│   │   ├── database_agent.py     # Agente Especialista em Bancos de Dados
+│   │   ├── qa_agent.py           # Agente QA Sênior e Automação
+│   │   ├── fullstack_agent.py    # Agente Desenvolvedor FullStack
+│   │   └── orchestrator_agent.py # Orquestrador Multi-Agente
+│   ├── config.py                 # Configurações, segurança e resolução de contrato
+│   ├── models.py                 # Modelos de dados de eventos e diagnósticos
+│   ├── jira_client.py            # Cliente Jira com UTF-8 estrito e Anti-Spam
+│   ├── templates.py              # Templates de formatação de tickets Jira
+│   ├── docker_scanner.py         # Scanner de containers Docker via unix socket
+│   ├── k8s_scanner.py            # Scanner de Pods Kubernetes
+│   └── pipeline_listener.py      # Servidor HTTP para webhooks de CI/CD
+├── k8s/                          # Manifestos declarativos para deploy em cluster
+│   ├── rbac-readonly.yaml        # ClusterRole e ServiceAccount estritamente Read-Only
+│   ├── configmap-secret.yaml     # ConfigMap e Secret
+│   └── deployment.yaml           # Deployment com health probes
+├── Dockerfile                    # Imagem Python 3.12-slim com usuário guardian
+├── docker-compose.yml            # Orquestração local (serviços watch e cli)
+├── guardian.sh                   # Script interativo de atalhos operacionais
+├── requirements.txt              # Dependências (requests, python-dotenv)
+└── README.md                     # Documentação oficial
 ```
 
 ---
 
-## ☸️ Implantação Futura no Cluster Kubernetes
+## 🛡️ Regras de Formatação do Jira e Resolução de Contratos
 
-Quando a equipe decidir implantar o GuardianOps dentro do cluster Kubernetes, os manifestos em `k8s/` já estão 100% prontos seguindo as regras de governança:
-- **Deployment Declarativo** com 2 réplicas e estratégia `RollingUpdate` (Zero Downtime).
-- **RBAC Estritamente Somente-Leitura**: Verbos apenas `["get", "list", "watch"]` em pods, logs e eventos. Nenhuma permissão de modificação (`create`, `update`, `delete`, `patch`).
-- **Segurança Não-Root**: Execução sob UID `10001` (`guardian`) com `runAsNonRoot: true`.
-- **Health Probes**: `livenessProbe` e `readinessProbe` em `/healthz`.
+- **Contrato Inteligente**: O campo `customfield_30118` é resolvido automaticamente. Serviços com termos como `flowti`, `infra`, `kube`, `interno`, `sistema` são mapeados diretamente para o contrato corporativo **`INTERNO`** (ID: 22514).
+- **Codificação UTF-8 Estrita**: Todas as requisições para a API do Jira usam codificação UTF-8 limpa, preservando a acentuação em português e ícones sem gerar quebras de caracteres (`¿`).
+- **Janela de Cooldown Anti-Spam**: Se o mesmo serviço apresentar anomalias repetidas no mesmo ciclo, um cooldown de 60 minutos (configurável) impede a abertura duplicada de tickets.
