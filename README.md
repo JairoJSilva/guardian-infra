@@ -1,206 +1,213 @@
-# 🛡️ GuardianOps (v2.0) — Sistema Multi-Agente de Observabilidade & RCA
+# Guardian — Autonomous Enterprise SRE & Incident Automation Platform
 
-O **GuardianOps v2.0** é uma plataforma inteligente e autônoma de observabilidade, diagnóstico de causa-raiz (RCA) e abertura automatizada de chamados técnicos no **Jira**.
-
----
-
-## 📚 Central Oficial de Documentações
-
-Toda a documentação técnica oficial, histórico de intervenções, decisões arquiteturais e manuais práticos estão organizados no diretório [`Documentações/`](Documentações/):
-
-| Seção | Descrição | Link Direto |
-|:---|:---|:---|
-| 🧭 **Central Principal** | Mapa completo e regras de governança contínua | [`Documentações/README.md`](Documentações/README.md) |
-| 📘 **Documentação Oficial** | Arquitetura técnica consolidada (Go + Python + Jira) | [`Documentações/DOCUMENTACAO_DO_PROJETO.md`](Documentações/DOCUMENTACAO_DO_PROJETO.md) |
-| 📜 **Histórico de RMTs** | Catálogo oficial de Registros de Modificações Técnicas | [`Documentações/modificacoes-tecnicas/`](Documentações/modificacoes-tecnicas/README.md) |
-| 🏛️ **ADR-001** | Registro de Decisão Arquitetural (Core Go + Multi-Agentes) | [`Documentações/ADR-001-...`](Documentações/ADR-001-arquitetura-hibrida-go-supervisor-e-agentes.md) |
-| 📂 **Manuais Práticos** | Guias de execução local, Jira, targets e agentes RCA | [`Documentações/guias/`](Documentações/guias/README.md) |
+<p align="center">
+  <img src="https://img.shields.io/badge/Version-v3.0.0_Enterprise-6366f1?style=for-the-badge&logo=shield" alt="Version v3.0.0" />
+  <img src="https://img.shields.io/badge/Language-Go_1.22+-00ADD8?style=for-the-badge&logo=go" alt="Go Language" />
+  <img src="https://img.shields.io/badge/Kubernetes-client--go_v0.30-326CE5?style=for-the-badge&logo=kubernetes" alt="Kubernetes" />
+  <img src="https://img.shields.io/badge/Docker-Native_Engine-2496ED?style=for-the-badge&logo=docker" alt="Docker" />
+  <img src="https://img.shields.io/badge/Jira-REST_API_v2-0052CC?style=for-the-badge&logo=jira" alt="Jira" />
+</p>
 
 ---
 
-## 🔒 Princípio de Segurança Mandatório (Read-Only)
+## 1. Visão Geral
 
-> [!IMPORTANT]
-> **Modo Estritamente Somente-Leitura (Read-Only):**  
-> O GuardianOps opera 100% em modo somente-leitura. Ele **NÃO executa ações destrutivas, correções cegas ou reinicializações não supervisionadas** nos ambientes monitorados. Sua função é diagnosticar com precisão técnica cirúrgica, classificar a severidade e fornecer o procedimento passo a passo pronto para o operador humano validar e aplicar.
+O **Guardian** é uma plataforma corporativa e autônoma de observabilidade, supervisão de infraestrutura e resposta automatizada a incidentes para times de SRE e DevOps.
 
----
-
-## 🤖 Esquadrão de Agentes Especialistas (v2.0)
-
-O GuardianOps adota uma arquitetura multi-agente determinística (sem custos de API ou dependência de serviços externos). Cada agente possui domínio aprofundado sobre sua camada:
-
-| Agente | ID | Especialidade & Cobertura |
-| :--- | :--- | :--- |
-| **🌐 DevOps & Cloud Native** | `agent-devops-cloudnative` | **Kubernetes** (OOMKilled, CrashLoopBackOff, ImagePull, Probes, PVC Pending), **Docker** (saúde, parada de containers, socket), **IaC** (Terraform, OpenTofu, Ansible) e **Pipelines CI/CD** (GitLab CI, GitHub Actions). |
-| **💾 Database & Data Systems** | `agent-database-specialist` | **Bancos Relacionais e NoSQL** (MySQL, PostgreSQL, MongoDB, Redis, Elasticsearch). Identifica exaustão de conexões, deadlocks, transações longas, queries lentas e falhas em migrações (Flyway, Alembic, Prisma). |
-| **🧪 QA Senior & Automation** | `agent-qa-senior` | **Garantia de Qualidade & Testes**: Regressões críticas, quebra de contratos de API (REST/GraphQL), testes intermitentes (*flaky tests*), cobertura de testes e templates de cenários BDD/Gherkin prontos para automação. |
-| **⚡ FullStack Developer** | `agent-fullstack-developer` | **Camada de Aplicação & Código**: Exceções não tratadas (NullPointer, TypeError), vazamento de memória (*heap leak*), problemas de CORS, falhas assíncronas (unhandled promises), segurança OWASP (SQLi/XSS) e erros de autenticação (401/403). |
-| **🎯 Orchestrator Bot** | `agent-orchestrator` | **Orquestrador Central**: Analisa os sintomas do incidente, roteia para os especialistas relevantes (acionando diagnósticos combinados quando necessário), consolida o relatório unificado e envia para o Jira. |
+A versão **v3.0.0 (Enterprise Hybrid)** consolida o Guardian como um **aplicativo standalone único**, eliminando a necessidade de serviços picotados ou containers auxiliares de monitoramento. Todo o ciclo de vida — desde a detecção em tempo real de falhas no Kubernetes ou Docker até a abertura de incidentes formatados no Jira — roda diretamente em um único binário nativo com servidor web e dashboard embutidos.
 
 ---
 
-## 🏗️ Arquitetura de Execução Local (Container Docker)
+## 2. Principais Novidades da Release v3.0.0
 
-A arquitetura recomendada para desenvolvimento e sustentação operacional consiste em rodar o GuardianOps localmente na sua máquina via **Docker Compose**:
+* 🛡️ **Arquitetura Híbrida Unificada (Kubernetes + Docker Nativo):**
+  * **Kubernetes:** Descoberta automática de contextos em `~/.kube/config` e `Documentos/kube-config*`, monitoramento dinâmico via `client-go` informers por Namespace sob demanda.
+  * **Docker:** Conexão nativa direta ao socket `/var/run/docker.sock` ou hosts remotos via SSH/TCP, inspecionando containers e capturando eventos sem intermediários.
+* 🖥️ **Novo Portal Web & SRE Command Center (Porta 8092):**
+  * Interface visual moderna em Dark Mode com navegação lateral (*Sidebar*).
+  * Dashboard de targets com telemetria em tempo real, badges de status (*ACTIVE*, *PAUSED*, *ERROR*) e contadores executivos.
+  * Live Stream de incidentes em tempo real utilizando Server-Sent Events (**SSE** na rota `/api/events/live`).
+* ⚡ **Descoberta Multicluster com Cache e Paginação:**
+  * Carregamento paralelo não-bloqueante de múltiplos clusters e hosts.
+  * Paginação inteligente nos feeds de eventos e targets para ambientes de larga escala.
+* 🎫 **Integração Corporativa Jira Aprimorada:**
+  * **Wiki Markup Nativa:** Substituição completa de emojis 4-bytes por tabelas e painéis corporativos nativos do Jira, garantindo 100% de compatibilidade com qualquer banco (MySQL/PostgreSQL/Oracle) sem erros de codificação UTF-8.
+  * **Deduplicação Inteligente (Anti-Spam):** Janela de cooldown configurável por assinatura única de incidente (*fingerprint*), evitando flood de chamados duplicados.
+  * **Auto-Discovery de Issue Types:** Reconhece e mapeia dinamicamente os tipos de chamados aceitos pelo projeto no Jira.
+* 🎛️ **Controle Dinâmico de Operação:**
+  * Alternância instantânea entre **Modo Dry-Run (Auditoria/Simulação)** e **Modo Produção (Atuação Ativa)** direto pela interface web sem precisar reiniciar o binário.
+* 📦 **Zero Dependências em Runtime:**
+  * Binário compilado autossuficiente (`./guardian`). Não necessita de Python, Docker containers ou daemons externos para executar o monitoramento.
 
+---
+
+## 3. Arquitetura da Solução
+
+```mermaid
+flowchart TD
+    subgraph UI ["Interface Web (Porta 8092)"]
+        Dashboard["SRE Command Center Dashboard"]
+        LiveFeed["Live Stream SSE (/api/events/live)"]
+        TargetMgr["Gerenciador de Targets & Modos"]
+    end
+
+    subgraph Core ["Guardian Core Engine (Go v3.0.0)"]
+        API["Servidor HTTP / REST API (internal/api)"]
+        Supervisor["Supervisor Dinâmico de Targets (internal/supervisor)"]
+        
+        subgraph Providers ["Provedores Nativos de Observabilidade"]
+            K8sProv["K8s Provider (client-go / kubeconfig)"]
+            DockerProv["Docker Provider (Docker Engine API / socket)"]
+        end
+
+        EventBus["Barramento de Eventos (IncidentEvent)"]
+        Deduplicator["Motor de Deduplicação & Cooldown"]
+        JiraAction["Ações Corporativas (Jira Client / Wiki Markup)"]
+    end
+
+    subgraph Infra ["Ambientes Supervisionados"]
+        K8sClusters["Clusters K8s (EKS, AKS, Rancher, Locais)"]
+        DockerHosts["Docker Hosts (Local / Remotos)"]
+        JiraServer["Atlassian Jira Server / Cloud"]
+    end
+
+    UI <-->|REST & SSE| API
+    API --> Supervisor
+    Supervisor --> K8sProv
+    Supervisor --> DockerProv
+    
+    K8sProv -->|Watch Namespaces| K8sClusters
+    DockerProv -->|Events Stream| DockerHosts
+    
+    K8sProv -->|Falhas / OOM / CrashLoop| EventBus
+    DockerProv -->|Container Morreu / Crash| EventBus
+    
+    EventBus --> Deduplicator
+    Deduplicator --> JiraAction
+    Deduplicator --> LiveFeed
+    JiraAction -->|Tickets Formatados| JiraServer
 ```
- ┌─────────────────────────────────────────────────────────┐
- │                   MÁQUINA LOCAL (HOST)                  │
- │                                                         │
- │   ┌────────────────┐  ┌────────────────┐                │
- │   │   flowti-app   │  │  flowti-mysql  │  ...containers │
- │   └────────┬───────┘  └────────┬───────┘                │
- │            │                   │                        │
- │            └─────────┬─────────┘                        │
- │                      ▼                                  │
- │             /var/run/docker.sock (:ro)                  │
- │                      │                                  │
- │   ┌──────────────────┴──────────────────────────────┐   │
- │   │  Container: guardianops_watch (v2.0)            │   │
- │   │                                                 │   │
- │   │  ┌───────────────────────────────────────────┐  │   │
- │   │  │ DockerScanner (Varredura Contínua)        │  │   │
- │   │  └─────────────────────┬─────────────────────┘  │   │
- │   │                        ▼                        │   │
- │   │  ┌───────────────────────────────────────────┐  │   │
- │   │  │ OrchestratorBotAgent                     │  │   │
- │   │  │   ├── DevOpsAgent                         │  │   │
- │   │  │   ├── DatabaseAgent                       │  │   │
- │   │  │   ├── FullStackAgent                      │  │   │
- │   │  │   └── QAAgent                             │  │   │
- │   │  └─────────────────────┬─────────────────────┘  │   │
- │   │                        ▼                        │   │
- │   │  ┌───────────────────────────────────────────┐  │   │
- │   │  │ JiraClient (UTF-8 + Deduplicação/Cooldown)│  │   │
- │   │  └─────────────────────┬─────────────────────┘  │   │
- │   │                        │                        │   │
- │   │  ~/.kube (:ro)         │                        │   │
- │   └────────┬───────────────┼────────────────────────┘   │
- └────────────┼───────────────┼────────────────────────────┘
-              │               │ HTTPS
-              ▼               ▼
-     Clusters K8s Remotos    Jira Data Center (Projeto OPS)
-```
-
-### Por que esta é a melhor opção?
-1. **Acesso Nativo e Seguro ao Docker**: O container acessa o `/var/run/docker.sock` em modo somente-leitura. Qualquer falha ou parada inesperada de container é detectada em segundos.
-2. **Ponte com Clusters K8s Remotos**: Montando o volume do `${HOME}/.kube`, o GuardianOps inspeciona pods de clusters remotos usando as mesmas permissões do seu `kubectl` local.
-3. **Persistência Segura de Cache**: O cache de deduplicação é persistido em volume Docker (`guardian_cache`), evitando chamados repetidos para o mesmo incidente.
-4. **Sem Conflito de Portas**: O webhook listener roda na porta interna `8080` e é exposto na porta `8088` do host, deixando a porta `8080` livre para suas aplicações locais (`flowti-app`).
 
 ---
 
-## 🚀 Como Executar
+## 4. Como Compilar e Executar
 
-### 1. Configurar Variáveis de Ambiente
-Crie ou verifique o arquivo `.env` na raiz do projeto:
+### Pré-requisitos
+* **Go 1.22+** instalado na estação/servidor.
+* Arquivo de configuração do Kubernetes (`~/.kube/config`).
+* Permissão de leitura no socket do Docker (caso vá monitorar Docker local):
+  ```bash
+  sudo usermod -aG docker $USER
+  # ou liberar temporariamente:
+  sudo chmod 666 /var/run/docker.sock
+  ```
+
+### Compilação do Binário
+```bash
+# Na raiz do repositório
+go build -o guardian ./cmd/guardian
+```
+
+### Execução
+```bash
+# Executando na porta 8092 (ou defina a porta desejada)
+./guardian -port 8092
+```
+
+Acesse a interface no seu navegador: **`http://localhost:8092`**
+
+---
+
+## 5. Flags de Linha de Comando
+
+| Flag | Tipo | Padrão | Descrição |
+| :--- | :--- | :--- | :--- |
+| `-port` | `int` | `8080` | Porta TCP do servidor web e API HTTP. |
+| `-dry-run` | `bool` | `false` | Se ativo, audita e loga falhas sem criar chamados reais no Jira. |
+| `-kubeconfig` | `string` | `~/.kube/config` | Caminho customizado para o arquivo de configuração do Kubernetes. |
+| `-docker-host` | `string` | `/var/run/docker.sock` | Caminho do socket local ou URL do Docker daemon. |
+
+---
+
+## 6. Variáveis de Ambiente (`.env`)
+
+Crie ou edite o arquivo `.env` na raiz do projeto para configurar integrações corporativas:
+
 ```env
-JIRA_BASE_URL=https://jira.mv.com.br
-JIRA_USER=seu.usuario
-JIRA_PASSWORD=sua_senha_ou_token
-```
+# Integração com o Jira
+JIRA_URL=https://jira.suaempresa.com.br
+JIRA_USER=seu_usuario_ou_email
+JIRA_API_TOKEN=seu_token_de_acesso
+JIRA_PROJECT_KEY=OPS
+JIRA_ISSUE_TYPE=Incidente
 
-### 2. Iniciar o Observador Contínuo (Modo Recomendado)
-```bash
-# Construir a imagem com o esquadrão de agentes
-docker build -t guardianops:v2.0 .
+# Configurações de Deduplicação
+COOLDOWN_MINUTES=60
 
-# Iniciar em segundo plano
-docker compose up -d guardian
-
-# Visualizar logs em tempo real
-docker compose logs -f guardian
-```
-
-### 3. Testar a Detecção Automática
-Em outro terminal, pare qualquer container monitorado:
-```bash
-# Exemplo: simulando queda de container
-docker stop flowti-phpmyadmin
-```
-Em até 30 segundos, o GuardianOps identificará o evento `ContainerStopped`, convocará os agentes especialistas, gerará a análise e abrirá o chamado automaticamente no Jira!
-
-Para restabelecer o container de teste:
-```bash
-docker start flowti-phpmyadmin
+# Modo de Operação Inicial
+DRY_RUN=false
+PORT=8092
 ```
 
 ---
 
-## 🛠️ Modos de Uso e Comandos CLI
+## 7. Estrutura do Repositório
 
-O GuardianOps oferece ferramentas para simulação, testes e chamadas pontuais sob demanda:
-
-### Listar os Agentes Ativos e Suas Capacidades
-```bash
-# Via container CLI:
-docker compose run --rm guardian-cli list-agents
-
-# Ou diretamente no Python local:
-python3 main.py list-agents
-```
-
-### Orquestrar Diagnóstico Manual Multi-Agente
-```bash
-# Diagnóstico de banco com agentes DevOps + Database
-docker compose run --rm guardian-cli orchestrate \
-  --source DOCKER_CONTAINER \
-  --failure-type ConnectionRefused \
-  --component flowti-mysql \
-  --container mysql \
-  --logs "ERROR 2002 (HY000): Can't connect to local MySQL server through socket" \
-  --dry-run
-```
-
-### Testar Conexão com o Jira
-```bash
-docker compose run --rm guardian-cli test-jira
-```
-
-### Script Utilitário Interativo (`guardian.sh`)
-Para facilitar a operação no dia a dia, use o script interativo com menu:
-```bash
-./guardian.sh
-```
-
----
-
-## 📦 Estrutura do Projeto
-
-```
+```text
 guardian-infra/
-├── guardian_ops/
-│   ├── agents/                   # 🤖 Esquadrão Multi-Agente (v2.0)
-│   │   ├── __init__.py
-│   │   ├── base_agent.py         # Definições base, enums e formatador Jira Wiki
-│   │   ├── devops_agent.py       # Agente DevOps, K8s, Docker e IaC
-│   │   ├── database_agent.py     # Agente Especialista em Bancos de Dados
-│   │   ├── qa_agent.py           # Agente QA Sênior e Automação
-│   │   ├── fullstack_agent.py    # Agente Desenvolvedor FullStack
-│   │   └── orchestrator_agent.py # Orquestrador Multi-Agente
-│   ├── config.py                 # Configurações, segurança e resolução de contrato
-│   ├── models.py                 # Modelos de dados de eventos e diagnósticos
-│   ├── jira_client.py            # Cliente Jira com UTF-8 estrito e Anti-Spam
-│   ├── templates.py              # Templates de formatação de tickets Jira
-│   ├── docker_scanner.py         # Scanner de containers Docker via unix socket
-│   ├── k8s_scanner.py            # Scanner de Pods Kubernetes
-│   └── pipeline_listener.py      # Servidor HTTP para webhooks de CI/CD
-├── k8s/                          # Manifestos declarativos para deploy em cluster
-│   ├── rbac-readonly.yaml        # ClusterRole e ServiceAccount estritamente Read-Only
-│   ├── configmap-secret.yaml     # ConfigMap e Secret
-│   └── deployment.yaml           # Deployment com health probes
-├── Dockerfile                    # Imagem Python 3.12-slim com usuário guardian
-├── docker-compose.yml            # Orquestração local (serviços watch e cli)
-├── guardian.sh                   # Script interativo de atalhos operacionais
-├── requirements.txt              # Dependências (requests, python-dotenv)
-└── README.md                     # Documentação oficial
+├── cmd/
+│   └── guardian/
+│       └── main.go                 # Entrypoint da aplicação Go v3.0.0
+├── internal/
+│   ├── api/                        # Servidor HTTP, rotas REST e SSE Live Stream
+│   ├── supervisor/                 # Gerenciamento dinâmico do ciclo de vida dos Targets
+│   ├── providers/                  # Provedores de observabilidade nativos
+│   │   ├── k8s/                    # client-go discovery, informers e watch de namespaces
+│   │   └── docker/                 # Inspecção de containers e stream de eventos do Docker
+│   ├── actions/                    # Pipeline de ações (Jira Client com Wiki Markup)
+│   ├── domain/                     # Modelos de domínio (Target, IncidentEvent)
+│   └── storage/                    # Persistência de estado local (targets.json)
+├── web/                            # Interface gráfica web (HTML, Tailwind CSS, Lucide, SSE)
+├── targets.json                    # Armazenamento local dos targets configurados
+├── go.mod                          # Módulos e dependências oficiais do Go
+├── go.sum                          # Checksums das dependências
+└── README.md                       # Este documento
 ```
 
 ---
 
-## 🛡️ Regras de Formatação do Jira e Resolução de Contratos
+## 8. Principais Rotas da API REST
 
-- **Contrato Inteligente**: O campo `customfield_30118` é resolvido automaticamente. Serviços com termos como `flowti`, `infra`, `kube`, `interno`, `sistema` são mapeados diretamente para o contrato corporativo **`INTERNO`** (ID: 22514).
-- **Codificação UTF-8 Estrita**: Todas as requisições para a API do Jira usam codificação UTF-8 limpa, preservando a acentuação em português e ícones sem gerar quebras de caracteres (`¿`).
-- **Janela de Cooldown Anti-Spam**: Se o mesmo serviço apresentar anomalias repetidas no mesmo ciclo, um cooldown de 60 minutos (configurável) impede a abertura duplicada de tickets.
+| Método | Endpoint | Descrição |
+| :--- | :--- | :--- |
+| `GET` | `/api/health` | Status de saúde do Guardian, modo atual (Dry-Run / Prod) e versão. |
+| `GET` | `/api/targets` | Lista todos os targets cadastrados e seus estados. |
+| `POST` | `/api/targets` | Cria um novo target (Kubernetes ou Docker). |
+| `PUT` | `/api/targets/{id}` | Atualiza regras, ações ou pausa/ativa um target. |
+| `DELETE` | `/api/targets/{id}` | Remove um target da supervisão. |
+| `GET` | `/api/events/live` | Stream contínuo de eventos via Server-Sent Events (**SSE**). |
+| `GET` | `/api/events/history` | Histórico consolidado de incidentes capturados. |
+| `GET` | `/api/discovery/environments` | Lista contextos K8s e namespaces disponíveis. |
+| `GET` | `/api/discovery/docker/inspect` | Diagnóstico de conexão e containers do Docker host. |
+| `POST` | `/api/settings/toggle-dry-run` | Alterna em tempo real entre Dry-Run e Produção. |
+
+---
+
+## 9. Histórico de Versões
+
+* **`v3.0.0` (Versão Atual - 21/Set/2026):**
+  * Unificação definitiva em aplicativo standalone único em Go.
+  * Suporte híbrido (Kubernetes multicluster + Docker socket nativo).
+  * Web UI executiva completa com modo escuro, sidebar e live stream SSE.
+  * Formatação Wiki Markup corporativa no Jira sem emojis 4-bytes.
+  * Cache multicluster, paginação e controle dinâmico de Dry-Run via web.
+* **`v2.0.0`:**
+  * Prototipagem da arquitetura de targets sob demanda e primeiros informers K8s.
+* **`v1.0.0`:**
+  * Daemon inicial em Python monitorando containers locais via docker-compose.
+
+---
+
+<p align="center">
+  <b>Guardian SRE Platform</b> • Desenvolvido para máxima resiliência e observabilidade corporativa.
+</p>
