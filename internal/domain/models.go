@@ -63,6 +63,7 @@ type IncidentEvent struct {
 	Details     map[string]interface{} `json:"details,omitempty"`
 	Timestamp   time.Time              `json:"timestamp"`
 	JiraIssue   string                 `json:"jira_issue,omitempty"`
+	JiraError   string                 `json:"jira_error,omitempty"`
 	Severity    string                 `json:"severity,omitempty"` // CRITICAL, WARNING, INFO
 }
 

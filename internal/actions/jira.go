@@ -7,7 +7,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	"guardian/internal/config"
@@ -15,8 +17,10 @@ import (
 )
 
 type JiraClient struct {
-	cfg        *config.Config
-	httpClient *http.Client
+	cfg            *config.Config
+	httpClient     *http.Client
+	issueTypeCache map[string]string
+	cacheMu        sync.RWMutex
 }
 
 func NewJiraClient(cfg *config.Config) *JiraClient {
@@ -25,6 +29,7 @@ func NewJiraClient(cfg *config.Config) *JiraClient {
 		httpClient: &http.Client{
 			Timeout: 15 * time.Second,
 		},
+		issueTypeCache: make(map[string]string),
 	}
 }
 
@@ -32,6 +37,80 @@ type JiraIssueResponse struct {
 	ID   string `json:"id"`
 	Key  string `json:"key"`
 	Self string `json:"self"`
+}
+
+func (j *JiraClient) resolveIssueType(projectKey string) string {
+	j.cacheMu.RLock()
+	if it, ok := j.issueTypeCache[projectKey]; ok && it != "" {
+		j.cacheMu.RUnlock()
+		return it
+	}
+	j.cacheMu.RUnlock()
+
+	configuredType := strings.TrimSpace(j.cfg.JiraIssueType)
+	if configuredType == "" {
+		configuredType = "Bug"
+	}
+
+	// Consulta createmeta do Jira para este projeto
+	metaURL := fmt.Sprintf("%s/rest/api/2/issue/createmeta?projectKeys=%s", j.cfg.JiraBaseURL, url.QueryEscape(projectKey))
+	req, err := http.NewRequest(http.MethodGet, metaURL, nil)
+	if err == nil {
+		req.SetBasicAuth(j.cfg.JiraUser, j.cfg.JiraPassword)
+		resp, err := j.httpClient.Do(req)
+		if err == nil && resp.StatusCode == http.StatusOK {
+			defer resp.Body.Close()
+			var meta struct {
+				Projects []struct {
+					Key        string `json:"key"`
+					IssueTypes []struct {
+						ID   string `json:"id"`
+						Name string `json:"name"`
+					} `json:"issuetypes"`
+				} `json:"projects"`
+			}
+			if err := json.NewDecoder(resp.Body).Decode(&meta); err == nil && len(meta.Projects) > 0 {
+				types := meta.Projects[0].IssueTypes
+				found := ""
+				// 1. Busca correspondência exata ou case-insensitive com tipo configurado
+				for _, it := range types {
+					if strings.EqualFold(it.Name, configuredType) {
+						found = it.Name
+						break
+					}
+				}
+				// 2. Se não encontrou, busca por palavras-chave comuns de chamados
+				if found == "" {
+					keywords := []string{"incidente", "bug", "falha", "serviço", "solicitação", "problema", "task"}
+					for _, kw := range keywords {
+						for _, it := range types {
+							if strings.Contains(strings.ToLower(it.Name), kw) {
+								found = it.Name
+								break
+							}
+						}
+						if found != "" {
+							break
+						}
+					}
+				}
+				// 3. Fallback para o primeiro tipo de item disponível no projeto
+				if found == "" && len(types) > 0 {
+					found = types[0].Name
+				}
+
+				if found != "" {
+					j.cacheMu.Lock()
+					j.issueTypeCache[projectKey] = found
+					j.cacheMu.Unlock()
+					log.Printf("[Jira] [Auto-Discovery] Tipo de pendência para projeto '%s': '%s'", projectKey, found)
+					return found
+				}
+			}
+		}
+	}
+
+	return configuredType
 }
 
 func (j *JiraClient) CreateIncidentIssue(event *domain.IncidentEvent, target *domain.Target) (string, error) {
@@ -58,6 +137,8 @@ func (j *JiraClient) CreateIncidentIssue(event *domain.IncidentEvent, target *do
 		priorityName = "Média"
 	}
 
+	issueTypeName := j.resolveIssueType(projectKey)
+
 	fields := map[string]interface{}{
 		"project": map[string]string{
 			"key": projectKey,
@@ -65,7 +146,7 @@ func (j *JiraClient) CreateIncidentIssue(event *domain.IncidentEvent, target *do
 		"summary":     summary,
 		"description": description,
 		"issuetype": map[string]string{
-			"name": j.cfg.JiraIssueType,
+			"name": issueTypeName,
 		},
 		"priority": map[string]string{
 			"name": priorityName,

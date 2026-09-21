@@ -169,6 +169,22 @@ func (s *Server) handleTargetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(parts) == 2 && parts[1] == "toggle-jira" && r.Method == http.MethodPost {
+		t, err := s.storage.Get(targetID)
+		if err != nil {
+			respondError(w, http.StatusNotFound, err.Error())
+			return
+		}
+		t.Actions.CreateJiraIssue = !t.Actions.CreateJiraIssue
+		t.UpdatedAt = time.Now()
+		if err := s.storage.Save(t); err != nil {
+			respondError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		respondJSON(w, http.StatusOK, t)
+		return
+	}
+
 	switch r.Method {
 	case http.MethodGet:
 		t, err := s.storage.Get(targetID)
@@ -279,8 +295,9 @@ func (s *Server) handleSimulate(w http.ResponseWriter, r *http.Request) {
 		req.Type = domain.EnvKubernetes
 	}
 	if req.EntityName == "" {
+		simSuffix := fmt.Sprintf("%04d", time.Now().UnixNano()%10000)
 		if req.Type == domain.EnvKubernetes {
-			req.EntityName = "payment-service-84f98d7b"
+			req.EntityName = fmt.Sprintf("payment-service-%s", simSuffix)
 			req.Environment = "k8s-cluster"
 			req.Scope = "billing"
 			req.Reason = "CrashLoopBackOff"
@@ -288,7 +305,7 @@ func (s *Server) handleSimulate(w http.ResponseWriter, r *http.Request) {
 			req.Severity = "WARNING"
 			req.Logs = "[FATAL] Conexão recusada no banco de dados após 3 tentativas\n[ERROR] panic: runtime error: invalid memory address or nil pointer dereference"
 		} else {
-			req.EntityName = "redis-cache-main-1"
+			req.EntityName = fmt.Sprintf("redis-cache-%s", simSuffix)
 			req.Environment = "docker-local"
 			req.Scope = "redis-cache"
 			req.Reason = "OOMKilled"

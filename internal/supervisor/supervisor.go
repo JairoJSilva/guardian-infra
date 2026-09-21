@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"sync"
 
 	"guardian/internal/actions"
@@ -79,8 +80,9 @@ func (s *Supervisor) eventLoop() {
 func (s *Supervisor) processEvent(event *domain.IncidentEvent) {
 	fingerprint := event.Fingerprint()
 
-	// Anti-Spam / Deduplicação
-	if s.deduplicator.IsInCooldown(fingerprint) {
+	// Anti-Spam / Deduplicação: Simulações intencionais não devem ser bloqueadas pelo cooldown
+	isSimulation := event.TargetID == "target-simulated" || strings.HasPrefix(event.ID, "evt-sim-")
+	if !isSimulation && s.deduplicator.IsInCooldown(fingerprint) {
 		log.Printf("[Supervisor] 🛡️ [Anti-Spam] Incidente %s suprimido por cooldown ativo.", fingerprint)
 		return
 	}
@@ -93,10 +95,16 @@ func (s *Supervisor) processEvent(event *domain.IncidentEvent) {
 		key, err := s.jiraClient.CreateIncidentIssue(event, target)
 		if err != nil {
 			log.Printf("[Supervisor] ❌ Falha ao criar chamado no Jira: %v", err)
+			event.JiraError = err.Error()
 		} else {
 			event.JiraIssue = key
-			s.deduplicator.Record(fingerprint)
+			if !isSimulation {
+				s.deduplicator.Record(fingerprint)
+			}
 		}
+	} else {
+		log.Printf("[Supervisor] ℹ️ Abertura de Jira desativada na configuração do target: %s", target.Name)
+		event.JiraError = "Jira desativado na configuração deste Target"
 	}
 
 	// Transmissão para Live Feed em tempo real

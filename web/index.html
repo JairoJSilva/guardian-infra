@@ -1283,10 +1283,26 @@ flowchart TD
           updateDryRunUI(data.dry_run);
           showToast(data.dry_run ? 'Modo Simulação (Dry-Run) ativado.' : 'Modo PRODUÇÃO REAL ATIVADO! Chamados oficiais serão abertos no Jira.', data.dry_run ? 'warning' : 'success');
         } else {
-          alert('Erro ao alternar modo operacional.');
+          showToast('Erro ao alternar modo operacional.', 'warning');
         }
       } catch (e) {
-        alert('Erro de conexão: ' + e.message);
+        showToast('Erro de conexão: ' + e.message, 'warning');
+      }
+    }
+
+    async function toggleTargetJira(id) {
+      try {
+        const res = await fetch(`/api/targets/${id}/toggle-jira`, { method: 'POST' });
+        if (res.ok) {
+          const updated = await res.json();
+          await loadTargets();
+          const state = updated.actions && updated.actions.create_jira_issue;
+          showToast(`Jira ${state ? 'ATIVADO' : 'DESATIVADO'} para o target ${updated.name}`, state ? 'success' : 'warning');
+        } else {
+          showToast('Erro ao alternar Jira no target', 'warning');
+        }
+      } catch (e) {
+        showToast('Erro de conexão: ' + e.message, 'warning');
       }
     }
 
@@ -1298,18 +1314,24 @@ flowchart TD
         document.body.appendChild(toast);
       }
 
-      const icon = type === 'success' ? 'check-circle' : 'alert-triangle';
+      const iconSvg = type === 'success' 
+        ? `<svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>`
+        : type === 'warning'
+        ? `<svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`
+        : `<svg class="w-4 h-4 text-cyan-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"></circle><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-4m0-4h.01"></path></svg>`;
+
       const border = type === 'success' 
         ? 'border-emerald-500/60 text-emerald-200 bg-slate-950/95 shadow-emerald-500/20' 
-        : 'border-amber-500/60 text-amber-200 bg-slate-950/95 shadow-amber-500/20';
+        : type === 'warning'
+        ? 'border-amber-500/60 text-amber-200 bg-slate-950/95 shadow-amber-500/20'
+        : 'border-cyan-500/60 text-cyan-200 bg-slate-950/95 shadow-cyan-500/20';
       
       toast.className = `fixed bottom-6 right-6 z-50 px-5 py-3.5 rounded-2xl border ${border} text-xs font-mono font-bold shadow-2xl flex items-center gap-3 transition-all duration-300 transform translate-y-0 opacity-100`;
-      toast.innerHTML = `<i data-lucide="${icon}" class="w-4 h-4 text-amber-400"></i> <span>${message}</span>`;
-      lucide.createIcons();
+      toast.innerHTML = `${iconSvg} <span>${message}</span>`;
 
       setTimeout(() => {
         toast.className = toast.className.replace('translate-y-0 opacity-100', 'translate-y-12 opacity-0 pointer-events-none');
-      }, 4000);
+      }, 4500);
     }
 
     async function loadEnvironments() {
@@ -1479,9 +1501,13 @@ flowchart TD
         }
 
         const jiraProj = (t.actions && t.actions.jira_project_key) ? t.actions.jira_project_key : 'OPS';
-        const jiraBadge = t.actions.create_jira_issue 
-          ? `<span class="text-xs text-emerald-400 flex items-center gap-1 font-mono"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> <span class="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-amber-300 font-bold">${jiraProj}</span></span>` 
-          : `<span class="text-xs text-slate-500 font-mono">Desativado</span>`;
+        const isJiraOn = t.actions && t.actions.create_jira_issue;
+        const jiraBadge = `
+          <button onclick="toggleTargetJira('${t.id}')" title="Clique para alternar abertura de chamados no Jira para este target" class="px-2.5 py-1 rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${isJiraOn ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/25' : 'bg-slate-800 text-slate-400 border border-white/5 hover:text-white hover:bg-slate-700'}">
+            <span class="h-1.5 w-1.5 rounded-full ${isJiraOn ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}"></span>
+            <span>${isJiraOn ? `${jiraProj} (Ativo)` : 'Desativado'}</span>
+          </button>
+        `;
 
         return `
           <tr class="hover:bg-white/[0.03] transition-colors">
@@ -1669,6 +1695,14 @@ flowchart TD
       preview.innerHTML = eventsHistory.slice(0, 3).map(evt => {
         const isCrit = evt.severity === 'CRITICAL';
         const color = isCrit ? 'text-red-400' : 'text-amber-300';
+        let jiraStatus = '';
+        if (evt.jira_issue) {
+          jiraStatus = evt.jira_issue.startsWith('DRYRUN-')
+            ? `<span class="text-[10px] text-amber-400 font-mono">Simulado: ${evt.jira_issue}</span>`
+            : `<span class="text-[10px] text-emerald-400 font-mono font-bold">Jira: ${evt.jira_issue}</span>`;
+        } else if (evt.jira_error) {
+          jiraStatus = `<span class="text-[10px] text-rose-400 font-mono truncate" title="${evt.jira_error}">Erro Jira</span>`;
+        }
         return `
           <div class="p-3 rounded-xl bg-white/5 border border-white/5 space-y-1">
             <div class="flex items-center justify-between">
@@ -1676,7 +1710,7 @@ flowchart TD
               <span class="text-slate-500 text-[10px]">${new Date(evt.timestamp).toLocaleTimeString('pt-BR')}</span>
             </div>
             <p class="text-white text-xs truncate">${evt.entity_name} (${evt.scope})</p>
-            ${evt.jira_issue ? `<span class="text-[10px] text-emerald-400">Jira: ${evt.jira_issue}</span>` : ''}
+            ${jiraStatus}
           </div>
         `;
       }).join('');
@@ -1713,12 +1747,29 @@ flowchart TD
 
       const timeStr = new Date(evt.timestamp).toLocaleTimeString('pt-BR');
 
-      const jiraBadge = evt.jira_issue
-        ? `<div class="text-[11px] text-emerald-400 pt-1.5 flex items-center gap-1.5 font-mono">
-             <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400"></i>
-             Chamado Jira: <strong class="underline font-bold text-amber-300">${evt.jira_issue}</strong> (Logs &amp; Diagnóstico anexados)
-           </div>`
-        : '';
+      let jiraBadge = '';
+      if (evt.jira_issue) {
+        if (evt.jira_issue.startsWith('DRYRUN-')) {
+          jiraBadge = `
+            <div class="text-[11px] text-amber-300 pt-1.5 flex items-center gap-1.5 font-mono flex-wrap">
+              <span class="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-bold text-[10px]">🟡 SIMULAÇÃO (DRY-RUN)</span>
+              <span>Chamado Simulado: <strong class="text-white">${evt.jira_issue}</strong> (nenhum ticket real criado)</span>
+            </div>`;
+        } else {
+          const jiraHref = serverConfig && serverConfig.jira_url ? `${serverConfig.jira_url}/browse/${evt.jira_issue}` : '#';
+          jiraBadge = `
+            <div class="text-[11px] text-emerald-400 pt-1.5 flex items-center gap-1.5 font-mono flex-wrap">
+              <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold text-[10px]">🟢 JIRA OFICIAL</span>
+              <span>Chamado Aberto: <a href="${jiraHref}" target="_blank" class="underline font-bold text-amber-300 hover:text-white">${evt.jira_issue}</a> (Logs anexados)</span>
+            </div>`;
+        }
+      } else if (evt.jira_error) {
+        jiraBadge = `
+          <div class="text-[11px] text-rose-400 pt-1.5 flex items-center gap-1.5 font-mono flex-wrap">
+            <span class="px-2 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 font-bold text-[10px]">🔴 JIRA NÃO ABERTO</span>
+            <span class="truncate max-w-xl text-slate-300" title="${evt.jira_error}">${evt.jira_error}</span>
+          </div>`;
+      }
 
       const logSnippet = evt.logs 
         ? `<div class="mt-2.5 rounded-xl border border-white/10 bg-black/95 overflow-hidden">
@@ -1752,6 +1803,7 @@ flowchart TD
     }
 
     async function simulateIncident(type) {
+      showToast(`Disparando falha simulada (${type})...`, 'info');
       try {
         const res = await fetch('/api/simulate', {
           method: 'POST',
@@ -1759,10 +1811,14 @@ flowchart TD
           body: JSON.stringify({ type: type })
         });
         if (res.ok) {
-          console.log("Incidente simulado disparado com sucesso!");
+          const data = await res.json();
+          const evt = data.event || {};
+          showToast(`Incidente simulado disparado para ${evt.entity_name || type}!`, 'success');
+        } else {
+          showToast('Falha na resposta da simulação.', 'warning');
         }
       } catch (e) {
-        alert("Falha na simulação: " + e.message);
+        showToast('Falha na simulação: ' + e.message, 'warning');
       }
     }
 
