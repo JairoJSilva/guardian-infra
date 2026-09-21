@@ -18,12 +18,17 @@ import (
 type K8sDiscovery struct {
 	pool           *ClientPool
 	kubeConfigPath string
+	cacheMu        sync.RWMutex
+	cachedEnvs     []domain.EnvironmentInfo
+	lastScan       time.Time
+	cacheTTL       time.Duration
 }
 
 func NewK8sDiscovery(pool *ClientPool, kubeConfigPath string) *K8sDiscovery {
 	return &K8sDiscovery{
 		pool:           pool,
 		kubeConfigPath: kubeConfigPath,
+		cacheTTL:       60 * time.Second,
 	}
 }
 
@@ -61,6 +66,14 @@ func (d *K8sDiscovery) loadKubeConfig() (*clientcmdapi.Config, string, error) {
 }
 
 func (d *K8sDiscovery) DiscoverEnvironments() []domain.EnvironmentInfo {
+	d.cacheMu.RLock()
+	if len(d.cachedEnvs) > 0 && time.Since(d.lastScan) < d.cacheTTL {
+		cached := d.cachedEnvs
+		d.cacheMu.RUnlock()
+		return cached
+	}
+	d.cacheMu.RUnlock()
+
 	cfg, actualPath, err := d.loadKubeConfig()
 	if err != nil || cfg == nil || len(cfg.Contexts) == 0 {
 		return []domain.EnvironmentInfo{
@@ -160,6 +173,11 @@ func (d *K8sDiscovery) DiscoverEnvironments() []domain.EnvironmentInfo {
 	for i, r := range results {
 		envs[i] = r.info
 	}
+
+	d.cacheMu.Lock()
+	d.cachedEnvs = envs
+	d.lastScan = time.Now()
+	d.cacheMu.Unlock()
 
 	return envs
 }

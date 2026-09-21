@@ -3,6 +3,7 @@ package k8s
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -41,8 +42,8 @@ func (p *ClientPool) GetClientForContext(contextName string) (*kubernetes.Client
 		return nil, fmt.Errorf("falha ao carregar restConfig para contexto %s: %w", contextName, err)
 	}
 
-	// Timeout de requisição seguro
-	restConfig.Timeout = 10 * 1e9 // 10s
+	// Timeout de requisição rápido para evitar travamento da interface
+	restConfig.Timeout = 2 * time.Second
 
 	clientset, err := kubernetes.NewForConfig(restConfig)
 	if err != nil {

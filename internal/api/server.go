@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"guardian/internal/actions"
@@ -207,8 +208,22 @@ func (s *Server) handleTargetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleDiscoveryEnvironments(w http.ResponseWriter, r *http.Request) {
-	k8sEnvs := s.k8sDiscovery.DiscoverEnvironments()
-	dockerEnvs := s.dockerDiscovery.DiscoverEnvironments()
+	var (
+		k8sEnvs    []domain.EnvironmentInfo
+		dockerEnvs []domain.EnvironmentInfo
+		wg         sync.WaitGroup
+	)
+
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		k8sEnvs = s.k8sDiscovery.DiscoverEnvironments()
+	}()
+	go func() {
+		defer wg.Done()
+		dockerEnvs = s.dockerDiscovery.DiscoverEnvironments()
+	}()
+	wg.Wait()
 
 	all := append(k8sEnvs, dockerEnvs...)
 	respondJSON(w, http.StatusOK, all)

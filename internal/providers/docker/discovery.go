@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"guardian/internal/domain"
@@ -22,19 +23,32 @@ type DockerHostInspectResult struct {
 }
 
 type DockerDiscovery struct {
-	pool    *DockerPool
-	storage *storage.Storage
+	pool       *DockerPool
+	storage    *storage.Storage
+	cacheMu    sync.RWMutex
+	cachedEnvs []domain.EnvironmentInfo
+	lastScan   time.Time
+	cacheTTL   time.Duration
 }
 
 func NewDockerDiscovery(pool *DockerPool, store *storage.Storage) *DockerDiscovery {
 	return &DockerDiscovery{
-		pool:    pool,
-		storage: store,
+		pool:     pool,
+		storage:  store,
+		cacheTTL: 60 * time.Second,
 	}
 }
 
 func (d *DockerDiscovery) DiscoverEnvironments() []domain.EnvironmentInfo {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	d.cacheMu.RLock()
+	if len(d.cachedEnvs) > 0 && time.Since(d.lastScan) < d.cacheTTL {
+		cached := d.cachedEnvs
+		d.cacheMu.RUnlock()
+		return cached
+	}
+	d.cacheMu.RUnlock()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
 	var envs []domain.EnvironmentInfo
@@ -95,6 +109,11 @@ func (d *DockerDiscovery) DiscoverEnvironments() []domain.EnvironmentInfo {
 			})
 		}
 	}
+
+	d.cacheMu.Lock()
+	d.cachedEnvs = envs
+	d.lastScan = time.Now()
+	d.cacheMu.Unlock()
 
 	return envs
 }

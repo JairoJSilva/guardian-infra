@@ -651,6 +651,31 @@
               </tbody>
             </table>
           </div>
+
+          <!-- Targets Pagination Footer -->
+          <div id="targets-pagination-bar" class="px-5 py-3.5 bg-slate-950/60 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono">
+            <div class="text-slate-400 flex items-center gap-2">
+              <span>Exibindo <span id="targets-page-range" class="text-white font-bold">0 - 0</span> de <span id="targets-page-total" class="text-white font-bold">0</span> targets</span>
+              <span class="text-slate-600">|</span>
+              <label class="text-slate-400 flex items-center gap-1.5">
+                <span>Por pág:</span>
+                <select id="targets-per-page-select" onchange="changeTargetsPerPage(this.value)" class="bg-slate-900 border border-white/10 text-white rounded px-2 py-0.5 text-xs font-mono focus:outline-none">
+                  <option value="5" selected>5</option>
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                </select>
+              </label>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="changeTargetsPage(-1)" id="btn-targets-prev" class="px-3 py-1.5 rounded-lg glass-panel hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 transition-all">
+                <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i> Anterior
+              </button>
+              <span id="targets-page-indicator" class="px-3 py-1 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold">Página 1 de 1</span>
+              <button type="button" onclick="changeTargetsPage(1)" id="btn-targets-next" class="px-3 py-1.5 rounded-lg glass-panel hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 transition-all">
+                Próxima <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
         </div>
 
       </section>
@@ -667,15 +692,39 @@
             <p class="text-xs text-slate-400 mt-1">Clusters Kubernetes detectados no Kubeconfig e Daemons Docker conectados.</p>
           </div>
 
-          <button onclick="loadEnvironments()" class="px-3.5 py-1.5 rounded-xl btn-glass-secondary text-xs font-mono text-slate-300 hover:text-white flex items-center gap-2">
-            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-            <span>Atualizar Descoberta</span>
-          </button>
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <div class="flex items-center p-1 rounded-xl glass-panel border border-white/10 text-xs">
+              <button onclick="setTopologyFilter('ALL')" id="topo-filter-all" class="px-3 py-1 rounded-lg font-mono text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">Todos</button>
+              <button onclick="setTopologyFilter('KUBERNETES')" id="topo-filter-k8s" class="px-3 py-1 rounded-lg font-mono text-[11px] text-slate-400 hover:text-white">K8s</button>
+              <button onclick="setTopologyFilter('DOCKER')" id="topo-filter-docker" class="px-3 py-1 rounded-lg font-mono text-[11px] text-slate-400 hover:text-white">Docker</button>
+            </div>
+
+            <button onclick="loadEnvironments(true)" class="px-3.5 py-1.5 rounded-xl btn-glass-secondary text-xs font-mono text-slate-300 hover:text-white flex items-center gap-2">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+              <span>Atualizar Descoberta</span>
+            </button>
+          </div>
         </div>
 
         <div id="environments-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <div class="p-6 rounded-2xl glass-panel animate-pulse text-xs text-slate-400 font-mono">
             Descobrindo infraestrutura...
+          </div>
+        </div>
+
+        <!-- Topology Pagination Footer -->
+        <div id="topology-pagination-bar" class="p-4 rounded-2xl glass-panel border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono">
+          <div class="text-slate-400">
+            Mostrando <span id="topology-page-range" class="text-white font-bold">0 - 0</span> de <span id="topology-page-total" class="text-white font-bold">0</span> clusters/hosts
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="changeTopologyPage(-1)" id="btn-topo-prev" class="px-3 py-1.5 rounded-lg glass-panel hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 transition-all">
+              <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i> Anterior
+            </button>
+            <span id="topology-page-indicator" class="px-3 py-1 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold">Página 1 de 1</span>
+            <button type="button" onclick="changeTopologyPage(1)" id="btn-topo-next" class="px-3 py-1.5 rounded-lg glass-panel hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 transition-all">
+              Próxima <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            </button>
           </div>
         </div>
 
@@ -713,6 +762,38 @@
 
         <div id="live-feed-container" class="rounded-2xl glass-panel p-5 space-y-3 font-mono text-xs max-h-[600px] overflow-y-auto">
           <div class="p-12 text-center text-slate-400">Aguardando telemetria em tempo real do supervisor...</div>
+        </div>
+
+        <!-- Incidents Pagination Bar -->
+        <div id="incidents-pagination-bar" class="p-4 rounded-2xl glass-panel border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono">
+          <div class="text-slate-400 flex items-center gap-2">
+            <span>Exibindo <span id="incidents-page-range" class="text-white font-bold">0 - 0</span> de <span id="incidents-page-total" class="text-white font-bold">0</span> incidentes</span>
+            <span class="text-slate-600">|</span>
+            <label class="text-slate-400 flex items-center gap-1.5">
+              <span>Por pág:</span>
+              <select id="incidents-per-page-select" onchange="changeIncidentsPerPage(this.value)" class="bg-slate-900 border border-white/10 text-white rounded px-2 py-0.5 text-xs font-mono focus:outline-none">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+              </select>
+            </label>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="changeIncidentsPage(-999)" id="btn-incidents-first" title="Primeira Página" class="px-2.5 py-1.5 rounded-lg glass-panel hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none flex items-center transition-all">
+              <i data-lucide="chevrons-left" class="w-3.5 h-3.5"></i>
+            </button>
+            <button type="button" onclick="changeIncidentsPage(-1)" id="btn-incidents-prev" class="px-3 py-1.5 rounded-lg glass-panel hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 transition-all">
+              <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i> Anterior
+            </button>
+            <span id="incidents-page-indicator" class="px-3 py-1 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold">Página 1 de 1</span>
+            <button type="button" onclick="changeIncidentsPage(1)" id="btn-incidents-next" class="px-3 py-1.5 rounded-lg glass-panel hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 transition-all">
+              Próxima <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            </button>
+            <button type="button" onclick="changeIncidentsPage(999)" id="btn-incidents-last" title="Última Página" class="px-2.5 py-1.5 rounded-lg glass-panel hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none flex items-center transition-all">
+              <i data-lucide="chevrons-right" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
         </div>
 
       </section>
@@ -1095,17 +1176,35 @@ flowchart TD
     let serverConfig = { project_key: 'OPS', jira_url: '', dry_run: true };
     let currentTargetFilter = 'ALL';
     let currentEventFilter = 'ALL';
+    let currentTopologyFilter = 'ALL';
     let customDockerScopes = [];
     let isSidebarCollapsed = false;
 
+    // Estados de Paginação & Caches
+    let targetsPage = 1;
+    let targetsPerPage = 5;
+    let filteredTargetsCache = [];
+
+    let topologyPage = 1;
+    let topologyPerPage = 6;
+    let filteredTopologyCache = [];
+
+    let incidentsPage = 1;
+    let incidentsPerPage = 10;
+    let filteredIncidentsCache = [];
+
     window.addEventListener('DOMContentLoaded', async () => {
       lucide.createIcons();
-      mermaid.run({ querySelector: '.mermaid' });
-      
-      await loadHealth();
-      await loadEnvironments();
-      await loadTargets();
-      await loadHistory();
+      // mermaid.run é executado sob demanda apenas ao abrir a view 'docs'
+
+      // Disparo em paralelo não-bloqueante para carregamento instantâneo (<50ms)
+      await Promise.allSettled([
+        loadHealth(),
+        loadTargets(),
+        loadHistory(),
+        loadEnvironments()
+      ]);
+
       initSSE();
       selectType('KUBERNETES');
       updateKPICounters();
@@ -1334,12 +1433,16 @@ flowchart TD
       }, 4500);
     }
 
-    async function loadEnvironments() {
+    async function loadEnvironments(force = false) {
+      const grid = document.getElementById('environments-grid');
+      if (force && grid) {
+        grid.innerHTML = `<div class="p-6 rounded-2xl glass-panel animate-pulse text-xs text-slate-400 font-mono col-span-full">Atualizando descoberta de infraestrutura...</div>`;
+      }
       try {
         const res = await fetch('/api/discovery/environments');
         if (res.ok) {
           environments = await res.json();
-          renderEnvironmentsGrid();
+          renderEnvironmentsGrid(true);
           updateKPICounters();
         }
       } catch (e) {
@@ -1347,11 +1450,75 @@ flowchart TD
       }
     }
 
-    function renderEnvironmentsGrid() {
-      const grid = document.getElementById('environments-grid');
-      if (!environments.length) return;
+    function setTopologyFilter(filter) {
+      currentTopologyFilter = filter;
+      topologyPage = 1;
 
-      grid.innerHTML = environments.map(env => {
+      const btnAll = document.getElementById('topo-filter-all');
+      const btnK8s = document.getElementById('topo-filter-k8s');
+      const btnDocker = document.getElementById('topo-filter-docker');
+
+      const activeClass = "px-3 py-1 rounded-lg font-mono text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40";
+      const inactiveClass = "px-3 py-1 rounded-lg font-mono text-[11px] text-slate-400 hover:text-white";
+
+      if (btnAll) btnAll.className = filter === 'ALL' ? activeClass : inactiveClass;
+      if (btnK8s) btnK8s.className = filter === 'KUBERNETES' ? activeClass : inactiveClass;
+      if (btnDocker) btnDocker.className = filter === 'DOCKER' ? activeClass : inactiveClass;
+
+      renderEnvironmentsGrid(false);
+    }
+
+    function changeTopologyPage(delta) {
+      const totalPages = Math.ceil(filteredTopologyCache.length / topologyPerPage) || 1;
+      if (delta === -999) topologyPage = 1;
+      else if (delta === 999) topologyPage = totalPages;
+      else topologyPage += delta;
+
+      if (topologyPage < 1) topologyPage = 1;
+      if (topologyPage > totalPages) topologyPage = totalPages;
+
+      renderEnvironmentsGrid(false);
+    }
+
+    function renderEnvironmentsGrid(resetPage = false) {
+      const grid = document.getElementById('environments-grid');
+      if (!grid) return;
+
+      let filtered = [...environments];
+      if (currentTopologyFilter !== 'ALL') {
+        filtered = filtered.filter(e => e.type === currentTopologyFilter);
+      }
+      filteredTopologyCache = filtered;
+
+      if (resetPage) topologyPage = 1;
+
+      const total = filtered.length;
+      const totalPages = Math.ceil(total / topologyPerPage) || 1;
+      if (topologyPage > totalPages) topologyPage = totalPages;
+      if (topologyPage < 1) topologyPage = 1;
+
+      const startIdx = (topologyPage - 1) * topologyPerPage;
+      const endIdx = Math.min(startIdx + topologyPerPage, total);
+      const paged = filtered.slice(startIdx, endIdx);
+
+      const rangeEl = document.getElementById('topology-page-range');
+      const totalEl = document.getElementById('topology-page-total');
+      const indicatorEl = document.getElementById('topology-page-indicator');
+      const btnPrev = document.getElementById('btn-topo-prev');
+      const btnNext = document.getElementById('btn-topo-next');
+
+      if (rangeEl) rangeEl.textContent = total > 0 ? `${startIdx + 1} - ${endIdx}` : '0 - 0';
+      if (totalEl) totalEl.textContent = total;
+      if (indicatorEl) indicatorEl.textContent = `Página ${topologyPage} de ${totalPages}`;
+      if (btnPrev) btnPrev.disabled = topologyPage <= 1;
+      if (btnNext) btnNext.disabled = topologyPage >= totalPages;
+
+      if (!filtered.length) {
+        grid.innerHTML = `<div class="p-8 rounded-2xl glass-panel text-center text-xs text-slate-400 font-mono col-span-full">Nenhum cluster ou ambiente encontrado com o filtro selecionado.</div>`;
+        return;
+      }
+
+      grid.innerHTML = paged.map(env => {
         const isK8s = env.type === 'KUBERNETES';
         const typeBadge = isK8s 
           ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold font-mono">K8S</span>`
@@ -1422,7 +1589,7 @@ flowchart TD
         const res = await fetch('/api/targets');
         if (res.ok) {
           targets = await res.json();
-          renderTargetsTable();
+          renderTargetsTable(false);
           renderDashboardTargets();
           updateKPICounters();
         }
@@ -1431,8 +1598,27 @@ flowchart TD
       }
     }
 
+    function changeTargetsPage(delta) {
+      const totalPages = Math.ceil(filteredTargetsCache.length / targetsPerPage) || 1;
+      if (delta === -999) targetsPage = 1;
+      else if (delta === 999) targetsPage = totalPages;
+      else targetsPage += delta;
+
+      if (targetsPage < 1) targetsPage = 1;
+      if (targetsPage > totalPages) targetsPage = totalPages;
+
+      renderTargetsTable(false);
+    }
+
+    function changeTargetsPerPage(val) {
+      targetsPerPage = parseInt(val, 10) || 5;
+      targetsPage = 1;
+      renderTargetsTable(false);
+    }
+
     function setTargetFilter(type) {
       currentTargetFilter = type;
+      targetsPage = 1;
       
       const btnAll = document.getElementById('filter-btn-all');
       const btnK8s = document.getElementById('filter-btn-k8s');
@@ -1441,18 +1627,19 @@ flowchart TD
       const activeClass = "px-3 py-1 rounded-lg font-mono text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40";
       const inactiveClass = "px-3 py-1 rounded-lg font-mono text-[11px] text-slate-400 hover:text-white";
 
-      btnAll.className = type === 'ALL' ? activeClass : inactiveClass;
-      btnK8s.className = type === 'KUBERNETES' ? activeClass : inactiveClass;
-      btnDocker.className = type === 'DOCKER' ? activeClass : inactiveClass;
+      if (btnAll) btnAll.className = type === 'ALL' ? activeClass : inactiveClass;
+      if (btnK8s) btnK8s.className = type === 'KUBERNETES' ? activeClass : inactiveClass;
+      if (btnDocker) btnDocker.className = type === 'DOCKER' ? activeClass : inactiveClass;
 
-      renderTargetsTable();
+      renderTargetsTable(false);
     }
 
     function filterTargetsTable() {
-      renderTargetsTable();
+      targetsPage = 1;
+      renderTargetsTable(false);
     }
 
-    function renderTargetsTable() {
+    function renderTargetsTable(resetPage = true) {
       const tbody = document.getElementById('targets-table-body');
       const searchTerm = (document.getElementById('target-search-input')?.value || '').toLowerCase().trim();
 
@@ -1467,13 +1654,37 @@ flowchart TD
           (t.scopes && t.scopes.some(s => s.toLowerCase().includes(searchTerm)))
         );
       }
+      filteredTargetsCache = filtered;
+
+      if (resetPage) targetsPage = 1;
+
+      const total = filtered.length;
+      const totalPages = Math.ceil(total / targetsPerPage) || 1;
+      if (targetsPage > totalPages) targetsPage = totalPages;
+      if (targetsPage < 1) targetsPage = 1;
+
+      const startIdx = (targetsPage - 1) * targetsPerPage;
+      const endIdx = Math.min(startIdx + targetsPerPage, total);
+      const paged = filtered.slice(startIdx, endIdx);
+
+      const rangeEl = document.getElementById('targets-page-range');
+      const totalEl = document.getElementById('targets-page-total');
+      const indicatorEl = document.getElementById('targets-page-indicator');
+      const btnPrev = document.getElementById('btn-targets-prev');
+      const btnNext = document.getElementById('btn-targets-next');
+
+      if (rangeEl) rangeEl.textContent = total > 0 ? `${startIdx + 1} - ${endIdx}` : '0 - 0';
+      if (totalEl) totalEl.textContent = total;
+      if (indicatorEl) indicatorEl.textContent = `Página ${targetsPage} de ${totalPages}`;
+      if (btnPrev) btnPrev.disabled = targetsPage <= 1;
+      if (btnNext) btnNext.disabled = targetsPage >= totalPages;
 
       if (!filtered.length) {
         tbody.innerHTML = `<tr><td colspan="7" class="py-12 text-center text-xs text-slate-400 font-mono">Nenhum target corresponde aos critérios de busca ou filtro.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = filtered.map(t => {
+      tbody.innerHTML = paged.map(t => {
         const isK8s = t.type === 'KUBERNETES';
         const typeBadge = isK8s 
           ? `<span class="px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/35 text-[11px] font-bold font-mono">Kubernetes</span>`
@@ -1625,8 +1836,8 @@ flowchart TD
         if (res.ok) {
           const events = await res.json();
           if (events && events.length) {
-            eventsHistory = events;
-            renderEventFeed();
+            eventsHistory = events.reverse(); // Mais recentes primeiro
+            renderEventFeed(true);
             renderDashboardFeedPreview();
             updateKPICounters();
           }
@@ -1636,8 +1847,27 @@ flowchart TD
       }
     }
 
+    function changeIncidentsPage(delta) {
+      const totalPages = Math.ceil(filteredIncidentsCache.length / incidentsPerPage) || 1;
+      if (delta === -999) incidentsPage = 1;
+      else if (delta === 999) incidentsPage = totalPages;
+      else incidentsPage += delta;
+
+      if (incidentsPage < 1) incidentsPage = 1;
+      if (incidentsPage > totalPages) incidentsPage = totalPages;
+
+      renderEventFeed(false);
+    }
+
+    function changeIncidentsPerPage(val) {
+      incidentsPerPage = parseInt(val, 10) || 10;
+      incidentsPage = 1;
+      renderEventFeed(false);
+    }
+
     function setEventFilter(filter) {
       currentEventFilter = filter;
+      incidentsPage = 1;
       const btnAll = document.getElementById('evt-filter-all');
       const btnCrit = document.getElementById('evt-filter-crit');
       const btnJira = document.getElementById('evt-filter-jira');
@@ -1645,21 +1875,22 @@ flowchart TD
       const activeClass = "px-3 py-1 rounded-lg font-mono text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40";
       const inactiveClass = "px-3 py-1 rounded-lg font-mono text-[11px] text-slate-400 hover:text-white";
 
-      btnAll.className = filter === 'ALL' ? activeClass : inactiveClass;
-      btnCrit.className = filter === 'CRITICAL' ? activeClass : inactiveClass;
-      btnJira.className = filter === 'JIRA' ? activeClass : inactiveClass;
+      if (btnAll) btnAll.className = filter === 'ALL' ? activeClass : inactiveClass;
+      if (btnCrit) btnCrit.className = filter === 'CRITICAL' ? activeClass : inactiveClass;
+      if (btnJira) btnJira.className = filter === 'JIRA' ? activeClass : inactiveClass;
 
-      renderEventFeed();
+      renderEventFeed(false);
     }
 
     function clearEventFeed() {
       eventsHistory = [];
-      renderEventFeed();
+      incidentsPage = 1;
+      renderEventFeed(true);
       renderDashboardFeedPreview();
       updateKPICounters();
     }
 
-    function renderEventFeed() {
+    function renderEventFeed(resetPage = false) {
       const feed = document.getElementById('live-feed-container');
       if (!feed) return;
       
@@ -1669,14 +1900,45 @@ flowchart TD
       } else if (currentEventFilter === 'JIRA') {
         list = list.filter(e => e.jira_issue);
       }
+      filteredIncidentsCache = list;
+
+      if (resetPage) incidentsPage = 1;
+
+      const total = list.length;
+      const totalPages = Math.ceil(total / incidentsPerPage) || 1;
+      if (incidentsPage > totalPages) incidentsPage = totalPages;
+      if (incidentsPage < 1) incidentsPage = 1;
+
+      const startIdx = (incidentsPage - 1) * incidentsPerPage;
+      const endIdx = Math.min(startIdx + incidentsPerPage, total);
+      const paged = list.slice(startIdx, endIdx);
+
+      const rangeEl = document.getElementById('incidents-page-range');
+      const totalEl = document.getElementById('incidents-page-total');
+      const indicatorEl = document.getElementById('incidents-page-indicator');
+      const btnFirst = document.getElementById('btn-incidents-first');
+      const btnPrev = document.getElementById('btn-incidents-prev');
+      const btnNext = document.getElementById('btn-incidents-next');
+      const btnLast = document.getElementById('btn-incidents-last');
+
+      if (rangeEl) rangeEl.textContent = total > 0 ? `${startIdx + 1} - ${endIdx}` : '0 - 0';
+      if (totalEl) totalEl.textContent = total;
+      if (indicatorEl) indicatorEl.textContent = `Página ${incidentsPage} de ${totalPages}`;
+
+      const atStart = incidentsPage <= 1;
+      const atEnd = incidentsPage >= totalPages;
+      if (btnFirst) btnFirst.disabled = atStart;
+      if (btnPrev) btnPrev.disabled = atStart;
+      if (btnNext) btnNext.disabled = atEnd;
+      if (btnLast) btnLast.disabled = atEnd;
 
       if (!list.length) {
-        feed.innerHTML = `<div class="p-12 text-center text-slate-400">Nenhum evento registrado com o filtro selecionado.</div>`;
+        feed.innerHTML = `<div class="p-12 text-center text-slate-400 font-mono">Nenhum evento registrado com o filtro selecionado.</div>`;
         return;
       }
 
       feed.innerHTML = '';
-      list.reverse().forEach(evt => {
+      paged.forEach(evt => {
         const card = createEventElement(evt);
         feed.appendChild(card);
       });
@@ -1722,8 +1984,8 @@ flowchart TD
         try {
           const event = JSON.parse(e.data);
           eventsHistory.unshift(event);
-          if (eventsHistory.length > 100) eventsHistory.pop();
-          renderEventFeed();
+          if (eventsHistory.length > 200) eventsHistory.pop();
+          renderEventFeed(false);
           renderDashboardFeedPreview();
           updateKPICounters();
         } catch (err) {
