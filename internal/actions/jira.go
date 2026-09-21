@@ -224,23 +224,25 @@ func (j *JiraClient) CreateIncidentIssue(event *domain.IncidentEvent, target *do
 func (j *JiraClient) buildDescription(event *domain.IncidentEvent, target *domain.Target) string {
 	var sb strings.Builder
 
-	sb.WriteString("h2. 🛡️ Incidente Detectado pelo Guardian (Supervisor Híbrido)\n\n")
-	sb.WriteString(fmt.Sprintf("* *Tipo de Ambiente:* %s\n", event.Type))
-	sb.WriteString(fmt.Sprintf("* *Host / Cluster:* %s\n", event.Environment))
-	sb.WriteString(fmt.Sprintf("* *Escopo (Namespace / Stack):* %s\n", event.Scope))
-	sb.WriteString(fmt.Sprintf("* *Entidade Afetada:* %s\n", event.EntityName))
+	sb.WriteString("h2. (!) Incidente Detectado pelo Guardian (Supervisor Híbrido)\n\n")
+	sb.WriteString("|| Parâmetro || Detalhes da Ocorrência ||\n")
+	sb.WriteString(fmt.Sprintf("| *Tipo de Ambiente* | %s |\n", event.Type))
+	sb.WriteString(fmt.Sprintf("| *Host / Cluster* | %s |\n", event.Environment))
+	sb.WriteString(fmt.Sprintf("| *Escopo (Namespace / Stack)* | %s |\n", event.Scope))
+	sb.WriteString(fmt.Sprintf("| *Entidade Afetada* | %s |\n", event.EntityName))
 	if event.Image != "" {
-		sb.WriteString(fmt.Sprintf("* *Imagem do Container:* %s\n", event.Image))
+		sb.WriteString(fmt.Sprintf("| *Imagem do Container* | %s |\n", event.Image))
 	}
-	sb.WriteString(fmt.Sprintf("* *Motivo da Falha:* %s\n", event.Reason))
-	sb.WriteString(fmt.Sprintf("* *Código de Saída (Exit Code):* %d\n", event.ExitCode))
-	sb.WriteString(fmt.Sprintf("* *Data / Hora da Ocorrência:* %s\n\n", event.Timestamp.Format("02/01/2006 15:04:05 -0700")))
+	sb.WriteString(fmt.Sprintf("| *Motivo da Falha* | %s |\n", event.Reason))
+	sb.WriteString(fmt.Sprintf("| *Código de Saída (Exit Code)* | %d |\n", event.ExitCode))
+	sb.WriteString(fmt.Sprintf("| *Data / Hora da Ocorrência* | %s |\n", event.Timestamp.Format("02/01/2006 15:04:05 -0700")))
 
 	if target != nil {
-		sb.WriteString(fmt.Sprintf("* *Target Guardian:* %s (ID: %s)\n\n", target.Name, target.ID))
+		sb.WriteString(fmt.Sprintf("| *Target Guardian* | %s (ID: %s) |\n", target.Name, target.ID))
 	}
+	sb.WriteString("\n")
 
-	sb.WriteString("h3. 📄 Últimos Logs do Container antes da queda:\n")
+	sb.WriteString("h3. (i) Diagnóstico & Últimos Logs do Container antes da queda:\n")
 	sb.WriteString("{code:bash}\n")
 	if strings.TrimSpace(event.Logs) != "" {
 		sb.WriteString(event.Logs)
