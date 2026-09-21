@@ -260,7 +260,7 @@ func (s *Server) handleSimulate(w http.ResponseWriter, r *http.Request) {
 	if req.EntityName == "" {
 		if req.Type == domain.EnvKubernetes {
 			req.EntityName = "payment-service-84f98d7b"
-			req.Environment = "aks-prod-brazil"
+			req.Environment = "k8s-cluster"
 			req.Scope = "billing"
 			req.Reason = "CrashLoopBackOff"
 			req.ExitCode = 1
