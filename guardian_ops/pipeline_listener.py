@@ -6,20 +6,20 @@ from guardian_ops.models import IncidentEvent, FailureSource
 class PipelineMock:
     @staticmethod
     def create_mock_pipeline_failure(
-        project: str = "flowti/portal-paciente",
+        project: str = "acme/portal-app",
         pipeline_id: str = "48921",
         stage: str = "docker-build",
         error_type: str = "JobFailed"
     ) -> IncidentEvent:
         """Cria evento simulado de falha de Pipeline CI/CD para validação."""
-        logs = """[00:01:23] $ docker build -t registry.flowti.com.br/portal-paciente:v2.4.1 -f Dockerfile .
+        logs = """[00:01:23] $ docker build -t registry.example.com/portal-app:v2.4.1 -f Dockerfile .
 [00:01:25] Step 1/12 : FROM node:20-alpine AS builder
 [00:01:28] Step 2/12 : WORKDIR /app
 [00:01:29] Step 3/12 : COPY package.json package-lock.json ./
 [00:01:31] Step 4/12 : RUN npm ci
 [00:01:45] npm ERR! code ERESOLVE
 [00:01:45] npm ERR! ERESOLVE could not resolve dependency:
-[00:01:45] npm ERR! peer @types/react@"^18.0.0" from @flowti/ui-components@3.1.0
+[00:01:45] npm ERR! peer @types/react@"^18.0.0" from @acme/ui-components@3.1.0
 [00:01:45] npm ERR! Conflicting dependency: react@19.0.0
 [00:01:46] ERROR: Service 'builder' failed to build: The command '/bin/sh -c npm ci' returned a non-zero code: 1
 [00:01:46] Cleaning up project directory and file based variables
@@ -34,10 +34,10 @@ class PipelineMock:
             error_message="Job 'docker-build' falhou com exit code 1 durante a execução do npm ci no Dockerfile",
             logs_snippet=logs,
             exit_code=1,
-            environment="GitLab CI Runner / AWS Staging",
+            environment="CI/CD Runner / Staging",
             details={
                 "commit_ref": "main",
-                "author": "dev-flowti@mv.com.br",
+                "author": "developer@example.com",
                 "pipeline_url": f"https://gitlab.com/{project}/-/pipelines/{pipeline_id}"
             }
         )

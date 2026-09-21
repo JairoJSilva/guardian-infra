@@ -75,10 +75,13 @@ func (j *JiraClient) CreateIncidentIssue(event *domain.IncidentEvent, target *do
 			"arquitetura-hibrida",
 			strings.ToLower(string(event.Type)),
 		},
-		j.cfg.JiraCustomfieldContratoID: map[string]string{
+	}
+
+	if j.cfg.JiraCustomfieldContratoID != "" && contract.ID != "" {
+		fields[j.cfg.JiraCustomfieldContratoID] = map[string]string{
 			"id":    contract.ID,
 			"value": contract.Value,
-		},
+		}
 	}
 
 	if j.cfg.JiraUser != "" {

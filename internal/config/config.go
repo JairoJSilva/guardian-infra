@@ -48,7 +48,7 @@ var ContratoMap = map[string]JiraContract{
 func CleanURL(raw string) string {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
-		return "https://jira.mv.com.br"
+		return ""
 	}
 	u, err := url.Parse(raw)
 	if err != nil || u.Host == "" {
@@ -87,14 +87,19 @@ func LoadConfig() *Config {
 		dockerSock = "/var/run/docker.sock"
 	}
 
+	jiraBase := CleanURL(os.Getenv("JIRA_BASE_URL"))
+	if jiraBase == "" {
+		jiraBase = "https://jira.example.com"
+	}
+
 	return &Config{
-		JiraBaseURL:               CleanURL(os.Getenv("JIRA_BASE_URL")),
+		JiraBaseURL:               jiraBase,
 		JiraUser:                  strings.TrimSpace(os.Getenv("JIRA_USER")),
 		JiraPassword:              strings.TrimSpace(os.Getenv("JIRA_PASSWORD")),
 		JiraProjectKey:            getEnvDefault("JIRA_PROJECT_KEY", "OPS"),
-		JiraIssueType:             getEnvDefault("JIRA_ISSUE_TYPE", "Solicitação de serviço"),
-		JiraContratoDefault:       getEnvDefault("JIRA_CONTRATO_DEFAULT", "INTERNO"),
-		JiraCustomfieldContratoID: getEnvDefault("JIRA_CUSTOMFIELD_CONTRATO_ID", "customfield_30118"),
+		JiraIssueType:             getEnvDefault("JIRA_ISSUE_TYPE", "Bug"),
+		JiraContratoDefault:       getEnvDefault("JIRA_CONTRATO_DEFAULT", ""),
+		JiraCustomfieldContratoID: getEnvDefault("JIRA_CUSTOMFIELD_CONTRATO_ID", ""),
 		HTTPPort:                  port,
 		CooldownMinutes:           cooldown,
 		DryRun:                    dryRun,

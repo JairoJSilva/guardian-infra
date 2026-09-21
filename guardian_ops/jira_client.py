@@ -114,7 +114,8 @@ class JiraClient:
             context_hint = f"{event.namespace_or_project} {event.identifier}"
             contract = Config.resolve_contract(context_hint)
 
-        fields[Config.JIRA_CUSTOMFIELD_CONTRATO_ID] = contract
+        if Config.JIRA_CUSTOMFIELD_CONTRATO_ID and contract:
+            fields[Config.JIRA_CUSTOMFIELD_CONTRATO_ID] = contract
 
         payload = {"fields": fields}
 

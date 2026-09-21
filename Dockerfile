@@ -2,7 +2,7 @@
 FROM python:3.12-slim
 
 # Metadados da imagem
-LABEL maintainer="GuardianOps Team <jairo.junior@flowti.com.br>"
+LABEL maintainer="GuardianOps Open Source Team <guardian@ops.local>"
 LABEL description="GuardianOps - Observador e Analisador de Falhas K8s e CI/CD"
 
 # Evita geração de bytecode .pyc e força stdout não-bufferizado

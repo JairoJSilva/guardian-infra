@@ -574,7 +574,13 @@ flowchart TD
         </div>
 
         <div class="space-y-2 pt-2 border-t border-white/10">
-          <span class="text-xs font-semibold text-slate-300 font-mono">Integração com Jira</span>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-300 font-mono">Integração com Jira</span>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-slate-400 font-mono">Projeto Jira:</span>
+              <input type="text" id="target-jira-project" placeholder="OPS" class="w-24 px-2 py-1 rounded-lg glass-input text-white text-[11px] font-mono uppercase placeholder:text-slate-500">
+            </div>
+          </div>
           <label class="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer">
             <input type="checkbox" id="target-jira-toggle" checked class="rounded border-white/20 bg-slate-900 text-amber-500 focus:ring-0">
             <span>Abrir chamados automaticamente no Jira anexando logs do crash</span>
@@ -594,17 +600,34 @@ flowchart TD
     let currentType = 'KUBERNETES';
     let environments = [];
     let eventSource = null;
+    let serverConfig = { project_key: 'OPS', jira_url: '', dry_run: true };
 
     window.addEventListener('DOMContentLoaded', async () => {
       lucide.createIcons();
       mermaid.run({ querySelector: '.mermaid' });
       
+      await loadHealth();
       await loadEnvironments();
       await loadTargets();
       await loadHistory();
       initSSE();
       selectType('KUBERNETES');
     });
+
+    async function loadHealth() {
+      try {
+        const res = await fetch('/api/health');
+        if (res.ok) {
+          serverConfig = await res.json();
+          if (serverConfig.project_key) {
+            const input = document.getElementById('target-jira-project');
+            if (input) input.placeholder = serverConfig.project_key;
+          }
+        }
+      } catch (e) {
+        console.warn("Falha ao carregar health:", e);
+      }
+    }
 
     async function loadEnvironments() {
       try {
@@ -1033,6 +1056,9 @@ flowchart TD
         return;
       }
 
+      const rawJiraProj = document.getElementById('target-jira-project').value.trim();
+      const jiraProject = (rawJiraProj || (serverConfig && serverConfig.project_key) || "OPS").toUpperCase();
+
       const payload = {
         name: name,
         type: currentType,
@@ -1046,8 +1072,8 @@ flowchart TD
         },
         actions: {
           create_jira_issue: jiraEnabled,
-          jira_project_key: "OPS",
-          contrato: "INTERNO"
+          jira_project_key: jiraProject,
+          contrato: ""
         }
       };
 
@@ -1094,6 +1120,12 @@ flowchart TD
     }
 
     function openModal() {
+      if (serverConfig && serverConfig.project_key) {
+        const projInput = document.getElementById('target-jira-project');
+        if (projInput && !projInput.value) {
+          projInput.value = serverConfig.project_key;
+        }
+      }
       document.getElementById('target-modal').classList.remove('hidden');
       document.getElementById('target-modal').classList.add('flex');
     }

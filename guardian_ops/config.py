@@ -25,13 +25,13 @@ def _clean_url(url: str) -> str:
 
 class Config:
     # Jira Settings
-    JIRA_BASE_URL: str = _clean_url(os.getenv("JIRA_BASE_URL", "https://jira.mv.com.br"))
+    JIRA_BASE_URL: str = _clean_url(os.getenv("JIRA_BASE_URL", "https://jira.example.com"))
     JIRA_USER: str = os.getenv("JIRA_USER", "").strip()
     JIRA_PASSWORD: str = os.getenv("JIRA_PASSWORD", "").strip()
     JIRA_PROJECT_KEY: str = os.getenv("JIRA_PROJECT_KEY", "OPS").strip()
-    JIRA_ISSUE_TYPE: str = os.getenv("JIRA_ISSUE_TYPE", "Solicitação de serviço").strip()
-    JIRA_CONTRATO_DEFAULT: str = os.getenv("JIRA_CONTRATO_DEFAULT", "INTERNO").strip()
-    JIRA_CUSTOMFIELD_CONTRATO_ID: str = os.getenv("JIRA_CUSTOMFIELD_CONTRATO_ID", "customfield_30118").strip()
+    JIRA_ISSUE_TYPE: str = os.getenv("JIRA_ISSUE_TYPE", "Incident").strip()
+    JIRA_CONTRATO_DEFAULT: str = os.getenv("JIRA_CONTRATO_DEFAULT", "").strip()
+    JIRA_CUSTOMFIELD_CONTRATO_ID: str = os.getenv("JIRA_CUSTOMFIELD_CONTRATO_ID", "").strip()
 
     # Mapeamento oficial dos Contratos FLOWTI no Jira (customfield_30118)
     CONTRATO_MAP: Dict[str, Dict[str, str]] = {
