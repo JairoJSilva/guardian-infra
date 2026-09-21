@@ -12,6 +12,7 @@ Bem-vindo à base oficial de conhecimento, especificações técnicas, registros
 | 📜 [**modificacoes-tecnicas/**](modificacoes-tecnicas/) | **Catálogo Oficial de Registros de Modificações Técnicas (RMT)**. Histórico cronológico de cada intervenção, refatoração e evolução técnica do projeto. |
 | 📋 [**modificacoes-tecnicas/TEMPLATE-RMT.md**](modificacoes-tecnicas/TEMPLATE-RMT.md) | **Template Oficial de RMT**. Modelo obrigatório para documentar qualquer alteração técnica no repositório. |
 | 🏛️ [**ADR-001-arquitetura-hibrida-go-supervisor-e-agentes.md**](ADR-001-arquitetura-hibrida-go-supervisor-e-agentes.md) | **Registro de Decisão Arquitetural (ADR)** sobre a migração para Core Engine em Go com Supervisor reativo e orquestração de Agentes Especialistas de RCA. |
+| 📌 [**issues/**](issues/) | **Especificações Formais de Issues e RFCs**. Demandas, propostas de melhorias e novas funcionalidades planejadas para a plataforma. |
 | 🧭 [**guias/**](guias/) | **Manuais Operacionais Práticos**. Passo a passo de execução local, configuração do Jira, gestão de targets e atuação dos agentes autônomos. |
 
 ---
