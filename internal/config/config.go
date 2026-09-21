@@ -218,9 +218,16 @@ func resolveKubeConfigPath() string {
 		}
 	}
 
-	// 4. Se o home atual for /root ou não tiver config, buscar em /home/*/.kube/config
+	// 4. Se o home atual for /root ou não tiver config, buscar em /home/*/.kube/config ou Documentos
 	if matches, _ := filepath.Glob("/home/*/.kube/config"); len(matches) > 0 {
 		for _, m := range matches {
+			if _, err := os.Stat(m); err == nil || !os.IsNotExist(err) {
+				return m
+			}
+		}
+	}
+	if docMatches, _ := filepath.Glob("/home/*/Documentos/kube-config*"); len(docMatches) > 0 {
+		for _, m := range docMatches {
 			if _, err := os.Stat(m); err == nil || !os.IsNotExist(err) {
 				return m
 			}
