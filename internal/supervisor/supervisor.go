@@ -18,7 +18,7 @@ type Supervisor struct {
 	ctx          context.Context
 	cancel       context.CancelFunc
 	k8sPool      *k8s.ClientPool
-	dockerClient *docker.DockerClient
+	dockerPool   *docker.DockerPool
 	storage      *storage.Storage
 	deduplicator *actions.Deduplicator
 	jiraClient   *actions.JiraClient
@@ -29,7 +29,7 @@ type Supervisor struct {
 
 func NewSupervisor(
 	k8sPool *k8s.ClientPool,
-	dockerClient *docker.DockerClient,
+	dockerPool *docker.DockerPool,
 	store *storage.Storage,
 	dedup *actions.Deduplicator,
 	jira *actions.JiraClient,
@@ -40,7 +40,7 @@ func NewSupervisor(
 		ctx:          ctx,
 		cancel:       cancel,
 		k8sPool:      k8sPool,
-		dockerClient: dockerClient,
+		dockerPool:   dockerPool,
 		storage:      store,
 		deduplicator: dedup,
 		jiraClient:   jira,
@@ -112,7 +112,7 @@ func (s *Supervisor) startWorker(target *domain.Target) {
 		return
 	}
 
-	worker := NewTargetWorker(target, s.ctx, s.k8sPool, s.dockerClient, s.eventChan)
+	worker := NewTargetWorker(target, s.ctx, s.k8sPool, s.dockerPool, s.eventChan)
 	s.workers[target.ID] = worker
 	worker.Start()
 	log.Printf("[Supervisor] [✓] Worker iniciado para Target: %s (%s)", target.Name, target.ID)

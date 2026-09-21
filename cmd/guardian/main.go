@@ -53,11 +53,11 @@ func main() {
 	k8sPool := k8s.NewClientPool(cfg.KubeConfigPath)
 	k8sDisc := k8s.NewK8sDiscovery(k8sPool, cfg.KubeConfigPath)
 
-	dockerClient := docker.NewDockerClient(cfg.DockerSocketPath)
-	dockerDisc := docker.NewDockerDiscovery(dockerClient)
+	dockerPool := docker.NewDockerPool(cfg.DockerSocketPath)
+	dockerDisc := docker.NewDockerDiscovery(dockerPool, store)
 
 	// 4. Inicializa Supervisor de Targets Híbrido
-	superv := supervisor.NewSupervisor(k8sPool, dockerClient, store, dedup, jira, notifier)
+	superv := supervisor.NewSupervisor(k8sPool, dockerPool, store, dedup, jira, notifier)
 	superv.Start()
 
 	// 5. Inicializa Servidor HTTP e Rotas da API

@@ -61,11 +61,7 @@ func LoadConfig() *Config {
 	_ = godotenv.Load(".env")
 	_ = godotenv.Load()
 
-	homeDir, _ := os.UserHomeDir()
-	defaultKube := filepath.Join(homeDir, ".kube", "config")
-	if envKube := os.Getenv("KUBECONFIG"); envKube != "" {
-		defaultKube = envKube
-	}
+	defaultKube := resolveKubeConfigPath()
 
 	cooldown := 60
 	if cdStr := os.Getenv("GUARDIAN_COOLDOWN_MINUTES"); cdStr != "" {
@@ -164,3 +160,50 @@ func (c *Config) ResolveContract(hint string) JiraContract {
 
 	return defContract
 }
+
+func resolveKubeConfigPath() string {
+	// 1. Variável de ambiente KUBECONFIG explícita
+	if envKube := os.Getenv("KUBECONFIG"); strings.TrimSpace(envKube) != "" {
+		return strings.TrimSpace(envKube)
+	}
+
+	// 2. Se executado com sudo, tentar primeiro o kubeconfig do usuário real que invocou o sudo
+	if sudoUser := os.Getenv("SUDO_USER"); sudoUser != "" {
+		sudoKube := filepath.Join("/home", sudoUser, ".kube", "config")
+		if _, err := os.Stat(sudoKube); err == nil || !os.IsNotExist(err) {
+			return sudoKube
+		}
+	}
+
+	// 3. Diretório home do usuário atual (ou real se em ambiente Snap)
+	homeDir, err := os.UserHomeDir()
+	if err == nil && homeDir != "" {
+		if strings.Contains(homeDir, "/snap/") {
+			realHome := strings.Split(homeDir, "/snap/")[0]
+			realKube := filepath.Join(realHome, ".kube", "config")
+			if _, err := os.Stat(realKube); err == nil || !os.IsNotExist(err) {
+				return realKube
+			}
+		}
+		userKube := filepath.Join(homeDir, ".kube", "config")
+		if _, err := os.Stat(userKube); err == nil || !os.IsNotExist(err) {
+			return userKube
+		}
+	}
+
+	// 4. Se o home atual for /root ou não tiver config, buscar em /home/*/.kube/config
+	if matches, _ := filepath.Glob("/home/*/.kube/config"); len(matches) > 0 {
+		for _, m := range matches {
+			if _, err := os.Stat(m); err == nil || !os.IsNotExist(err) {
+				return m
+			}
+		}
+	}
+
+	// 5. Fallback padrão
+	if homeDir != "" {
+		return filepath.Join(homeDir, ".kube", "config")
+	}
+	return "/root/.kube/config"
+}
+

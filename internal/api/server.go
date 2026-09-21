@@ -72,6 +72,7 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/targets", s.handleTargets)
 	s.mux.HandleFunc("/api/targets/", s.handleTargetByID)
 	s.mux.HandleFunc("/api/discovery/environments", s.handleDiscoveryEnvironments)
+	s.mux.HandleFunc("/api/discovery/docker/inspect", s.handleDockerInspect)
 	s.mux.HandleFunc("/api/events/live", s.handleLiveEvents)
 	s.mux.HandleFunc("/api/events/history", s.handleEventsHistory)
 	s.mux.HandleFunc("/api/simulate", s.handleSimulate)
@@ -174,6 +175,26 @@ func (s *Server) handleDiscoveryEnvironments(w http.ResponseWriter, r *http.Requ
 
 	all := append(k8sEnvs, dockerEnvs...)
 	respondJSON(w, http.StatusOK, all)
+}
+
+func (s *Server) handleDockerInspect(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		respondError(w, http.StatusMethodNotAllowed, "Método não permitido")
+		return
+	}
+
+	endpoint := strings.TrimSpace(r.URL.Query().Get("endpoint"))
+	if endpoint == "" {
+		endpoint = "/var/run/docker.sock"
+	}
+
+	res, err := s.dockerDiscovery.InspectEndpoint(r.Context(), endpoint)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondJSON(w, http.StatusOK, res)
 }
 
 func (s *Server) handleEventsHistory(w http.ResponseWriter, r *http.Request) {
