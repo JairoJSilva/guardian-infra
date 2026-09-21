@@ -2,7 +2,19 @@
 
 O **GuardianOps v2.0** é uma plataforma inteligente e autônoma de observabilidade, diagnóstico de causa-raiz (RCA) e abertura automatizada de chamados técnicos no **Jira**.
 
-Executando localmente como um container Docker de baixo consumo ou como daemon no Kubernetes, o GuardianOps monitora containers locais, pods de clusters remotos e esteiras de CI/CD. Quando uma falha é detectada, o **OrchestratorBot** aciona um esquadrão de **agentes especialistas** para diagnosticar o incidente, sintetizar o impacto e abrir um chamado com procedimentos detalhados de correção.
+---
+
+## 📚 Central Oficial de Documentações
+
+Toda a documentação técnica oficial, histórico de intervenções, decisões arquiteturais e manuais práticos estão organizados no diretório [`Documentações/`](Documentações/):
+
+| Seção | Descrição | Link Direto |
+|:---|:---|:---|
+| 🧭 **Central Principal** | Mapa completo e regras de governança contínua | [`Documentações/README.md`](Documentações/README.md) |
+| 📘 **Documentação Oficial** | Arquitetura técnica consolidada (Go + Python + Jira) | [`Documentações/DOCUMENTACAO_DO_PROJETO.md`](Documentações/DOCUMENTACAO_DO_PROJETO.md) |
+| 📜 **Histórico de RMTs** | Catálogo oficial de Registros de Modificações Técnicas | [`Documentações/modificacoes-tecnicas/`](Documentações/modificacoes-tecnicas/README.md) |
+| 🏛️ **ADR-001** | Registro de Decisão Arquitetural (Core Go + Multi-Agentes) | [`Documentações/ADR-001-...`](Documentações/ADR-001-arquitetura-hibrida-go-supervisor-e-agentes.md) |
+| 📂 **Manuais Práticos** | Guias de execução local, Jira, targets e agentes RCA | [`Documentações/guias/`](Documentações/guias/README.md) |
 
 ---
 
