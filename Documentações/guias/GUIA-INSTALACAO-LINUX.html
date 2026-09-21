@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guardian SRE — Documentação Oficial de Instalação no Linux</title>
+  
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            guardian: {
+              gold: '#ffb703',
+              amber: '#fb8500',
+              ember: '#ff5400',
+              jade: '#00f59b',
+              emerald: '#10b981',
+              ruby: '#ff2a6d',
+              amethyst: '#9d4edd',
+              obsidian: '#030408',
+              surface: 'rgba(12, 16, 28, 0.65)',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Mermaid.js -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        darkMode: true,
+        background: '#0a0d18',
+        primaryColor: '#fb8500',
+        primaryTextColor: '#f3f4f6',
+        primaryBorderColor: '#00f59b',
+        lineColor: '#ffb703',
+        secondaryColor: '#121626',
+        tertiaryColor: '#05070f'
+      }
+    });
+  </script>
+
+  <style>
+    :root {
+      --bg-base: #030408;
+      --glass-bg: rgba(12, 16, 28, 0.68);
+      --glass-bg-hover: rgba(20, 26, 44, 0.82);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-border-hover: rgba(255, 183, 3, 0.38);
+      --glass-shadow: 0 16px 40px 0 rgba(0, 0, 0, 0.75), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+      --title-grad: linear-gradient(135deg, #ffffff 0%, #ffdf9e 45%, #ffb703 80%, #00f59b 100%);
+      --accent-grad: linear-gradient(135deg, #ff5400 0%, #fb8500 50%, #ffb703 100%);
+    }
+
+    body {
+      background-color: var(--bg-base);
+      background-image: 
+        radial-gradient(rgba(255, 183, 3, 0.04) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(3, 4, 8, 0.94) 0%, #030408 100%);
+      background-size: 32px 32px, 100% 100%;
+      color: #f1f5f9;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    .ambient-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(160px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.18;
+    }
+    .ambient-gold {
+      width: 650px;
+      height: 650px;
+      background: radial-gradient(circle, #fb8500 0%, #ffb703 60%, transparent 100%);
+      top: -200px;
+      left: -150px;
+    }
+    .ambient-jade {
+      width: 550px;
+      height: 550px;
+      background: radial-gradient(circle, #00f59b 0%, #10b981 60%, transparent 100%);
+      bottom: -150px;
+      right: -100px;
+    }
+
+    .glass-panel {
+      background: var(--glass-bg);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+      border-radius: 1rem;
+    }
+
+    .glass-panel-hover {
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .glass-panel-hover:hover {
+      background: var(--glass-bg-hover);
+      border-color: var(--glass-border-hover);
+      box-shadow: 0 20px 48px 0 rgba(0, 0, 0, 0.8), 0 0 24px 0 rgba(255, 183, 3, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .text-title-gradient {
+      background: var(--title-grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .btn-gradient {
+      background: var(--accent-grad);
+      color: #030306;
+      font-weight: 700;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 20px 0 rgba(251, 133, 0, 0.35);
+    }
+    .btn-gradient:hover {
+      background: linear-gradient(135deg, #ff6a1a 0%, #ffa200 50%, #ffc629 100%);
+      box-shadow: 0 6px 26px 0 rgba(255, 183, 3, 0.55);
+      transform: translateY(-1px);
+    }
+
+    .code-block {
+      background: #060913;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      position: relative;
+    }
+
+    .tab-btn.active {
+      background: rgba(255, 183, 3, 0.15);
+      border-color: rgba(255, 183, 3, 0.5);
+      color: #ffb703;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(4, 6, 12, 0.7);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 183, 3, 0.45);
+    }
+  </style>
+</head>
+<body class="selection:bg-amber-500/30 selection:text-amber-200 relative text-slate-200">
+
+  <!-- Ambient Light Orbs -->
+  <div class="ambient-orb ambient-gold"></div>
+  <div class="ambient-orb ambient-jade"></div>
+
+  <!-- Main Container -->
+  <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+
+    <!-- ==================== HEADER / HERO ==================== -->
+    <header class="glass-panel p-8 sm:p-12 relative overflow-hidden border border-amber-500/20">
+      <div class="absolute -right-16 -top-16 opacity-10 pointer-events-none">
+        <svg class="w-96 h-96 text-amber-400" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+
+      <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+        <div class="space-y-4 max-w-3xl">
+          <div class="flex flex-wrap items-center gap-2.5">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-mono">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+              Release v3.0.0
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/30 font-mono">
+              <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
+              Linux Native Desktop & Daemon
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-mono">
+              <i data-lucide="box" class="w-3.5 h-3.5"></i>
+              Ubuntu 24.04 / Zorin OS / Debian
+            </span>
+          </div>
+
+          <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-title-gradient leading-tight">
+            Guardian SRE Platform
+          </h1>
+          <p class="text-base sm:text-lg text-slate-300 font-light leading-relaxed">
+            Guia oficial de implantação e operação local como <strong class="text-amber-400 font-semibold">aplicativo desktop nativo e serviço de segundo plano (daemon)</strong> no ecossistema Linux.
+          </p>
+
+          <div class="flex flex-wrap items-center gap-3 pt-2 text-xs text-slate-400 font-mono">
+            <span class="flex items-center gap-1"><i data-lucide="zap" class="w-3.5 h-3.5 text-amber-400"></i> Zero Dependências Runtime</span>
+            <span class="text-slate-600">•</span>
+            <span class="flex items-center gap-1"><i data-lucide="app-window" class="w-3.5 h-3.5 text-emerald-400"></i> App-Mode Borderless</span>
+            <span class="text-slate-600">•</span>
+            <span class="flex items-center gap-1"><i data-lucide="layers" class="w-3.5 h-3.5 text-cyan-400"></i> Padrão XDG FreeDesktop</span>
+          </div>
+        </div>
+
+        <!-- Quick Action Nav Buttons -->
+        <div class="flex flex-col sm:flex-row lg:flex-col gap-3 w-full lg:w-auto shrink-0">
+          <a href="#quick-install" class="btn-gradient px-6 py-3.5 rounded-xl flex items-center justify-center gap-2.5 text-sm shadow-lg text-slate-950 font-bold">
+            <i data-lucide="terminal" class="w-4 h-4"></i>
+            Instalação Rápida (1 Min)
+          </a>
+          <a href="#deb-install" class="glass-panel px-6 py-3 rounded-xl flex items-center justify-center gap-2.5 text-sm hover:border-amber-400/50 hover:bg-slate-800/50 transition">
+            <i data-lucide="download" class="w-4 h-4 text-amber-400"></i>
+            Pacote Debian (.deb)
+          </a>
+          <a href="#cli-manual" class="glass-panel px-6 py-3 rounded-xl flex items-center justify-center gap-2.5 text-sm hover:border-emerald-400/50 hover:bg-slate-800/50 transition">
+            <i data-lucide="command" class="w-4 h-4 text-emerald-400"></i>
+            Manual do CLI (guardian-ctl)
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- ==================== ARQUITETURA DO APLICATIVO NATIVO ==================== -->
+    <section class="glass-panel p-8 space-y-6">
+      <div class="flex items-center justify-between border-b border-white/5 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="p-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <i data-lucide="network" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-white">Como Funciona a Arquitetura Nativa no Linux</h2>
+            <p class="text-xs text-slate-400 font-mono">Do clique no ícone do Zorin/GNOME até a supervisão dos clusters</p>
+          </div>
+        </div>
+        <span class="hidden sm:inline-flex text-[11px] px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-slate-300 font-mono">
+          Single-Binary Engine + Webview UI
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <!-- Diagrama Mermaid -->
+        <div class="lg:col-span-7 bg-[#060913] p-6 rounded-xl border border-white/5 overflow-x-auto">
+          <div class="mermaid">
+flowchart TD
+    subgraph Desktop ["Ambiente Linux Desktop (GNOME / Zorin)"]
+        Menu["Atalho do Menu (guardian.desktop)"]
+        Launcher["Smart Launcher (guardian-app)"]
+        UIWindow["Janela Nativa App-Mode (Chromium / Firefox)"]
+    end
+
+    subgraph Service ["Serviço & Motor (Systemd / User)"]
+        Systemd["systemd --user (guardian.service)"]
+        GoEngine["Guardian Core Engine (Go v3.0.0)"]
+        WebEmbed["Embedded Web Server (Porta 8092)"]
+    end
+
+    subgraph Storage ["Padrão XDG Base Directory"]
+        ConfigDir["~/.config/guardian/guardian.env"]
+        DataDir["~/.local/share/guardian/targets.json"]
+        LogDir["~/.local/state/guardian/guardian.log"]
+    end
+
+    subgraph Infra ["Supervisão & Ação"]
+        K8s["Clusters Kubernetes (client-go)"]
+        Docker["Docker Engine (/var/run/docker.sock)"]
+        Jira["Atlassian Jira REST API"]
+    end
+
+    Menu -->|Executa| Launcher
+    Launcher -->|Verifica se está ativo| Systemd
+    Systemd -->|Inicia binário| GoEngine
+    GoEngine -->|Carrega| ConfigDir
+    GoEngine -->|Persiste Targets| DataDir
+    GoEngine -->|Grava Logs| LogDir
+    GoEngine -->|Sobe| WebEmbed
+    Launcher -->|Aguarda /api/health| UIWindow
+    UIWindow <-->|REST & SSE| WebEmbed
+    GoEngine -->|Watch Pods| K8s
+    GoEngine -->|Events Stream| Docker
+    GoEngine -->|Abre Chamados| Jira
+          </div>
+        </div>
+
+        <!-- Explicação dos 4 Pilares -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-white/5 hover:border-amber-500/30 transition">
+            <div class="flex items-center gap-2.5 text-amber-400 font-semibold text-sm">
+              <i data-lucide="monitor" class="w-4 h-4"></i>
+              1. Experiência de Janela Nativa
+            </div>
+            <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">
+              Ao abrir o Guardian pelo menu, o launcher executa o modo <code>--app</code>. O dashboard abre em sua própria janela independente, sem barras de endereços ou abas, integrando-se perfeitamente ao dock e ao Alt-Tab do sistema.
+            </p>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-white/5 hover:border-emerald-500/30 transition">
+            <div class="flex items-center gap-2.5 text-emerald-400 font-semibold text-sm">
+              <i data-lucide="cpu" class="w-4 h-4"></i>
+              2. Zero Overhead & Memória Mínima
+            </div>
+            <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">
+              O motor em Go roda em segundo plano consumindo apenas <strong>~22 MB de RAM</strong>, monitorando continuamente múltiplos clusters Kubernetes e containers Docker de forma assíncrona.
+            </p>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-white/5 hover:border-cyan-500/30 transition">
+            <div class="flex items-center gap-2.5 text-cyan-400 font-semibold text-sm">
+              <i data-lucide="folder-check" class="w-4 h-4"></i>
+              3. Especificação XDG Base Directory
+            </div>
+            <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">
+              Nenhum arquivo solto no seu <code>$HOME</code>. Credenciais ficam em <code>~/.config/guardian/</code>, estado e targets em <code>~/.local/share/guardian/</code> e logs em <code>~/.local/state/guardian/</code>.
+            </p>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-white/5 hover:border-purple-500/30 transition">
+            <div class="flex items-center gap-2.5 text-purple-400 font-semibold text-sm">
+              <i data-lucide="activity" class="w-4 h-4"></i>
+              4. Automação com systemd
+            </div>
+            <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">
+              O serviço de usuário reinicia automaticamente em caso de falhas e pode ser gerenciado com comandos padrão <code>systemctl --user</code> ou pelo <code>guardian-ctl</code>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== MÉTODOS DE INSTALAÇÃO (TABS) ==================== -->
+    <section id="quick-install" class="glass-panel p-8 space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <i data-lucide="download-cloud" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-white">Métodos Oficiais de Instalação</h2>
+            <p class="text-xs text-slate-400 font-mono">Escolha a opção ideal para sua estação de trabalho ou servidor</p>
+          </div>
+        </div>
+
+        <!-- Tab Buttons -->
+        <div class="flex p-1 rounded-xl bg-slate-900/80 border border-white/5 font-mono text-xs">
+          <button onclick="switchTab('user-install')" id="tab-user-install" class="tab-btn active px-3.5 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5">
+            <i data-lucide="user" class="w-3.5 h-3.5"></i> Usuário Local (Sem Sudo)
+          </button>
+          <button onclick="switchTab('deb-install')" id="tab-deb-install" class="tab-btn px-3.5 py-1.5 rounded-lg font-semibold text-slate-400 hover:text-white transition flex items-center gap-1.5">
+            <i data-lucide="package" class="w-3.5 h-3.5"></i> Pacote Debian (.deb)
+          </button>
+          <button onclick="switchTab('dev-install')" id="tab-dev-install" class="tab-btn px-3.5 py-1.5 rounded-lg font-semibold text-slate-400 hover:text-white transition flex items-center gap-1.5">
+            <i data-lucide="terminal" class="w-3.5 h-3.5"></i> Modo Desenvolvimento
+          </button>
+        </div>
+      </div>
+
+      <!-- TAB CONTENT: Usuário Local -->
+      <div id="content-user-install" class="space-y-6">
+        <div class="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20 flex items-start gap-3.5">
+          <i data-lucide="info" class="w-5 h-5 text-amber-400 shrink-0 mt-0.5"></i>
+          <div class="text-xs text-slate-300 leading-relaxed">
+            <strong class="text-amber-300 font-semibold">Instalação Segura e Isolada:</strong> Não requer permissões de administrador (<code>sudo</code>). Todos os arquivos são instalados estritamente na árvore do seu usuário (<code>~/.local</code> e <code>~/.config</code>), preservando a integridade do sistema operacional.
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-mono">1</span>
+            Clone o Repositório e Execute o Instalador
+          </h3>
+
+          <div class="code-block p-4">
+            <button onclick="copyCode('cmd-install-user', this)" class="absolute top-3 right-3 p-1.5 rounded-md bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition text-xs flex items-center gap-1 font-mono">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copiar
+            </button>
+            <pre id="cmd-install-user" class="text-xs text-emerald-400 overflow-x-auto"><code><span class="text-slate-500"># Acesse o diretório do projeto</span>
+cd ~/Documentos/Jairo/automação-jira/guardian-infra
+
+<span class="text-slate-500"># Execute o instalador automatizado</span>
+make install
+
+<span class="text-slate-500"># Ou execute diretamente o script de instalação</span>
+./scripts/install-desktop.sh</code></pre>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-mono">2</span>
+            O que o Instalador Configura Automaticamente
+          </h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 font-mono text-xs">
+            <div class="p-3 rounded-lg bg-slate-900/60 border border-white/5">
+              <span class="text-amber-400 font-bold">~/.local/bin/</span>
+              <p class="text-slate-400 text-[11px] mt-1 font-sans">Instala os executáveis <code>guardian</code>, <code>guardian-app</code> e <code>guardian-ctl</code>.</p>
+            </div>
+            <div class="p-3 rounded-lg bg-slate-900/60 border border-white/5">
+              <span class="text-emerald-400 font-bold">~/.local/share/applications/</span>
+              <p class="text-slate-400 text-[11px] mt-1 font-sans">Registra o <code>guardian.desktop</code> no menu de apps do Zorin/Ubuntu.</p>
+            </div>
+            <div class="p-3 rounded-lg bg-slate-900/60 border border-white/5">
+              <span class="text-cyan-400 font-bold">~/.local/share/icons/hicolor/</span>
+              <p class="text-slate-400 text-[11px] mt-1 font-sans">Instala o ícone vetorial SVG em alta resolução <code>guardian.svg</code>.</p>
+            </div>
+            <div class="p-3 rounded-lg bg-slate-900/60 border border-white/5">
+              <span class="text-purple-400 font-bold">~/.config/systemd/user/</span>
+              <p class="text-slate-400 text-[11px] mt-1 font-sans">Registra e habilita o serviço de background <code>guardian.service</code>.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-900/80 border border-white/5 text-xs text-slate-400 space-y-2">
+          <div class="font-bold text-white flex items-center gap-2">
+            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i> Verificação de PATH no terminal
+          </div>
+          <p>
+            Certifique-se de que o diretório <code>~/.local/bin</code> esteja presente no seu <code>$PATH</code> para executar os comandos de qualquer lugar. Se necessário, adicione ao seu <code>~/.bashrc</code>:
+          </p>
+          <code class="block p-2 rounded bg-black/50 text-amber-300 font-mono">export PATH="$HOME/.local/bin:$PATH"</code>
+        </div>
+      </div>
+
+      <!-- TAB CONTENT: Pacote Debian -->
+      <div id="content-deb-install" class="space-y-6 hidden">
+        <div class="p-4 rounded-xl bg-cyan-500/5 border border-cyan-500/20 flex items-start gap-3.5">
+          <i data-lucide="package-check" class="w-5 h-5 text-cyan-400 shrink-0 mt-0.5"></i>
+          <div class="text-xs text-slate-300 leading-relaxed">
+            <strong class="text-cyan-300 font-semibold">Distribuição Padronizada para Frotas:</strong> Ideal para instalar o Guardian globalmente na máquina ou distribuir para outros membros do time de Engenharia e SRE através de um arquivo <code>.deb</code> oficial.
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xs font-mono">1</span>
+            Compilar e Gerar o Pacote .deb
+          </h3>
+
+          <div class="code-block p-4">
+            <button onclick="copyCode('cmd-build-deb', this)" class="absolute top-3 right-3 p-1.5 rounded-md bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition text-xs flex items-center gap-1 font-mono">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copiar
+            </button>
+            <pre id="cmd-build-deb" class="text-xs text-emerald-400 overflow-x-auto"><code><span class="text-slate-500"># Constrói o pacote .deb na pasta dist/</span>
+make deb
+
+<span class="text-slate-500"># O arquivo gerado estará em:</span>
+ls -lh dist/guardian_3.0.0_amd64.deb</code></pre>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xs font-mono">2</span>
+            Instalação no Sistema Operacional
+          </h3>
+
+          <div class="code-block p-4">
+            <button onclick="copyCode('cmd-install-deb', this)" class="absolute top-3 right-3 p-1.5 rounded-md bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition text-xs flex items-center gap-1 font-mono">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copiar
+            </button>
+            <pre id="cmd-install-deb" class="text-xs text-emerald-400 overflow-x-auto"><code><span class="text-slate-500"># Instalação via dpkg no Ubuntu / Debian / Zorin</span>
+sudo dpkg -i dist/guardian_3.0.0_amd64.deb
+
+<span class="text-slate-500"># Ou clique duas vezes no arquivo .deb pelo Gerenciador de Arquivos para instalar via Software Center</span></code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB CONTENT: Modo Desenvolvimento -->
+      <div id="content-dev-install" class="space-y-6 hidden">
+        <div class="p-4 rounded-xl bg-purple-500/5 border border-purple-500/20 flex items-start gap-3.5">
+          <i data-lucide="terminal" class="w-5 h-5 text-purple-400 shrink-0 mt-0.5"></i>
+          <div class="text-xs text-slate-300 leading-relaxed">
+            <strong class="text-purple-300 font-semibold">Ambiente de Desenvolvimento Rápido:</strong> Execute o Guardian diretamente pelo terminal sem necessidade de registrar atalhos de sistema.
+          </div>
+        </div>
+
+        <div class="code-block p-4">
+          <button onclick="copyCode('cmd-dev-run', this)" class="absolute top-3 right-3 p-1.5 rounded-md bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition text-xs flex items-center gap-1 font-mono">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copiar
+          </button>
+          <pre id="cmd-dev-run" class="text-xs text-emerald-400 overflow-x-auto"><code><span class="text-slate-500"># Compila o binário standalone</span>
+make build
+
+<span class="text-slate-500"># Inicia o servidor e abre a janela de aplicativo desktop nativa</span>
+./bin/guardian -gui
+
+<span class="text-slate-500"># Ou rode apenas o servidor HTTP na porta desejada</span>
+./bin/guardian -port 8092</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== MANUAL DE OPERAÇÃO DO CLI ==================== -->
+    <section id="cli-manual" class="glass-panel p-8 space-y-6">
+      <div class="flex items-center justify-between border-b border-white/5 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="p-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <i data-lucide="terminal-square" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-white">Manual de Operação CLI — guardian-ctl</h2>
+            <p class="text-xs text-slate-400 font-mono">Controle completo do ciclo de vida, telemetria e logs pelo terminal</p>
+          </div>
+        </div>
+        <span class="text-xs text-amber-400 font-mono">CLI nativo</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Comando: status -->
+        <div class="p-5 rounded-xl bg-[#060913] border border-white/5 space-y-3 hover:border-amber-500/30 transition">
+          <div class="flex items-center justify-between">
+            <span class="px-2.5 py-1 rounded bg-amber-500/10 text-amber-300 font-mono text-xs font-bold border border-amber-500/20">
+              guardian-ctl status
+            </span>
+            <i data-lucide="activity" class="w-4 h-4 text-amber-400"></i>
+          </div>
+          <p class="text-xs text-slate-400">
+            Inspeciona se o motor está rodando, exibe a URL local, contadores de targets ativos e telemetria da API.
+          </p>
+        </div>
+
+        <!-- Comando: open -->
+        <div class="p-5 rounded-xl bg-[#060913] border border-white/5 space-y-3 hover:border-emerald-500/30 transition">
+          <div class="flex items-center justify-between">
+            <span class="px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-300 font-mono text-xs font-bold border border-emerald-500/20">
+              guardian-ctl open
+            </span>
+            <i data-lucide="app-window" class="w-4 h-4 text-emerald-400"></i>
+          </div>
+          <p class="text-xs text-slate-400">
+            Inicia o motor em background (se não estiver rodando) e abre imediatamente a janela nativa do aplicativo.
+          </p>
+        </div>
+
+        <!-- Comando: start -->
+        <div class="p-5 rounded-xl bg-[#060913] border border-white/5 space-y-3 hover:border-cyan-500/30 transition">
+          <div class="flex items-center justify-between">
+            <span class="px-2.5 py-1 rounded bg-cyan-500/10 text-cyan-300 font-mono text-xs font-bold border border-cyan-500/20">
+              guardian-ctl start
+            </span>
+            <i data-lucide="play" class="w-4 h-4 text-cyan-400"></i>
+          </div>
+          <p class="text-xs text-slate-400">
+            Dispara o daemon do Guardian em segundo plano gerenciado pelo systemd ou como processo resiliente.
+          </p>
+        </div>
+
+        <!-- Comando: stop -->
+        <div class="p-5 rounded-xl bg-[#060913] border border-white/5 space-y-3 hover:border-rose-500/30 transition">
+          <div class="flex items-center justify-between">
+            <span class="px-2.5 py-1 rounded bg-rose-500/10 text-rose-300 font-mono text-xs font-bold border border-rose-500/20">
+              guardian-ctl stop
+            </span>
+            <i data-lucide="square" class="w-4 h-4 text-rose-400"></i>
+          </div>
+          <p class="text-xs text-slate-400">
+            Interrompe graciosamente o serviço do Guardian, fechando as conexões com K8s informers e Docker socket.
+          </p>
+        </div>
+
+        <!-- Comando: logs -->
+        <div class="p-5 rounded-xl bg-[#060913] border border-white/5 space-y-3 hover:border-purple-500/30 transition">
+          <div class="flex items-center justify-between">
+            <span class="px-2.5 py-1 rounded bg-purple-500/10 text-purple-300 font-mono text-xs font-bold border border-purple-500/20">
+              guardian-ctl logs
+            </span>
+            <i data-lucide="file-text" class="w-4 h-4 text-purple-400"></i>
+          </div>
+          <p class="text-xs text-slate-400">
+            Abre o streaming contínuo de logs da aplicação (via <code>journalctl</code> ou arquivo de log direto).
+          </p>
+        </div>
+
+        <!-- Comando: restart -->
+        <div class="p-5 rounded-xl bg-[#060913] border border-white/5 space-y-3 hover:border-blue-500/30 transition">
+          <div class="flex items-center justify-between">
+            <span class="px-2.5 py-1 rounded bg-blue-500/10 text-blue-300 font-mono text-xs font-bold border border-blue-500/20">
+              guardian-ctl restart
+            </span>
+            <i data-lucide="rotate-cw" class="w-4 h-4 text-blue-400"></i>
+          </div>
+          <p class="text-xs text-slate-400">
+            Recarrega configurações e reinicia os workers do supervisor mantendo o histórico de deduplicação.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== GESTÃO SYSTEMD & XDG DIRECTORIES ==================== -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      
+      <!-- Systemd Service Box -->
+      <div class="glass-panel p-6 sm:p-8 space-y-5">
+        <div class="flex items-center gap-3">
+          <div class="p-2 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+            <i data-lucide="server" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-white">Serviço de Segundo Plano (systemd)</h3>
+            <p class="text-xs text-slate-400 font-mono">Gerenciamento via systemctl nativo</p>
+          </div>
+        </div>
+
+        <p class="text-xs text-slate-300 leading-relaxed">
+          O Guardian é executado como uma unidade de serviço do usuário no <code>systemd</code>. Isso significa que ele inicia com o seu login e não interfere nos serviços do sistema operacional.
+        </p>
+
+        <div class="code-block p-4 text-xs">
+          <pre class="text-cyan-300 overflow-x-auto"><code><span class="text-slate-500"># Iniciar o serviço</span>
+systemctl --user start guardian
+
+<span class="text-slate-500"># Verificar status detalhado</span>
+systemctl --user status guardian
+
+<span class="text-slate-500"># Habilitar inicialização no login</span>
+systemctl --user enable guardian
+
+<span class="text-slate-500"># Ver logs pelo journalctl</span>
+journalctl --user -u guardian -f</code></pre>
+        </div>
+      </div>
+
+      <!-- XDG Directory Box -->
+      <div class="glass-panel p-6 sm:p-8 space-y-5">
+        <div class="flex items-center gap-3">
+          <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <i data-lucide="folder-tree" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-white">Estrutura de Arquivos XDG</h3>
+            <p class="text-xs text-slate-400 font-mono">Onde os dados ficam armazenados</p>
+          </div>
+        </div>
+
+        <div class="space-y-3 font-mono text-xs">
+          <div class="p-2.5 rounded bg-slate-900/60 border border-white/5 flex items-start justify-between">
+            <div>
+              <span class="text-amber-400 font-bold">~/.config/guardian/guardian.env</span>
+              <p class="text-[11px] text-slate-400 font-sans mt-0.5">Configurações de Jira, portas e modo de operação.</p>
+            </div>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">Config</span>
+          </div>
+
+          <div class="p-2.5 rounded bg-slate-900/60 border border-white/5 flex items-start justify-between">
+            <div>
+              <span class="text-emerald-400 font-bold">~/.local/share/guardian/targets.json</span>
+              <p class="text-[11px] text-slate-400 font-sans mt-0.5">Banco de dados com targets K8s e Docker supervisionados.</p>
+            </div>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">Data</span>
+          </div>
+
+          <div class="p-2.5 rounded bg-slate-900/60 border border-white/5 flex items-start justify-between">
+            <div>
+              <span class="text-cyan-400 font-bold">~/.local/state/guardian/guardian.log</span>
+              <p class="text-[11px] text-slate-400 font-sans mt-0.5">Logs de auditoria e telemetria da aplicação local.</p>
+            </div>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">State</span>
+          </div>
+
+          <div class="p-2.5 rounded bg-slate-900/60 border border-white/5 flex items-start justify-between">
+            <div>
+              <span class="text-purple-400 font-bold">~/.local/bin/guardian-app</span>
+              <p class="text-[11px] text-slate-400 font-sans mt-0.5">Launcher desktop executado pelo atalho do menu.</p>
+            </div>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">Binary</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== RESOLUÇÃO DE PROBLEMAS ==================== -->
+    <section class="glass-panel p-8 space-y-6">
+      <div class="flex items-center gap-3 border-b border-white/5 pb-4">
+        <div class="p-2 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20">
+          <i data-lucide="help-circle" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold text-white">Resolução de Problemas Comuns (Troubleshooting)</h2>
+          <p class="text-xs text-slate-400 font-mono">Dicas rápidas para diagnósticos no Linux</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Item 1: Porta Ocupada -->
+        <div class="p-4 rounded-xl bg-slate-900/60 border border-white/5 space-y-2">
+          <div class="flex items-center gap-2 font-bold text-sm text-amber-400">
+            <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+            Porta 8092 já em uso
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Se outra instância estiver rodando ou a porta estiver presa:
+          </p>
+          <code class="block p-2 rounded bg-black/40 text-emerald-400 text-xs font-mono">
+            guardian-ctl stop<br>
+            # ou altere a porta em ~/.config/guardian/guardian.env: PORT=8095
+          </code>
+        </div>
+
+        <!-- Item 2: Permissão Docker -->
+        <div class="p-4 rounded-xl bg-slate-900/60 border border-white/5 space-y-2">
+          <div class="flex items-center gap-2 font-bold text-sm text-cyan-400">
+            <i data-lucide="lock" class="w-4 h-4"></i>
+            Permissão negada no socket Docker
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Se você for monitorar containers Docker locais e receber erro no socket:
+          </p>
+          <code class="block p-2 rounded bg-black/40 text-emerald-400 text-xs font-mono">
+            sudo usermod -aG docker $USER<br>
+            # Reinicie a sessão ou execute: newgrp docker
+          </code>
+        </div>
+
+        <!-- Item 3: Ícone não aparece -->
+        <div class="p-4 rounded-xl bg-slate-900/60 border border-white/5 space-y-2">
+          <div class="flex items-center gap-2 font-bold text-sm text-emerald-400">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            Atalho não aparece no menu Zorin/GNOME
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Atualize manualmente o banco de dados de atalhos e ícones da sessão:
+          </p>
+          <code class="block p-2 rounded bg-black/40 text-emerald-400 text-xs font-mono">
+            update-desktop-database ~/.local/share/applications<br>
+            gtk-update-icon-cache -f -t ~/.local/share/icons/hicolor
+          </code>
+        </div>
+
+        <!-- Item 4: Desinstalação Limpa -->
+        <div class="p-4 rounded-xl bg-slate-900/60 border border-white/5 space-y-2">
+          <div class="flex items-center gap-2 font-bold text-sm text-rose-400">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+            Como Desinstalar o Aplicativo
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Para remover executáveis, atalhos do desktop e serviços mantendo seus dados:
+          </p>
+          <code class="block p-2 rounded bg-black/40 text-emerald-400 text-xs font-mono">
+            make uninstall<br>
+            # ou: ./scripts/uninstall-desktop.sh
+          </code>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="text-center py-6 text-xs text-slate-500 font-mono space-y-2 border-t border-white/5">
+      <div class="flex items-center justify-center gap-2 text-slate-400">
+        <i data-lucide="shield" class="w-4 h-4 text-amber-400"></i>
+        <span>Guardian SRE Platform v3.0.0 — Flowti Cloud & Platform Engineering</span>
+      </div>
+      <p>Documentação gerada para implantação nativa em Linux (Ubuntu / Zorin OS / Debian).</p>
+    </footer>
+
+  </div>
+
+  <script>
+    // Inicializa Lucide Icons
+    lucide.createIcons();
+
+    // Alternância de Abas
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById('content-user-install').classList.add('hidden');
+      document.getElementById('content-deb-install').classList.add('hidden');
+      document.getElementById('content-dev-install').classList.add('hidden');
+
+      document.getElementById('tab-' + tabId).classList.add('active');
+      document.getElementById('content-' + tabId).classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    // Copiar Código com Feedback Visual
+    function copyCode(elementId, btn) {
+      const code = document.getElementById(elementId).innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> <span class="text-emerald-400 font-bold">Copiado!</span>`;
+        lucide.createIcons();
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          lucide.createIcons();
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

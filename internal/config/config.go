@@ -79,9 +79,83 @@ func CleanURL(raw string) string {
 	return u.Scheme + "://" + u.Host
 }
 
-func LoadConfig() *Config {
+func getEffectiveUserHome() string {
+	if snapHome := os.Getenv("SNAP_REAL_HOME"); snapHome != "" {
+		return snapHome
+	}
+	if sudoUser := os.Getenv("SUDO_USER"); sudoUser != "" && sudoUser != "root" {
+		return filepath.Join("/home", sudoUser)
+	}
+	if h, err := os.UserHomeDir(); err == nil && h != "" {
+		if strings.Contains(h, "/snap/") {
+			return strings.Split(h, "/snap/")[0]
+		}
+		return h
+	}
+	return ""
+}
+
+func loadEnvFiles() {
+	// 1. .env no diretório atual de trabalho
 	_ = godotenv.Load(".env")
+
+	// 2. Arquivo customizado definido por variável
+	if custom := os.Getenv("GUARDIAN_CONFIG_FILE"); custom != "" {
+		_ = godotenv.Load(custom)
+	}
+
+	// 3. Padrão XDG Config no Home do Usuário (~/.config/guardian/guardian.env)
+	home := getEffectiveUserHome()
+	if home != "" {
+		xdgEnv := filepath.Join(home, ".config", "guardian", "guardian.env")
+		_ = godotenv.Load(xdgEnv)
+		xdgDotEnv := filepath.Join(home, ".config", "guardian", ".env")
+		_ = godotenv.Load(xdgDotEnv)
+	}
+
+	// 4. Configuração global do sistema (/etc/guardian/guardian.env)
+	_ = godotenv.Load("/etc/guardian/guardian.env")
+
+	// 5. Variáveis de ambiente herdadas
 	_ = godotenv.Load()
+}
+
+func resolveStoragePath() string {
+	if envPath := os.Getenv("GUARDIAN_STORAGE_FILE"); envPath != "" {
+		return envPath
+	}
+	// Se existe targets.json no diretório local atual, priorizar para desenvolvimento
+	if _, err := os.Stat("targets.json"); err == nil {
+		return "targets.json"
+	}
+	// Padrão XDG Data Home (~/.local/share/guardian/targets.json)
+	home := getEffectiveUserHome()
+	if home != "" {
+		dir := filepath.Join(home, ".local", "share", "guardian")
+		_ = os.MkdirAll(dir, 0755)
+		return filepath.Join(dir, "targets.json")
+	}
+	return "targets.json"
+}
+
+func resolveCachePath() string {
+	if envPath := os.Getenv("GUARDIAN_CACHE_FILE"); envPath != "" {
+		return envPath
+	}
+	if _, err := os.Stat("guardian_cache.json"); err == nil {
+		return "guardian_cache.json"
+	}
+	home := getEffectiveUserHome()
+	if home != "" {
+		dir := filepath.Join(home, ".local", "share", "guardian")
+		_ = os.MkdirAll(dir, 0755)
+		return filepath.Join(dir, "guardian_cache.json")
+	}
+	return "guardian_cache.json"
+}
+
+func LoadConfig() *Config {
+	loadEnvFiles()
 
 	defaultKube := resolveKubeConfigPath()
 
@@ -92,7 +166,7 @@ func LoadConfig() *Config {
 		}
 	}
 
-	port := 8080
+	port := 8092
 	if pStr := os.Getenv("PORT"); pStr != "" {
 		if v, err := strconv.Atoi(pStr); err == nil && v > 0 {
 			port = v
@@ -127,8 +201,8 @@ func LoadConfig() *Config {
 		DryRun:                    dryRun,
 		KubeConfigPath:            defaultKube,
 		DockerSocketPath:          dockerSock,
-		StoragePath:               getEnvDefault("GUARDIAN_STORAGE_FILE", "targets.json"),
-		CachePath:                 getEnvDefault("GUARDIAN_CACHE_FILE", "guardian_cache.json"),
+		StoragePath:               resolveStoragePath(),
+		CachePath:                 resolveCachePath(),
 	}
 }
 

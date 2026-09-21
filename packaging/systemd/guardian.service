@@ -1,0 +1,18 @@
+[Unit]
+Description=Guardian Autonomous Enterprise SRE & Incident Automation Platform
+Documentation=https://github.com/JairoJSilva/guardian-infra
+After=network.target docker.service
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/guardian
+Restart=on-failure
+RestartSec=3s
+EnvironmentFile=-%h/.config/guardian/guardian.env
+WorkingDirectory=%h/.local/share/guardian
+LimitNOFILE=65536
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

@@ -15,6 +15,7 @@ import (
 	"guardian/internal/actions"
 	"guardian/internal/api"
 	"guardian/internal/config"
+	"guardian/internal/desktop"
 	"guardian/internal/providers/docker"
 	"guardian/internal/providers/k8s"
 	"guardian/internal/storage"
@@ -22,14 +23,43 @@ import (
 	"guardian/web"
 )
 
+const AppVersion = "v3.0.0-Enterprise-NativeLinux"
+
 func main() {
+	// Subcomandos de conveniência CLI
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "version", "-v", "--version":
+			fmt.Printf("Guardian Autonomous SRE Platform %s\n", AppVersion)
+			return
+		case "open", "gui", "app":
+			cfg := config.LoadConfig()
+			appURL := fmt.Sprintf("http://localhost:%d", cfg.HTTPPort)
+			// Se o servidor já estiver em execução, apenas abre a janela
+			if desktop.WaitForServerReady(appURL, 500*time.Millisecond) {
+				log.Printf("🚀 Guardian já está ativo em %s. Abrindo janela desktop...", appURL)
+				_ = desktop.LaunchAppWindow(appURL)
+				return
+			}
+			// Se não estiver rodando, remove o subcomando e continua para iniciar com -gui
+			os.Args = append([]string{os.Args[0], "-gui"}, os.Args[2:]...)
+		}
+	}
+
 	cfg := config.LoadConfig()
 
 	portFlag := flag.Int("port", cfg.HTTPPort, "Porta HTTP do servidor")
 	dryRunFlag := flag.Bool("dry-run", cfg.DryRun, "Executar em modo Dry-Run (sem criar chamados no Jira)")
 	kubeFlag := flag.String("kubeconfig", cfg.KubeConfigPath, "Caminho do arquivo kubeconfig")
 	dockerFlag := flag.String("docker-sock", cfg.DockerSocketPath, "Caminho do unix socket do Docker")
+	guiFlag := flag.Bool("gui", false, "Abre a interface gráfica nativa em janela desktop ao iniciar")
+	versionFlag := flag.Bool("version", false, "Exibe a versão do Guardian")
 	flag.Parse()
+
+	if *versionFlag {
+		fmt.Printf("Guardian Autonomous SRE Platform %s\n", AppVersion)
+		return
+	}
 
 	cfg.HTTPPort = *portFlag
 	cfg.DryRun = *dryRunFlag
@@ -92,6 +122,16 @@ func main() {
 			log.Fatalf("Erro no servidor HTTP: %v", err)
 		}
 	}()
+
+	// Se flag -gui foi informada, aguarda o servidor responder e abre a janela desktop
+	if *guiFlag {
+		go func() {
+			appURL := fmt.Sprintf("http://localhost:%d", cfg.HTTPPort)
+			if desktop.WaitForServerReady(appURL, 5*time.Second) {
+				_ = desktop.LaunchAppWindow(appURL)
+			}
+		}()
+	}
 
 	// Captura sinais de interrupção para encerramento gracioso
 	stop := make(chan os.Signal, 1)

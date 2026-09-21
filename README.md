@@ -90,31 +90,56 @@ flowchart TD
 
 ---
 
-## 4. Como Compilar e Executar
+## 4. Como Executar e Instalar no Linux
 
-### Pré-requisitos
-* **Go 1.22+** instalado na estação/servidor.
-* Arquivo de configuração do Kubernetes (`~/.kube/config`).
-* Permissão de leitura no socket do Docker (caso vá monitorar Docker local):
-  ```bash
-  sudo usermod -aG docker $USER
-  # ou liberar temporariamente:
-  sudo chmod 666 /var/run/docker.sock
-  ```
+### 🐧 Instalação como Aplicativo Nativo de Linux (Recomendado)
 
-### Compilação do Binário
+O Guardian pode ser instalado diretamente no ambiente desktop do Linux (Zorin OS, Ubuntu, Debian, GNOME, KDE) com atalho no menu de aplicativos, ícone vetorial de alta resolução, serviço de segundo plano (`systemd`) e modo de janela independente:
+
+#### Opção A: Instalação Local do Usuário (Sem necessidade de `sudo`)
 ```bash
-# Na raiz do repositório
-go build -o guardian ./cmd/guardian
+# Compila e instala em ~/.local/bin, adicionando atalho no menu do sistema
+make install
+# ou diretamente:
+./scripts/install-desktop.sh
 ```
 
-### Execução
+#### Opção B: Instalação via Pacote Debian (.deb)
 ```bash
-# Executando na porta 8092 (ou defina a porta desejada)
-./guardian -port 8092
+# Gera o pacote oficial .deb
+make deb
+
+# Instala no sistema
+sudo dpkg -i dist/guardian_3.0.0_amd64.deb
 ```
 
-Acesse a interface no seu navegador: **`http://localhost:8092`**
+#### 🚀 Formas de Uso após a Instalação:
+* **Pelo Menu de Aplicativos:** Pressione a tecla `Super/Windows`, digite **Guardian SRE** e clique no ícone para abrir a aplicação em sua janela desktop nativa.
+* **Linha de Comando (CLI):**
+  * `guardian-app` ou `guardian gui`: Abre diretamente a janela de aplicativo desktop.
+  * `guardian-ctl status`: Exibe status, targets ativos e telemetria.
+  * `guardian-ctl start` / `guardian-ctl stop`: Inicia ou para o motor em background.
+  * `guardian-ctl logs`: Acompanha os logs em tempo real.
+* **Serviço systemd:**
+  * `systemctl --user start guardian`
+  * `systemctl --user status guardian`
+
+---
+
+### 💻 Execução Direta via Terminal (Desenvolvimento)
+
+```bash
+# Compilar binário standalone
+make build
+
+# Executar abrindo direto a janela desktop nativa
+./bin/guardian -gui
+
+# Ou executar apenas como servidor na porta 8092
+./bin/guardian -port 8092
+```
+
+Acesse a interface no seu navegador ou janela de aplicativo: **`http://localhost:8092`**
 
 ---
 

@@ -1,0 +1,29 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Guardian SRE
+GenericName=Plataforma SRE Autônoma
+Comment=Observabilidade, monitoramento e resposta a incidentes Kubernetes e Docker com Jira
+Exec=guardian-app
+Icon=guardian
+Terminal=false
+Categories=Development;System;Network;Monitor;
+Keywords=Kubernetes;Docker;SRE;DevOps;Jira;Incident;Monitor;Logs;
+StartupWMClass=guardian
+Actions=OpenUI;StartDaemon;StopDaemon;ViewLogs;
+
+[Desktop Action OpenUI]
+Name=Abrir Dashboard SRE
+Exec=guardian-app
+
+[Desktop Action StartDaemon]
+Name=Iniciar Serviço (Segundo Plano)
+Exec=systemctl --user start guardian
+
+[Desktop Action StopDaemon]
+Name=Parar Serviço (Segundo Plano)
+Exec=systemctl --user stop guardian
+
+[Desktop Action ViewLogs]
+Name=Ver Logs em Tempo Real
+Exec=gnome-terminal -- journalctl --user -u guardian -f

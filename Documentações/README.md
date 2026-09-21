@@ -20,10 +20,11 @@ Bem-vindo à base oficial de conhecimento, especificações técnicas, registros
 
 Para operadores, desenvolvedores e engenheiros de DevOps/SRE:
 
-1. 💻 [**Guia de Execução Local e Docker**](guias/GUIA-EXECUCAO-LOCAL-E-DOCKER.md): Instruções para compilar o binário Go, rodar via `./guardian.sh`, executar com Docker Compose ou utilizar o ambiente virtual Python.
-2. 🎫 [**Guia de Integração com o Jira**](guias/GUIA-INTEGRACAO-JIRA.md): Configuração de tokens de API, variáveis `.env`, mapeamento de campos customizados, tags, contratos e anti-duplicação de chamados.
-3. 🎯 [**Guia de Supervisor e Gestão de Targets**](guias/GUIA-SUPERVISOR-E-TARGETS.md): Como cadastrar, ativar, pausar e inspecionar targets de Kubernetes (Namespaces) e Docker (Stacks Compose) pela Web UI e API REST.
-4. 🤖 [**Guia do Sistema Multi-Agente de RCA**](guias/GUIA-SISTEMA-MULTI-AGENTE-RCA.md): Como funcionam os agentes especializados (DevOps, Database, QA, Fullstack e Orquestrador) na análise heurística de falhas e logs.
+1. 🐧 [**Guia de Instalação no Linux (HTML Interativo)**](guias/GUIA-INSTALACAO-LINUX.html) / [**instalacao-guardian.html**](../instalacao-guardian.html): Documentação visual oficial com passo a passo para instalar como aplicativo local nativo no Linux (Desktop Zorin/Ubuntu, pacote `.deb`, CLI `guardian-ctl` e `systemd`).
+2. 💻 [**Guia de Execução Local e Docker**](guias/GUIA-EXECUCAO-LOCAL-E-DOCKER.md): Instruções para compilar o binário Go, rodar via `./guardian.sh`, executar com Docker Compose ou utilizar o ambiente virtual Python.
+3. 🎫 [**Guia de Integração com o Jira**](guias/GUIA-INTEGRACAO-JIRA.md): Configuração de tokens de API, variáveis `.env`, mapeamento de campos customizados, tags, contratos e anti-duplicação de chamados.
+4. 🎯 [**Guia de Supervisor e Gestão de Targets**](guias/GUIA-SUPERVISOR-E-TARGETS.md): Como cadastrar, ativar, pausar e inspecionar targets de Kubernetes (Namespaces) e Docker (Stacks Compose) pela Web UI e API REST.
+5. 🤖 [**Guia do Sistema Multi-Agente de RCA**](guias/GUIA-SISTEMA-MULTI-AGENTE-RCA.md): Como funcionam os agentes especializados (DevOps, Database, QA, Fullstack e Orquestrador) na análise heurística de falhas e logs.
 
 ---
 

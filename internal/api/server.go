@@ -83,7 +83,7 @@ func (s *Server) registerRoutes() {
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"status":      "UP",
-		"version":     "2.0.0-hybrid",
+		"version":     "3.0.0-enterprise-linux",
 		"mode":        "hybrid-supervisor",
 		"dry_run":     s.cfg.IsDryRun(),
 		"jira_url":    s.cfg.JiraBaseURL,
