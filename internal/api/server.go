@@ -76,6 +76,7 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/events/live", s.handleLiveEvents)
 	s.mux.HandleFunc("/api/events/history", s.handleEventsHistory)
 	s.mux.HandleFunc("/api/simulate", s.handleSimulate)
+	s.mux.HandleFunc("/api/settings/toggle-dry-run", s.handleToggleDryRun)
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
@@ -83,10 +84,30 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 		"status":      "UP",
 		"version":     "2.0.0-hybrid",
 		"mode":        "hybrid-supervisor",
-		"dry_run":     s.cfg.DryRun,
+		"dry_run":     s.cfg.IsDryRun(),
 		"jira_url":    s.cfg.JiraBaseURL,
 		"project_key": s.cfg.JiraProjectKey,
 		"time":        time.Now().Format(time.RFC3339),
+	})
+}
+
+func (s *Server) handleToggleDryRun(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		respondError(w, http.StatusMethodNotAllowed, "Método não permitido")
+		return
+	}
+
+	newDryRun := s.cfg.ToggleDryRun()
+	modeName := "PRODUÇÃO REAL (Chamados reais no Jira)"
+	if newDryRun {
+		modeName = "SIMULAÇÃO (Dry-Run Ativo - sem chamados reais)"
+	}
+	log.Printf("[API Settings] Modo de operação alterado dinamicamente pela interface para: %s", modeName)
+
+	respondJSON(w, http.StatusOK, map[string]interface{}{
+		"dry_run": newDryRun,
+		"mode":    modeName,
+		"message": "Modo de operação alternado com sucesso",
 	})
 }
 

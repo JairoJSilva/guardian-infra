@@ -406,7 +406,11 @@
             <span id="topbar-jira-text">Jira: OPS</span>
           </span>
           <span class="text-slate-600">|</span>
-          <span id="topbar-dryrun-text" class="text-amber-400">Dry-Run: On</span>
+          <button type="button" onclick="toggleDryRunMode()" id="topbar-dryrun-btn" title="Clique para alternar entre Modo Produção e Modo Simulação" class="flex items-center gap-1.5 hover:opacity-80 transition-all cursor-pointer">
+            <span id="topbar-dryrun-dot" class="h-2 w-2 rounded-full bg-amber-400 neon-pulse-gold animate-pulse"></span>
+            <span id="topbar-dryrun-text" class="text-amber-400 font-bold">Dry-Run: On</span>
+            <i data-lucide="refresh-cw" class="w-3 h-3 text-slate-500 hover:text-amber-300"></i>
+          </button>
         </div>
 
         <button onclick="openModal()" class="px-4 py-2 rounded-xl btn-glass-primary flex items-center gap-2 text-xs font-bold shadow-lg shadow-amber-500/20">
@@ -509,7 +513,7 @@
               <span class="text-xs font-mono uppercase text-slate-400 font-semibold tracking-wider flex items-center gap-1.5">
                 <i data-lucide="send" class="w-4 h-4 text-cyan-400"></i> Jira Auto
               </span>
-              <span id="kpi-jira-mode-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 font-mono">Dry-Run: On</span>
+              <button type="button" onclick="event.stopPropagation(); toggleDryRunMode();" id="kpi-jira-mode-badge" title="Clique para alternar modo" class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-mono hover:scale-105 transition-all cursor-pointer">Dry-Run: On</button>
             </div>
             <div class="flex items-baseline justify-between">
               <span id="kpi-jira-tickets-count" class="text-3xl font-extrabold text-white font-mono">0</span>
@@ -884,6 +888,28 @@ flowchart TD
           <p class="text-xs text-slate-400 mt-1">Parâmetros ativos carregados do arquivo de ambiente ou flags de inicialização.</p>
         </div>
 
+        <!-- CONTROLE INTERATIVO DO MODO OPERACIONAL -->
+        <div id="cfg-mode-card" class="p-6 rounded-2xl glass-panel space-y-4 border border-amber-500/30 bg-amber-500/5 transition-all">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2.5">
+                <span class="text-xs font-mono uppercase text-amber-400 font-bold tracking-wider flex items-center gap-1.5">
+                  <i data-lucide="sliders" class="w-4 h-4"></i> Controle do Modo de Operação (Dry-Run vs Produção)
+                </span>
+                <span id="cfg-mode-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-bold">MODO SIMULAÇÃO</span>
+              </div>
+              <p id="cfg-mode-description" class="text-xs text-slate-300 leading-relaxed max-w-2xl">
+                O modo atual é <b>Simulação (Dry-Run Ativo)</b>. Incidentes e falhas são interceptados e analisados em tempo real, mas <b>nenhum chamado oficial é gerado no Jira</b>. Ideal para testes e homologação.
+              </p>
+            </div>
+            
+            <button type="button" onclick="toggleDryRunMode()" id="cfg-dryrun-toggle-btn" class="px-5 py-3 rounded-xl btn-glass-primary text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 shadow-lg shadow-amber-500/20">
+              <i data-lucide="toggle-right" class="w-4 h-4"></i>
+              <span id="cfg-dryrun-btn-label">Mudar para Modo Produção Real</span>
+            </button>
+          </div>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           
           <div class="p-6 rounded-2xl glass-panel space-y-4">
@@ -901,7 +927,7 @@ flowchart TD
               </div>
               <div class="flex items-center justify-between pb-2 border-b border-white/5">
                 <span class="text-slate-400">Modo Dry-Run:</span>
-                <span id="cfg-dry-run" class="text-emerald-400 font-bold">-</span>
+                <span id="cfg-dry-run" class="text-amber-400 font-bold">-</span>
               </div>
               <div class="flex items-center justify-between pb-2 border-b border-white/5">
                 <span class="text-slate-400">Janela de Cooldown:</span>
@@ -1179,23 +1205,111 @@ flowchart TD
             document.getElementById('cfg-version').textContent = serverConfig.version;
           }
 
-          const isDryRun = serverConfig.dry_run;
-          document.getElementById('topbar-dryrun-text').textContent = isDryRun ? 'Dry-Run: On' : 'Dry-Run: Off';
-          document.getElementById('topbar-dryrun-text').className = isDryRun ? 'text-amber-400' : 'text-emerald-400 font-bold';
-          document.getElementById('cfg-dry-run').textContent = isDryRun ? 'Habilitado (Nenhum chamado real criado)' : 'Desabilitado (Produção Real)';
-          document.getElementById('cfg-dry-run').className = isDryRun ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold';
-
-          const jiraBadge = document.getElementById('kpi-jira-mode-badge');
-          if (jiraBadge) {
-            jiraBadge.textContent = isDryRun ? 'Dry-Run: On' : 'Dry-Run: Off';
-            jiraBadge.className = isDryRun 
-              ? 'text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-mono'
-              : 'text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-mono';
-          }
+          updateDryRunUI(serverConfig.dry_run);
         }
       } catch (e) {
         console.warn("Falha ao carregar health:", e);
       }
+    }
+
+    function updateDryRunUI(isDryRun) {
+      // 1. Top Bar Pill
+      const topbarDot = document.getElementById('topbar-dryrun-dot');
+      const topbarText = document.getElementById('topbar-dryrun-text');
+      if (topbarDot) {
+        topbarDot.className = isDryRun 
+          ? 'h-2 w-2 rounded-full bg-amber-400 neon-pulse-gold animate-pulse' 
+          : 'h-2 w-2 rounded-full bg-emerald-400 neon-pulse-jade animate-pulse';
+      }
+      if (topbarText) {
+        topbarText.textContent = isDryRun ? 'Dry-Run: On' : 'Modo Produção';
+        topbarText.className = isDryRun ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold';
+      }
+
+      // 2. Dashboard KPI Card 4 Badge
+      const jiraBadge = document.getElementById('kpi-jira-mode-badge');
+      if (jiraBadge) {
+        jiraBadge.textContent = isDryRun ? 'Dry-Run: On' : 'Produção Real';
+        jiraBadge.className = isDryRun 
+          ? 'text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-mono hover:scale-105 transition-all cursor-pointer'
+          : 'text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-mono hover:scale-105 transition-all cursor-pointer';
+      }
+
+      // 3. Settings View Card
+      const cfgDryRun = document.getElementById('cfg-dry-run');
+      if (cfgDryRun) {
+        cfgDryRun.textContent = isDryRun ? 'Habilitado (Simulação - sem chamados reais)' : 'Desabilitado (Produção Real Ativa)';
+        cfgDryRun.className = isDryRun ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold';
+      }
+
+      const modeCard = document.getElementById('cfg-mode-card');
+      const modeBadge = document.getElementById('cfg-mode-badge');
+      const modeDesc = document.getElementById('cfg-mode-description');
+      const btnLabel = document.getElementById('cfg-dryrun-btn-label');
+      const toggleBtn = document.getElementById('cfg-dryrun-toggle-btn');
+
+      if (isDryRun) {
+        if (modeCard) modeCard.className = "p-6 rounded-2xl glass-panel space-y-4 border border-amber-500/30 bg-amber-500/5 transition-all";
+        if (modeBadge) {
+          modeBadge.textContent = "MODO SIMULAÇÃO";
+          modeBadge.className = "text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-bold";
+        }
+        if (modeDesc) {
+          modeDesc.innerHTML = "O modo atual é <b>Simulação (Dry-Run Ativo)</b>. Incidentes e falhas são interceptados e analisados em tempo real, mas <b>nenhum chamado oficial é gerado no Jira</b>. Ideal para testes e demonstrações.";
+        }
+        if (btnLabel) btnLabel.textContent = "Mudar para Modo Produção Real";
+        if (toggleBtn) toggleBtn.className = "px-5 py-3 rounded-xl btn-glass-primary text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 shadow-lg shadow-amber-500/20 cursor-pointer";
+      } else {
+        if (modeCard) modeCard.className = "p-6 rounded-2xl glass-panel space-y-4 border border-emerald-500/40 bg-emerald-500/10 transition-all";
+        if (modeBadge) {
+          modeBadge.textContent = "PRODUÇÃO REAL ATIVA";
+          modeBadge.className = "text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold";
+        }
+        if (modeDesc) {
+          modeDesc.innerHTML = "O modo atual é <b class='text-emerald-300'>PRODUÇÃO REAL</b>. O Guardian irá <b class='text-white'>abrir chamados verdadeiros no Jira</b> com logs anexados sempre que um Pod ou Container falhar nos targets supervisionados.";
+        }
+        if (btnLabel) btnLabel.textContent = "Voltar para Modo Simulação (Dry-Run)";
+        if (toggleBtn) toggleBtn.className = "px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 shadow-lg shadow-emerald-500/30 cursor-pointer";
+      }
+      lucide.createIcons();
+    }
+
+    async function toggleDryRunMode() {
+      try {
+        const res = await fetch('/api/settings/toggle-dry-run', { method: 'POST' });
+        if (res.ok) {
+          const data = await res.json();
+          serverConfig.dry_run = data.dry_run;
+          updateDryRunUI(data.dry_run);
+          showToast(data.dry_run ? 'Modo Simulação (Dry-Run) ativado.' : 'Modo PRODUÇÃO REAL ATIVADO! Chamados oficiais serão abertos no Jira.', data.dry_run ? 'warning' : 'success');
+        } else {
+          alert('Erro ao alternar modo operacional.');
+        }
+      } catch (e) {
+        alert('Erro de conexão: ' + e.message);
+      }
+    }
+
+    function showToast(message, type = 'info') {
+      let toast = document.getElementById('guardian-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'guardian-toast';
+        document.body.appendChild(toast);
+      }
+
+      const icon = type === 'success' ? 'check-circle' : 'alert-triangle';
+      const border = type === 'success' 
+        ? 'border-emerald-500/60 text-emerald-200 bg-slate-950/95 shadow-emerald-500/20' 
+        : 'border-amber-500/60 text-amber-200 bg-slate-950/95 shadow-amber-500/20';
+      
+      toast.className = `fixed bottom-6 right-6 z-50 px-5 py-3.5 rounded-2xl border ${border} text-xs font-mono font-bold shadow-2xl flex items-center gap-3 transition-all duration-300 transform translate-y-0 opacity-100`;
+      toast.innerHTML = `<i data-lucide="${icon}" class="w-4 h-4 text-amber-400"></i> <span>${message}</span>`;
+      lucide.createIcons();
+
+      setTimeout(() => {
+        toast.className = toast.className.replace('translate-y-0 opacity-100', 'translate-y-12 opacity-0 pointer-events-none');
+      }, 4000);
     }
 
     async function loadEnvironments() {

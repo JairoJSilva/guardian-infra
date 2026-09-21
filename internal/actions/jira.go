@@ -99,7 +99,7 @@ func (j *JiraClient) CreateIncidentIssue(event *domain.IncidentEvent, target *do
 		return "", fmt.Errorf("falha ao serializar payload Jira: %w", err)
 	}
 
-	if j.cfg.DryRun {
+	if j.cfg.IsDryRun() {
 		mockKey := fmt.Sprintf("DRYRUN-%s-%d", projectKey, time.Now().Unix()%10000)
 		log.Printf("[Jira] [DRY-RUN] Simulação de chamado Jira bem-sucedida! Chave simulada: %s", mockKey)
 		log.Printf("[Jira] [DRY-RUN] Contrato: %s (ID: %s) | Resumo: %s", contract.Value, contract.ID, summary)

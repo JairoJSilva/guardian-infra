@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/joho/godotenv"
 )
@@ -16,6 +17,8 @@ type JiraContract struct {
 }
 
 type Config struct {
+	mu sync.RWMutex
+
 	JiraBaseURL               string
 	JiraUser                  string
 	JiraPassword              string
@@ -31,6 +34,25 @@ type Config struct {
 	DockerSocketPath string
 	StoragePath      string
 	CachePath        string
+}
+
+func (c *Config) IsDryRun() bool {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.DryRun
+}
+
+func (c *Config) SetDryRun(val bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.DryRun = val
+}
+
+func (c *Config) ToggleDryRun() bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.DryRun = !c.DryRun
+	return c.DryRun
 }
 
 var ContratoMap = map[string]JiraContract{
