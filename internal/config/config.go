@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/joho/godotenv"
 )
@@ -16,6 +17,8 @@ type JiraContract struct {
 }
 
 type Config struct {
+	mu sync.RWMutex
+
 	JiraBaseURL               string
 	JiraUser                  string
 	JiraPassword              string
@@ -33,6 +36,25 @@ type Config struct {
 	CachePath        string
 }
 
+func (c *Config) IsDryRun() bool {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.DryRun
+}
+
+func (c *Config) SetDryRun(val bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.DryRun = val
+}
+
+func (c *Config) ToggleDryRun() bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.DryRun = !c.DryRun
+	return c.DryRun
+}
+
 var ContratoMap = map[string]JiraContract{
 	"INTERNO":                     {ID: "22514", Value: "INTERNO"},
 	"DENTALIS":                    {ID: "22300", Value: "DENTALIS"},
@@ -48,7 +70,7 @@ var ContratoMap = map[string]JiraContract{
 func CleanURL(raw string) string {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
-		return "https://jira.mv.com.br"
+		return ""
 	}
 	u, err := url.Parse(raw)
 	if err != nil || u.Host == "" {
@@ -61,11 +83,7 @@ func LoadConfig() *Config {
 	_ = godotenv.Load(".env")
 	_ = godotenv.Load()
 
-	homeDir, _ := os.UserHomeDir()
-	defaultKube := filepath.Join(homeDir, ".kube", "config")
-	if envKube := os.Getenv("KUBECONFIG"); envKube != "" {
-		defaultKube = envKube
-	}
+	defaultKube := resolveKubeConfigPath()
 
 	cooldown := 60
 	if cdStr := os.Getenv("GUARDIAN_COOLDOWN_MINUTES"); cdStr != "" {
@@ -91,14 +109,19 @@ func LoadConfig() *Config {
 		dockerSock = "/var/run/docker.sock"
 	}
 
+	jiraBase := CleanURL(os.Getenv("JIRA_BASE_URL"))
+	if jiraBase == "" {
+		jiraBase = "https://jira.example.com"
+	}
+
 	return &Config{
-		JiraBaseURL:               CleanURL(os.Getenv("JIRA_BASE_URL")),
+		JiraBaseURL:               jiraBase,
 		JiraUser:                  strings.TrimSpace(os.Getenv("JIRA_USER")),
 		JiraPassword:              strings.TrimSpace(os.Getenv("JIRA_PASSWORD")),
 		JiraProjectKey:            getEnvDefault("JIRA_PROJECT_KEY", "OPS"),
-		JiraIssueType:             getEnvDefault("JIRA_ISSUE_TYPE", "Solicitação de serviço"),
-		JiraContratoDefault:       getEnvDefault("JIRA_CONTRATO_DEFAULT", "INTERNO"),
-		JiraCustomfieldContratoID: getEnvDefault("JIRA_CUSTOMFIELD_CONTRATO_ID", "customfield_30118"),
+		JiraIssueType:             getEnvDefault("JIRA_ISSUE_TYPE", "Bug"),
+		JiraContratoDefault:       getEnvDefault("JIRA_CONTRATO_DEFAULT", ""),
+		JiraCustomfieldContratoID: getEnvDefault("JIRA_CUSTOMFIELD_CONTRATO_ID", ""),
 		HTTPPort:                  port,
 		CooldownMinutes:           cooldown,
 		DryRun:                    dryRun,
@@ -164,3 +187,57 @@ func (c *Config) ResolveContract(hint string) JiraContract {
 
 	return defContract
 }
+
+func resolveKubeConfigPath() string {
+	// 1. Variável de ambiente KUBECONFIG explícita
+	if envKube := os.Getenv("KUBECONFIG"); strings.TrimSpace(envKube) != "" {
+		return strings.TrimSpace(envKube)
+	}
+
+	// 2. Se executado com sudo, tentar primeiro o kubeconfig do usuário real que invocou o sudo
+	if sudoUser := os.Getenv("SUDO_USER"); sudoUser != "" {
+		sudoKube := filepath.Join("/home", sudoUser, ".kube", "config")
+		if _, err := os.Stat(sudoKube); err == nil || !os.IsNotExist(err) {
+			return sudoKube
+		}
+	}
+
+	// 3. Diretório home do usuário atual (ou real se em ambiente Snap)
+	homeDir, err := os.UserHomeDir()
+	if err == nil && homeDir != "" {
+		if strings.Contains(homeDir, "/snap/") {
+			realHome := strings.Split(homeDir, "/snap/")[0]
+			realKube := filepath.Join(realHome, ".kube", "config")
+			if _, err := os.Stat(realKube); err == nil || !os.IsNotExist(err) {
+				return realKube
+			}
+		}
+		userKube := filepath.Join(homeDir, ".kube", "config")
+		if _, err := os.Stat(userKube); err == nil || !os.IsNotExist(err) {
+			return userKube
+		}
+	}
+
+	// 4. Se o home atual for /root ou não tiver config, buscar em /home/*/.kube/config ou Documentos
+	if matches, _ := filepath.Glob("/home/*/.kube/config"); len(matches) > 0 {
+		for _, m := range matches {
+			if _, err := os.Stat(m); err == nil || !os.IsNotExist(err) {
+				return m
+			}
+		}
+	}
+	if docMatches, _ := filepath.Glob("/home/*/Documentos/kube-config*"); len(docMatches) > 0 {
+		for _, m := range docMatches {
+			if _, err := os.Stat(m); err == nil || !os.IsNotExist(err) {
+				return m
+			}
+		}
+	}
+
+	// 5. Fallback padrão
+	if homeDir != "" {
+		return filepath.Join(homeDir, ".kube", "config")
+	}
+	return "/root/.kube/config"
+}
+

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Guardian — Autonomous Target Supervisor (K8s & Docker)</title>
+  <title>Guardian — Autonomous Enterprise SRE & Incident Automation Platform</title>
   
   <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,8 +30,8 @@
               emerald: '#10b981',
               ruby: '#ff2a6d',
               amethyst: '#9d4edd',
-              obsidian: '#030306',
-              surface: 'rgba(15, 16, 24, 0.55)',
+              obsidian: '#030408',
+              surface: 'rgba(12, 16, 28, 0.65)',
             }
           }
         }
@@ -61,60 +61,52 @@
   </script>
 
   <style>
-    /* ==================== ESTILO GLASSMORPHISM OBSIDIAN-GOLD-JADE ==================== */
+    /* ==================== ESTILO ENTERPRISE OBSIDIAN-GLASS ==================== */
     :root {
-      --bg-base: #030306;
-      --glass-bg: rgba(16, 17, 26, 0.52);
-      --glass-bg-hover: rgba(26, 28, 42, 0.68);
+      --bg-base: #030408;
+      --glass-bg: rgba(12, 15, 26, 0.65);
+      --glass-bg-hover: rgba(20, 25, 42, 0.80);
       --glass-border: rgba(255, 255, 255, 0.08);
-      --glass-border-hover: rgba(255, 183, 3, 0.4);
-      --glass-shadow: 0 16px 40px 0 rgba(0, 0, 0, 0.65), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+      --glass-border-hover: rgba(255, 183, 3, 0.40);
+      --glass-shadow: 0 16px 40px 0 rgba(0, 0, 0, 0.7), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
       --title-grad: linear-gradient(135deg, #ffffff 0%, #ffdf9e 45%, #ffb703 80%, #00f59b 100%);
+      --accent-grad: linear-gradient(135deg, #ff5400 0%, #fb8500 50%, #ffb703 100%);
     }
 
     body {
       background-color: var(--bg-base);
       background-image: 
         radial-gradient(rgba(255, 183, 3, 0.04) 1px, transparent 1px),
-        linear-gradient(180deg, rgba(3, 3, 6, 0.8) 0%, #030306 100%);
-      background-size: 36px 36px, 100% 100%;
-      color: #f3f4f6;
+        linear-gradient(180deg, rgba(3, 4, 8, 0.90) 0%, #030408 100%);
+      background-size: 32px 32px, 100% 100%;
+      color: #f1f5f9;
       font-family: 'Inter', sans-serif;
       overflow-x: hidden;
       min-height: 100vh;
     }
 
-    /* Ambient Glow Orbs (Golden Amber, Jade Emerald, Amethyst) */
+    /* Ambient Lighting Orbs */
     .ambient-orb {
       position: fixed;
       border-radius: 50%;
-      filter: blur(150px);
+      filter: blur(160px);
       pointer-events: none;
       z-index: 0;
-      opacity: 0.22;
+      opacity: 0.18;
     }
     .ambient-gold {
-      width: 600px;
-      height: 600px;
+      width: 650px;
+      height: 650px;
       background: radial-gradient(circle, #fb8500 0%, #ffb703 60%, transparent 100%);
-      top: -180px;
-      left: -140px;
+      top: -160px;
+      left: 100px;
     }
     .ambient-jade {
       width: 550px;
       height: 550px;
       background: radial-gradient(circle, #00f59b 0%, #10b981 70%, transparent 100%);
-      bottom: -160px;
-      right: -120px;
-    }
-    .ambient-amethyst {
-      width: 450px;
-      height: 450px;
-      background: radial-gradient(circle, #9d4edd 0%, transparent 70%);
-      top: 35%;
-      left: 55%;
-      transform: translate(-50%, -50%);
-      opacity: 0.12;
+      bottom: -140px;
+      right: -80px;
     }
 
     /* Glass Panels */
@@ -124,7 +116,6 @@
       -webkit-backdrop-filter: blur(24px) saturate(190%);
       border: 1px solid var(--glass-border);
       box-shadow: var(--glass-shadow);
-      position: relative;
     }
 
     .glass-panel-hover {
@@ -133,16 +124,24 @@
     .glass-panel-hover:hover {
       background: var(--glass-bg-hover);
       border-color: var(--glass-border-hover);
-      box-shadow: 0 20px 50px 0 rgba(0, 0, 0, 0.75), 0 0 30px 0 rgba(255, 183, 3, 0.15), inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+      box-shadow: 0 20px 48px 0 rgba(0, 0, 0, 0.8), 0 0 24px 0 rgba(255, 183, 3, 0.15), inset 0 1px 0 0 rgba(255, 255, 255, 0.18);
       transform: translateY(-2px);
     }
 
-    /* Glass Header Nav */
-    .glass-header {
-      background: rgba(8, 8, 14, 0.75);
+    /* Sidebar Glass */
+    .glass-sidebar {
+      background: rgba(7, 9, 17, 0.88);
+      backdrop-filter: blur(36px);
+      -webkit-backdrop-filter: blur(36px);
+      border-right: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    /* Top Bar Glass */
+    .glass-topbar {
+      background: rgba(8, 10, 18, 0.80);
       backdrop-filter: blur(30px);
       -webkit-backdrop-filter: blur(30px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
     }
 
     /* Gradient Title */
@@ -152,19 +151,19 @@
       -webkit-text-fill-color: transparent;
     }
 
-    /* Glass Buttons */
+    /* Buttons */
     .btn-glass-primary {
-      background: linear-gradient(135deg, #ff5400 0%, #fb8500 50%, #ffb703 100%);
+      background: var(--accent-grad);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.25);
-      box-shadow: 0 4px 22px 0 rgba(251, 133, 0, 0.45), inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
-      transition: all 0.2s ease;
+      box-shadow: 0 4px 20px 0 rgba(251, 133, 0, 0.40), inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       color: #030306;
       font-weight: 700;
     }
     .btn-glass-primary:hover {
       background: linear-gradient(135deg, #ff6a1a 0%, #ffa200 50%, #ffc629 100%);
-      box-shadow: 0 6px 30px 0 rgba(255, 183, 3, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
+      box-shadow: 0 6px 26px 0 rgba(255, 183, 3, 0.55), inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
       transform: translateY(-1px);
     }
 
@@ -176,13 +175,13 @@
     }
     .btn-glass-secondary:hover {
       background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.22);
       transform: translateY(-1px);
     }
 
-    /* Glass Inputs */
+    /* Inputs */
     .glass-input {
-      background: rgba(10, 11, 18, 0.7);
+      background: rgba(9, 12, 22, 0.80);
       border: 1px solid rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(12px);
       color: #ffffff;
@@ -191,15 +190,15 @@
     .glass-input:focus {
       outline: none;
       border-color: #ffb703;
-      box-shadow: 0 0 20px rgba(255, 183, 3, 0.25), inset 0 0 6px rgba(255, 183, 3, 0.15);
+      box-shadow: 0 0 18px rgba(255, 183, 3, 0.25), inset 0 0 6px rgba(255, 183, 3, 0.15);
     }
 
-    /* Custom Neon Glows */
+    /* Pulses & Highlights */
     .neon-pulse-jade {
-      box-shadow: 0 0 14px rgba(0, 245, 155, 0.8);
+      box-shadow: 0 0 14px rgba(0, 245, 155, 0.85);
     }
     .neon-pulse-gold {
-      box-shadow: 0 0 14px rgba(255, 183, 3, 0.8);
+      box-shadow: 0 0 14px rgba(255, 183, 3, 0.85);
     }
 
     /* Custom Scrollbar */
@@ -208,38 +207,63 @@
       height: 6px;
     }
     ::-webkit-scrollbar-track {
-      background: rgba(5, 5, 10, 0.6);
+      background: rgba(4, 6, 12, 0.7);
     }
     ::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.18);
       border-radius: 9999px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 183, 3, 0.4);
+      background: rgba(255, 183, 3, 0.45);
     }
 
     .mermaid svg {
       max-width: 100%;
       height: auto;
     }
+
+    /* Sidebar Transitions */
+    #sidebar {
+      transition: width 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .sidebar-expanded {
+      width: 260px;
+    }
+    .sidebar-collapsed {
+      width: 76px;
+    }
+    .sidebar-collapsed .nav-text,
+    .sidebar-collapsed .nav-badge,
+    .sidebar-collapsed .nav-header,
+    .sidebar-collapsed .brand-text {
+      display: none;
+    }
+    .sidebar-collapsed .nav-item {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+    }
+    .sidebar-collapsed .brand-container {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+    }
   </style>
 </head>
-<body class="selection:bg-amber-500/30 selection:text-amber-200 relative">
+<body class="selection:bg-amber-500/30 selection:text-amber-200 relative text-slate-200 flex min-h-screen">
 
   <!-- AMBIENT GLOW ORBS -->
   <div class="ambient-orb ambient-gold"></div>
   <div class="ambient-orb ambient-jade"></div>
-  <div class="ambient-orb ambient-amethyst"></div>
 
-  <!-- TOP NAVIGATION (GLASS) -->
-  <header class="glass-header sticky top-0 z-40 transition-all">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      
-      <!-- BRAND LOGO -->
-      <div class="flex items-center gap-3.5">
-        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-400 via-ember-500 to-jade-500 p-[1px] shadow-lg shadow-amber-500/20 flex items-center justify-center">
-          <div class="w-full h-full bg-[#08090f]/90 backdrop-blur rounded-[11px] flex items-center justify-center text-amber-400">
-            <!-- Custom Neo-Shield SVG (Amber & Jade) -->
+  <!-- ==================== SIDEBAR LATERAL FIXO ==================== -->
+  <aside id="sidebar" class="sidebar-expanded glass-sidebar fixed inset-y-0 left-0 z-50 flex flex-col justify-between py-5 px-3 select-none">
+    
+    <!-- TOP BRAND LOGO -->
+    <div class="space-y-6">
+      <div class="brand-container flex items-center gap-3 px-3">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-400 via-ember-500 to-jade-500 p-[1px] shadow-lg shadow-amber-500/25 flex items-center justify-center shrink-0 cursor-pointer" onclick="navigateTo('dashboard')">
+          <div class="w-full h-full bg-[#070912]/90 backdrop-blur rounded-[11px] flex items-center justify-center text-amber-400">
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               <path d="m9 12 2 2 4-4" stroke="#00f59b"/>
@@ -247,275 +271,817 @@
             </svg>
           </div>
         </div>
-        <div>
-          <span class="font-extrabold text-lg tracking-tight flex items-center gap-2">
-            <span class="text-title-gradient">GUARDIAN</span>
-            <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30 font-mono font-bold tracking-wider">
-              SUPERVISOR HÍBRIDO
-            </span>
-          </span>
-          <p class="text-[11px] text-slate-400 font-mono tracking-tight">Autonomous Target SRE & Incident Engine</p>
+        <div class="brand-text overflow-hidden">
+          <div class="flex items-center gap-1.5">
+            <span class="font-black text-base tracking-tight text-title-gradient">GUARDIAN</span>
+            <span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30 font-mono font-bold">OSS</span>
+          </div>
+          <p class="text-[10px] text-slate-400 font-mono truncate">Autonomous SRE Platform</p>
         </div>
       </div>
 
-      <!-- TABS (GLASS PILL) -->
-      <nav class="flex items-center gap-1.5 p-1 rounded-xl glass-panel border border-white/10">
-        <button id="tab-btn-demo" onclick="switchTab('demo')" class="px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all btn-glass-primary">
-          <i data-lucide="layout-dashboard" class="w-3.5 h-3.5 text-slate-950"></i>
-          Painel de Operações
-        </button>
-        <button id="tab-btn-docs" onclick="switchTab('docs')" class="px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all text-slate-400 hover:text-white hover:bg-white/5">
-          <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
-          Arquitetura & Spec
-        </button>
+      <!-- NAVIGATION LINKS -->
+      <nav class="space-y-6">
+        
+        <!-- GRUPO 1: OPERACIONAL -->
+        <div class="space-y-1">
+          <div class="nav-header px-3 text-[10px] uppercase font-bold text-slate-400/80 font-mono tracking-wider">
+            Operacional
+          </div>
+          
+          <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-xs transition-all text-amber-300 bg-amber-500/15 border border-amber-500/30">
+            <div class="flex items-center gap-3">
+              <i data-lucide="layout-dashboard" class="w-4 h-4 text-amber-400 shrink-0"></i>
+              <span class="nav-text">Dashboard &amp; KPIs</span>
+            </div>
+          </button>
+
+          <button onclick="navigateTo('targets')" id="nav-targets" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-xs transition-all text-slate-400 hover:text-white hover:bg-white/5 border border-transparent">
+            <div class="flex items-center gap-3">
+              <i data-lucide="crosshair" class="w-4 h-4 shrink-0"></i>
+              <span class="nav-text">Targets &amp; Watchers</span>
+            </div>
+            <span id="nav-badge-targets" class="nav-badge text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-mono font-bold">0</span>
+          </button>
+
+          <button onclick="navigateTo('topology')" id="nav-topology" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-xs transition-all text-slate-400 hover:text-white hover:bg-white/5 border border-transparent">
+            <div class="flex items-center gap-3">
+              <i data-lucide="server" class="w-4 h-4 shrink-0"></i>
+              <span class="nav-text">Topologia de Clusters</span>
+            </div>
+            <span id="nav-badge-envs" class="nav-badge text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-slate-300 font-mono">0</span>
+          </button>
+        </div>
+
+        <!-- GRUPO 2: TELEMETRIA & SRE -->
+        <div class="space-y-1">
+          <div class="nav-header px-3 text-[10px] uppercase font-bold text-slate-400/80 font-mono tracking-wider">
+            Telemetria &amp; SRE
+          </div>
+
+          <button onclick="navigateTo('incidents')" id="nav-incidents" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-xs transition-all text-slate-400 hover:text-white hover:bg-white/5 border border-transparent">
+            <div class="flex items-center gap-3">
+              <i data-lucide="activity" class="w-4 h-4 text-ruby-400 shrink-0"></i>
+              <span class="nav-text">Live Incident Stream</span>
+            </div>
+            <span class="nav-badge h-2 w-2 rounded-full bg-emerald-400 neon-pulse-jade animate-ping mr-1"></span>
+          </button>
+
+          <button onclick="navigateTo('chaos')" id="nav-chaos" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-xs transition-all text-slate-400 hover:text-white hover:bg-white/5 border border-transparent">
+            <div class="flex items-center gap-3">
+              <i data-lucide="zap" class="w-4 h-4 text-amber-400 shrink-0"></i>
+              <span class="nav-text">Chaos &amp; Simulação</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- GRUPO 3: GOVERNANÇA & SISTEMA -->
+        <div class="space-y-1">
+          <div class="nav-header px-3 text-[10px] uppercase font-bold text-slate-400/80 font-mono tracking-wider">
+            Engenharia
+          </div>
+
+          <button onclick="navigateTo('docs')" id="nav-docs" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-xs transition-all text-slate-400 hover:text-white hover:bg-white/5 border border-transparent">
+            <div class="flex items-center gap-3">
+              <i data-lucide="layers" class="w-4 h-4 shrink-0"></i>
+              <span class="nav-text">Arquitetura &amp; Spec</span>
+            </div>
+          </button>
+
+          <button onclick="navigateTo('settings')" id="nav-settings" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-xs transition-all text-slate-400 hover:text-white hover:bg-white/5 border border-transparent">
+            <div class="flex items-center gap-3">
+              <i data-lucide="settings" class="w-4 h-4 shrink-0"></i>
+              <span class="nav-text">Configurações &amp; Jira</span>
+            </div>
+          </button>
+        </div>
+
       </nav>
-
-      <!-- ENGINE STATUS -->
-      <div class="hidden sm:flex items-center gap-2 text-xs">
-        <span id="backend-status-badge" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 font-mono text-[11px]">
-          <span class="h-2 w-2 rounded-full bg-emerald-400 neon-pulse-jade animate-pulse"></span>
-          Engine Go Online
-        </span>
-      </div>
     </div>
-  </header>
 
-  <!-- MAIN CONTENT CONTAINER -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
-
-    <!-- ==================== ABA 1: PAINEL DE OPERAÇÕES ==================== -->
-    <div id="tab-content-demo" class="space-y-8">
-      
-      <!-- HERO TOP BAR (GLASS) -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel rounded-2xl p-6">
-        <div>
-          <h2 class="text-2xl font-extrabold text-white flex items-center gap-3">
-            <span class="text-title-gradient">Supervisão Dinâmica de Targets</span>
-          </h2>
-          <p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-            Monitoramento sob demanda de <strong>Namespaces em Kubernetes</strong> e <strong>Stacks no Docker</strong> com geração autônoma de diagnóstico e chamados no Jira.
-          </p>
-        </div>
-
-        <div class="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
-          <button onclick="simulateIncident('KUBERNETES')" class="px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-400/40 text-amber-300 font-medium text-xs flex items-center gap-1.5 transition-all shadow-lg shadow-amber-500/10">
-            <i data-lucide="play" class="w-3.5 h-3.5 text-amber-400"></i> Simular K8s Crash
-          </button>
-          <button onclick="simulateIncident('DOCKER')" class="px-3.5 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-medium text-xs flex items-center gap-1.5 transition-all shadow-lg shadow-emerald-500/10">
-            <i data-lucide="play" class="w-3.5 h-3.5 text-emerald-400"></i> Simular Docker OOM
-          </button>
-          <button onclick="openModal()" class="px-4 py-2.5 rounded-xl btn-glass-primary flex items-center gap-2">
-            <i data-lucide="plus-circle" class="w-4 h-4 text-slate-950"></i>
-            Configurar Target
-          </button>
-        </div>
+    <!-- SIDEBAR FOOTER (ENGINE STATUS & COLLAPSE) -->
+    <div class="space-y-3 pt-4 border-t border-white/10 px-1">
+      <div class="brand-text flex items-center justify-between text-[11px] font-mono text-slate-400 px-2">
+        <span class="flex items-center gap-2">
+          <span class="h-2 w-2 rounded-full bg-emerald-400 neon-pulse-jade"></span>
+          Engine Online
+        </span>
+        <span class="text-slate-500">Go 1.23</span>
       </div>
 
-      <!-- CARDS DE AMBIENTES CONECTADOS (GLASS) -->
-      <div class="space-y-3">
-        <div class="flex items-center justify-between">
-          <span class="text-xs uppercase font-bold tracking-wider text-amber-400/90 font-mono flex items-center gap-2">
-            <i data-lucide="cpu" class="w-3.5 h-3.5"></i> Ambientes & Clusters Detectados
+      <a href="https://github.com/JairoJSilva/guardian-infra" target="_blank" rel="noopener" class="nav-item flex items-center justify-between p-2 rounded-xl bg-white/5 hover:bg-amber-500/10 border border-white/5 hover:border-amber-500/30 text-slate-300 hover:text-amber-300 text-xs font-mono transition-all">
+        <div class="flex items-center gap-2.5">
+          <i data-lucide="github" class="w-4 h-4 text-amber-400 shrink-0"></i>
+          <span class="nav-text">GitHub OSS</span>
+        </div>
+        <span class="nav-badge text-[10px] text-amber-300 font-bold">★ Star</span>
+      </a>
+
+      <button type="button" onclick="toggleSidebarCollapse()" class="w-full flex items-center justify-center p-2 rounded-xl hover:bg-white/5 text-slate-500 hover:text-white text-xs transition-colors">
+        <i id="sidebar-toggle-icon" data-lucide="chevrons-left" class="w-4 h-4"></i>
+        <span class="nav-text ml-2 font-mono text-[11px]">Recolher Menu</span>
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- ==================== ÁREA DE CONTEÚDO PRINCIPAL (COM MARGEM DA SIDEBAR) ==================== -->
+  <div id="main-wrapper" class="flex-1 flex flex-col min-h-screen ml-[260px] transition-all duration-300 relative z-10">
+    
+    <!-- TOP BAR DE OPERAÇÕES -->
+    <header class="glass-topbar sticky top-0 z-40 h-16 px-6 flex items-center justify-between gap-4">
+      
+      <!-- BREADCRUMB DINÂMICO -->
+      <div class="flex items-center gap-2 text-xs font-mono">
+        <span class="text-slate-500">Guardian</span>
+        <span class="text-slate-600">/</span>
+        <span id="topbar-breadcrumb" class="text-amber-300 font-semibold uppercase tracking-wider">Dashboard &amp; KPIs</span>
+      </div>
+
+      <!-- STATUS & AÇÃO PRINCIPAL -->
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:flex items-center gap-2 text-xs font-mono px-3 py-1.5 rounded-full glass-panel text-slate-300">
+          <span id="topbar-jira-pill" class="flex items-center gap-1.5">
+            <i data-lucide="send" class="w-3.5 h-3.5 text-cyan-400"></i>
+            <span id="topbar-jira-text">Jira: OPS</span>
           </span>
-          <span class="text-[11px] text-slate-400 font-mono">Detecção automática por Kubeconfig / Docker Socket</span>
+          <span class="text-slate-600">|</span>
+          <button type="button" onclick="toggleDryRunMode()" id="topbar-dryrun-btn" title="Clique para alternar entre Modo Produção e Modo Simulação" class="flex items-center gap-1.5 hover:opacity-80 transition-all cursor-pointer">
+            <span id="topbar-dryrun-dot" class="h-2 w-2 rounded-full bg-amber-400 neon-pulse-gold animate-pulse"></span>
+            <span id="topbar-dryrun-text" class="text-amber-400 font-bold">Dry-Run: On</span>
+            <i data-lucide="refresh-cw" class="w-3 h-3 text-slate-500 hover:text-amber-300"></i>
+          </button>
         </div>
 
-        <div id="environments-grid" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div class="p-4 rounded-2xl glass-panel animate-pulse text-xs text-slate-400 font-mono">
-            Descobrindo topologia de infraestrutura...
+        <button onclick="openModal()" class="px-4 py-2 rounded-xl btn-glass-primary flex items-center gap-2 text-xs font-bold shadow-lg shadow-amber-500/20">
+          <i data-lucide="plus-circle" class="w-4 h-4 text-slate-950"></i>
+          <span>Novo Target</span>
+        </button>
+      </div>
+
+    </header>
+
+    <!-- CONTAINER DE TELAS / VIEWS DINÂMICAS -->
+    <main class="flex-1 p-6 sm:p-8 max-w-7xl w-full mx-auto space-y-8">
+
+      <!-- ==================== VIEW 1: DASHBOARD & KPIS ==================== -->
+      <section id="view-dashboard" class="space-y-8">
+        
+        <!-- HERO EXECUTIVE BANNER -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 glass-panel rounded-2xl p-6 sm:p-8">
+          <div class="space-y-2">
+            <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] font-mono">
+              <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-amber-400"></i>
+              Autonomous Target SRE &amp; Reliability Platform
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              Visão Geral de <span class="text-title-gradient">Confiabilidade &amp; Incidentes</span>
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+              Supervisão cirúrgica de microserviços em Kubernetes e containers no Docker puro. Detecção autônoma de falhas com captura imediata de logs e abertura automatizada no Jira.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2.5 shrink-0">
+            <button onclick="navigateTo('targets')" class="px-4 py-2.5 rounded-xl btn-glass-secondary text-xs font-semibold text-white flex items-center gap-2 hover:border-amber-400/30">
+              <i data-lucide="crosshair" class="w-4 h-4 text-amber-400"></i>
+              Gerenciar Targets
+            </button>
+            <button onclick="navigateTo('incidents')" class="px-4 py-2.5 rounded-xl btn-glass-secondary text-xs font-semibold text-white flex items-center gap-2 hover:border-emerald-400/30">
+              <i data-lucide="terminal" class="w-4 h-4 text-emerald-400"></i>
+              Console de Logs
+            </button>
           </div>
         </div>
-      </div>
 
-      <!-- TABELA DE TARGETS ATIVOS (GLASS) -->
-      <div class="space-y-4">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold text-white flex items-center gap-2.5">
-            <i data-lucide="crosshair" class="w-5 h-5 text-amber-400"></i>
-            Targets em Execução no Supervisor
-          </h3>
-          <span id="targets-count" class="text-xs px-3 py-1 rounded-full glass-panel text-amber-300 font-mono border border-amber-500/30">
-            0 ativos
-          </span>
+        <!-- KPI CARDS (4 CARDS) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          <div class="p-5 rounded-2xl glass-panel glass-panel-hover space-y-3 cursor-pointer" onclick="navigateTo('topology')">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase text-slate-400 font-semibold tracking-wider flex items-center gap-1.5">
+                <i data-lucide="server" class="w-4 h-4 text-amber-400"></i> Ambientes
+              </span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-mono">Conectado</span>
+            </div>
+            <div class="flex items-baseline justify-between">
+              <span id="kpi-environments-count" class="text-3xl font-extrabold text-white font-mono">0</span>
+              <span class="text-xs text-slate-400 font-mono" id="kpi-environments-sub">0 K8s | 0 Docker</span>
+            </div>
+            <div class="text-[11px] text-slate-400 pt-2 border-t border-white/5 flex items-center justify-between">
+              <span>Descoberta Kubeconfig</span>
+              <span class="text-amber-400 font-bold font-mono">Online</span>
+            </div>
+          </div>
+
+          <div class="p-5 rounded-2xl glass-panel glass-panel-hover space-y-3 cursor-pointer" onclick="navigateTo('targets')">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase text-slate-400 font-semibold tracking-wider flex items-center gap-1.5">
+                <i data-lucide="crosshair" class="w-4 h-4 text-emerald-400"></i> Targets Ativos
+              </span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-mono">Goroutines</span>
+            </div>
+            <div class="flex items-baseline justify-between">
+              <span id="kpi-targets-active" class="text-3xl font-extrabold text-white font-mono">0</span>
+              <span class="text-xs text-slate-400 font-mono" id="kpi-targets-total">de 0 alocados</span>
+            </div>
+            <div class="text-[11px] text-slate-400 pt-2 border-t border-white/5 flex items-center justify-between">
+              <span>Escopos supervisionados</span>
+              <span id="kpi-scopes-count" class="text-emerald-400 font-bold font-mono">0</span>
+            </div>
+          </div>
+
+          <div class="p-5 rounded-2xl glass-panel glass-panel-hover space-y-3 cursor-pointer" onclick="navigateTo('incidents')">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase text-slate-400 font-semibold tracking-wider flex items-center gap-1.5">
+                <i data-lucide="activity" class="w-4 h-4 text-rose-400"></i> Incidentes
+              </span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30 font-mono">Tempo Real</span>
+            </div>
+            <div class="flex items-baseline justify-between">
+              <span id="kpi-incidents-count" class="text-3xl font-extrabold text-white font-mono">0</span>
+              <span class="text-xs text-slate-400 font-mono">Eventos Capturados</span>
+            </div>
+            <div class="text-[11px] text-slate-400 pt-2 border-t border-white/5 flex items-center justify-between">
+              <span>Filtro Cooldown</span>
+              <span class="text-emerald-400 font-bold font-mono">60m Cooldown</span>
+            </div>
+          </div>
+
+          <div class="p-5 rounded-2xl glass-panel glass-panel-hover space-y-3 cursor-pointer" onclick="navigateTo('settings')">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase text-slate-400 font-semibold tracking-wider flex items-center gap-1.5">
+                <i data-lucide="send" class="w-4 h-4 text-cyan-400"></i> Jira Auto
+              </span>
+              <button type="button" onclick="event.stopPropagation(); toggleDryRunMode();" id="kpi-jira-mode-badge" title="Clique para alternar modo" class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-mono hover:scale-105 transition-all cursor-pointer">Dry-Run: On</button>
+            </div>
+            <div class="flex items-baseline justify-between">
+              <span id="kpi-jira-tickets-count" class="text-3xl font-extrabold text-white font-mono">0</span>
+              <span class="text-xs text-slate-400 font-mono" id="kpi-jira-proj-key">Proj: OPS</span>
+            </div>
+            <div class="text-[11px] text-slate-400 pt-2 border-t border-white/5 flex items-center justify-between">
+              <span>Diagnóstico Automático</span>
+              <span class="text-cyan-300 font-bold font-mono">&lt; 1.2s</span>
+            </div>
+          </div>
+
         </div>
 
-        <div class="rounded-2xl glass-panel overflow-hidden">
-          <table class="w-full text-left text-sm text-slate-300">
-            <thead class="bg-slate-950/80 border-b border-white/10 text-[11px] uppercase font-mono font-semibold text-slate-400 tracking-wider">
-              <tr>
-                <th class="py-4 px-6">Nome do Target</th>
-                <th class="py-4 px-6">Plataforma</th>
-                <th class="py-4 px-6">Endpoint / Host</th>
-                <th class="py-4 px-6">Escopo de Observação</th>
-                <th class="py-4 px-6">Jira Auto</th>
-                <th class="py-4 px-6">Status Worker</th>
-                <th class="py-4 px-6 text-right">Controle</th>
-              </tr>
-            </thead>
-            <tbody id="targets-table-body" class="divide-y divide-white/5 font-sans">
-              <tr>
-                <td colspan="7" class="py-10 text-center text-xs text-slate-400 font-mono">Carregando targets configurados...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+        <!-- RESUMO DE TARGETS & MINI LIVE STREAM -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- RESUMO TARGETS (COLUNA 1 & 2) -->
+          <div class="lg:col-span-2 space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <i data-lucide="crosshair" class="w-4 h-4 text-amber-400"></i>
+                Targets sob Supervisão Ativa
+              </h3>
+              <button onclick="navigateTo('targets')" class="text-xs text-amber-400 hover:underline font-mono">Ver todos &rarr;</button>
+            </div>
 
-      <!-- LIVE STREAM DE FALHAS & JIRA (GLASS) -->
-      <div class="space-y-4">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold text-white flex items-center gap-2.5">
-            <i data-lucide="activity" class="w-5 h-5 text-ruby-400"></i>
-            Live Stream de Incidentes & Chamados Jira
-          </h3>
-          <span class="text-xs text-emerald-400 font-mono flex items-center gap-1.5 px-3 py-1 rounded-full glass-panel border border-emerald-500/30">
-            <span class="h-2 w-2 rounded-full bg-emerald-400 neon-pulse-jade animate-ping"></span>
-            SSE Realtime Ativo
-          </span>
+            <div class="rounded-2xl glass-panel overflow-hidden">
+              <table class="w-full text-left text-sm text-slate-300">
+                <thead class="bg-slate-950/90 border-b border-white/10 text-[11px] uppercase font-mono font-semibold text-slate-400">
+                  <tr>
+                    <th class="py-3 px-4">Target</th>
+                    <th class="py-3 px-4">Tipo</th>
+                    <th class="py-3 px-4">Escopos</th>
+                    <th class="py-3 px-4">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-targets-table" class="divide-y divide-white/5 font-sans">
+                  <tr>
+                    <td colspan="4" class="py-8 text-center text-xs text-slate-400 font-mono">Carregando targets...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- MINI FEED DE INCIDENTES RECENTES (COLUNA 3) -->
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <i data-lucide="activity" class="w-4 h-4 text-ruby-400"></i>
+                Últimos Incidentes
+              </h3>
+              <button onclick="navigateTo('incidents')" class="text-xs text-ruby-400 hover:underline font-mono">Abrir Console &rarr;</button>
+            </div>
+
+            <div id="dashboard-feed-preview" class="rounded-2xl glass-panel p-4 space-y-3 font-mono text-xs max-h-[380px] overflow-y-auto">
+              <div class="p-6 text-center text-slate-400">Nenhum incidente recente detectado.</div>
+            </div>
+          </div>
+
         </div>
 
-        <div id="live-feed-container" class="rounded-2xl glass-panel p-4 space-y-3 font-mono text-xs max-h-[440px] overflow-y-auto">
-          <div class="p-6 text-center text-slate-400">Aguardando telemetria em tempo real do supervisor...</div>
+        <!-- SIMULADOR RÁPIDO DE CHAOS (DASHBOARD WIDGET) -->
+        <div class="p-5 rounded-2xl glass-panel flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-white/10">
+          <div class="flex items-center gap-3">
+            <div class="h-9 w-9 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center shrink-0 border border-amber-500/30">
+              <i data-lucide="zap" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h4 class="text-xs font-bold text-white font-mono uppercase tracking-wider">Chaos &amp; Resiliência Rápida</h4>
+              <p class="text-[11px] text-slate-400">Injete falhas sintéticas para validar a resposta do supervisor em tempo real.</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <button onclick="simulateIncident('KUBERNETES')" class="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-400/40 text-amber-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all">
+              <i data-lucide="play" class="w-3 h-3 text-amber-400"></i> Simular K8s Crash
+            </button>
+            <button onclick="simulateIncident('DOCKER')" class="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all">
+              <i data-lucide="play" class="w-3 h-3 text-emerald-400"></i> Simular Docker OOM
+            </button>
+          </div>
         </div>
-      </div>
 
-    </div>
+      </section>
 
-    <!-- ==================== ABA 2: ESPECIFICAÇÃO DE ARQUITETURA ==================== -->
-    <div id="tab-content-docs" class="hidden space-y-12">
-      
-      <div class="rounded-2xl glass-panel p-8 sm:p-10 relative overflow-hidden">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-300 text-xs font-semibold border border-amber-500/30 mb-4 font-mono">
-          <i data-lucide="layers" class="w-3.5 h-3.5"></i> ARQUITETURA UNIFICADA: KUBERNETES + DOCKER
-        </div>
+      <!-- ==================== VIEW 2: TARGETS & WATCHERS ==================== -->
+      <section id="view-targets" class="hidden space-y-6">
         
-        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-4">
-          <span class="text-title-gradient">Guardian: Supervisor Híbrido de Targets</span>
-        </h1>
-        <p class="text-slate-300 text-sm sm:text-base max-w-4xl leading-relaxed">
-          Plataforma de observabilidade ativa, diagnóstico automatizado e resposta a incidentes. Em vez de agentes estáticos globais que sobrecarregam nós, o Guardian opera no conceito de <strong>Targets cirúrgicos alocados dinamicamente via goroutines</strong>.
-        </p>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
+              <i data-lucide="crosshair" class="w-6 h-6 text-amber-400"></i>
+              Targets Supervisionados
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">Gerenciamento cirúrgico de workloads monitorados ativamente pelo supervisor Go.</p>
+          </div>
 
-        <!-- TABELA DE EQUIVALENCIA (GLASS) -->
-        <div class="mt-8 overflow-x-auto rounded-xl border border-white/10 glass-panel">
-          <table class="w-full text-left text-xs font-mono">
-            <thead class="bg-slate-950/80 text-slate-300 uppercase border-b border-white/10">
-              <tr>
-                <th class="p-3.5 text-slate-400">Dimensão</th>
-                <th class="p-3.5 text-amber-400">Kubernetes</th>
-                <th class="p-3.5 text-emerald-400">Docker Puro</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-white/5 text-slate-300">
-              <tr>
-                <td class="p-3.5 font-semibold text-slate-400">Ambiente / Host</td>
-                <td class="p-3.5">Cluster Context (~/.kube/config)</td>
-                <td class="p-3.5">Docker Host (/var/run/docker.sock ou SSH/TCP)</td>
-              </tr>
-              <tr>
-                <td class="p-3.5 font-semibold text-slate-400">Escopo do Target</td>
-                <td class="p-3.5"><strong class="text-white">Namespace</strong> (ex: billing, checkout)</td>
-                <td class="p-3.5"><strong class="text-white">Compose Stack / Labels</strong></td>
-              </tr>
-              <tr>
-                <td class="p-3.5 font-semibold text-slate-400">Motor de Eventos</td>
-                <td class="p-3.5">client-go Informers / Watcher por Namespace</td>
-                <td class="p-3.5">Docker Engine Events Stream (die, oom)</td>
-              </tr>
-              <tr>
-                <td class="p-3.5 font-semibold text-slate-400">Coleta de Diagnóstico</td>
-                <td class="p-3.5">kubectl logs --tail=50 --previous</td>
-                <td class="p-3.5">docker logs --tail=50</td>
-              </tr>
-              <tr>
-                <td class="p-3.5 font-semibold text-slate-400">Ação no Jira</td>
-                <td class="p-3.5 text-amber-300 font-sans font-medium">Chamado com logs do Pod anexados</td>
-                <td class="p-3.5 text-emerald-300 font-sans font-medium">Chamado com logs do Container anexados</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <div class="relative">
+              <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"></i>
+              <input type="text" id="target-search-input" oninput="filterTargetsTable()" placeholder="Buscar targets..." class="pl-8 pr-3 py-1.5 rounded-xl glass-input text-white text-xs font-mono placeholder:text-slate-500 w-52">
+            </div>
+
+            <div class="flex items-center p-1 rounded-xl glass-panel border border-white/10 text-xs">
+              <button onclick="setTargetFilter('ALL')" id="filter-btn-all" class="px-3 py-1 rounded-lg font-mono text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">Todos</button>
+              <button onclick="setTargetFilter('KUBERNETES')" id="filter-btn-k8s" class="px-3 py-1 rounded-lg font-mono text-[11px] text-slate-400 hover:text-white">K8s</button>
+              <button onclick="setTargetFilter('DOCKER')" id="filter-btn-docker" class="px-3 py-1 rounded-lg font-mono text-[11px] text-slate-400 hover:text-white">Docker</button>
+            </div>
+
+            <button onclick="openModal()" class="px-4 py-2 rounded-xl btn-glass-primary flex items-center gap-2 text-xs font-bold shadow-lg shadow-amber-500/20">
+              <i data-lucide="plus" class="w-3.5 h-3.5 text-slate-950"></i>
+              <span>Novo Target</span>
+            </button>
+          </div>
         </div>
-      </div>
 
-      <!-- MERMAID DIAGRAM (GLASS) -->
-      <section class="space-y-4">
-        <h2 class="text-xl font-bold text-white flex items-center gap-2">
-          <i data-lucide="git-branch" class="w-5 h-5 text-amber-400"></i>
-          Fluxo e Topologia do Engine
-        </h2>
-        <div class="p-6 rounded-2xl glass-panel flex justify-center overflow-x-auto">
-          <div class="mermaid w-full">
+        <div class="rounded-2xl glass-panel overflow-hidden border border-white/10">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-300">
+              <thead class="bg-slate-950/90 border-b border-white/10 text-[11px] uppercase font-mono font-semibold text-slate-400 tracking-wider">
+                <tr>
+                  <th class="py-3.5 px-5">Target &amp; ID</th>
+                  <th class="py-3.5 px-5">Plataforma</th>
+                  <th class="py-3.5 px-5">Endpoint / Host</th>
+                  <th class="py-3.5 px-5">Escopo de Observação</th>
+                  <th class="py-3.5 px-5">Jira Auto</th>
+                  <th class="py-3.5 px-5">Status Worker</th>
+                  <th class="py-3.5 px-5 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="targets-table-body" class="divide-y divide-white/5 font-sans">
+                <tr>
+                  <td colspan="7" class="py-12 text-center text-xs text-slate-400 font-mono">Carregando targets configurados...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Targets Pagination Footer -->
+          <div id="targets-pagination-bar" class="px-5 py-3.5 bg-slate-950/60 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono">
+            <div class="text-slate-400 flex items-center gap-2">
+              <span>Exibindo <span id="targets-page-range" class="text-white font-bold">0 - 0</span> de <span id="targets-page-total" class="text-white font-bold">0</span> targets</span>
+              <span class="text-slate-600">|</span>
+              <label class="text-slate-400 flex items-center gap-1.5">
+                <span>Por pág:</span>
+                <select id="targets-per-page-select" onchange="changeTargetsPerPage(this.value)" class="bg-slate-900 border border-white/10 text-white rounded px-2 py-0.5 text-xs font-mono focus:outline-none">
+                  <option value="5" selected>5</option>
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                </select>
+              </label>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="changeTargetsPage(-1)" id="btn-targets-prev" class="px-3 py-1.5 rounded-lg glass-panel hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 transition-all">
+                <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i> Anterior
+              </button>
+              <span id="targets-page-indicator" class="px-3 py-1 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold">Página 1 de 1</span>
+              <button type="button" onclick="changeTargetsPage(1)" id="btn-targets-next" class="px-3 py-1.5 rounded-lg glass-panel hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 transition-all">
+                Próxima <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================== VIEW 3: TOPOLOGIA DE AMBIENTES ==================== -->
+      <section id="view-topology" class="hidden space-y-6">
+        
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
+              <i data-lucide="server" class="w-6 h-6 text-amber-400"></i>
+              Topologia de Ambientes &amp; Clusters
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">Clusters Kubernetes detectados no Kubeconfig e Daemons Docker conectados.</p>
+          </div>
+
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <div class="flex items-center p-1 rounded-xl glass-panel border border-white/10 text-xs">
+              <button onclick="setTopologyFilter('ALL')" id="topo-filter-all" class="px-3 py-1 rounded-lg font-mono text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">Todos</button>
+              <button onclick="setTopologyFilter('KUBERNETES')" id="topo-filter-k8s" class="px-3 py-1 rounded-lg font-mono text-[11px] text-slate-400 hover:text-white">K8s</button>
+              <button onclick="setTopologyFilter('DOCKER')" id="topo-filter-docker" class="px-3 py-1 rounded-lg font-mono text-[11px] text-slate-400 hover:text-white">Docker</button>
+            </div>
+
+            <button onclick="loadEnvironments(true)" class="px-3.5 py-1.5 rounded-xl btn-glass-secondary text-xs font-mono text-slate-300 hover:text-white flex items-center gap-2">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+              <span>Atualizar Descoberta</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="environments-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div class="p-6 rounded-2xl glass-panel animate-pulse text-xs text-slate-400 font-mono">
+            Descobrindo infraestrutura...
+          </div>
+        </div>
+
+        <!-- Topology Pagination Footer -->
+        <div id="topology-pagination-bar" class="p-4 rounded-2xl glass-panel border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono">
+          <div class="text-slate-400">
+            Mostrando <span id="topology-page-range" class="text-white font-bold">0 - 0</span> de <span id="topology-page-total" class="text-white font-bold">0</span> clusters/hosts
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="changeTopologyPage(-1)" id="btn-topo-prev" class="px-3 py-1.5 rounded-lg glass-panel hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 transition-all">
+              <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i> Anterior
+            </button>
+            <span id="topology-page-indicator" class="px-3 py-1 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold">Página 1 de 1</span>
+            <button type="button" onclick="changeTopologyPage(1)" id="btn-topo-next" class="px-3 py-1.5 rounded-lg glass-panel hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 transition-all">
+              Próxima <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================== VIEW 4: LIVE INCIDENT STREAM ==================== -->
+      <section id="view-incidents" class="hidden space-y-6">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
+              <i data-lucide="terminal" class="w-6 h-6 text-ruby-400"></i>
+              Console de Incidentes em Tempo Real
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">Streaming autônomo de telemetria via Server-Sent Events (SSE).</p>
+          </div>
+
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <div class="flex items-center p-1 rounded-xl glass-panel border border-white/10 text-xs">
+              <button onclick="setEventFilter('ALL')" id="evt-filter-all" class="px-3 py-1 rounded-lg font-mono text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">Todos</button>
+              <button onclick="setEventFilter('CRITICAL')" id="evt-filter-crit" class="px-3 py-1 rounded-lg font-mono text-[11px] text-slate-400 hover:text-white">Críticos</button>
+              <button onclick="setEventFilter('JIRA')" id="evt-filter-jira" class="px-3 py-1 rounded-lg font-mono text-[11px] text-slate-400 hover:text-white">Com Jira</button>
+            </div>
+
+            <button onclick="clearEventFeed()" class="px-3 py-1.5 rounded-xl glass-panel text-[11px] text-slate-400 hover:text-white font-mono transition-all flex items-center gap-1.5">
+              <i data-lucide="trash" class="w-3.5 h-3.5"></i> Limpar
+            </button>
+
+            <span class="text-xs text-emerald-400 font-mono flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-panel border border-emerald-500/30">
+              <span class="h-2 w-2 rounded-full bg-emerald-400 neon-pulse-jade animate-ping"></span>
+              SSE Conectado
+            </span>
+          </div>
+        </div>
+
+        <div id="live-feed-container" class="rounded-2xl glass-panel p-5 space-y-3 font-mono text-xs max-h-[600px] overflow-y-auto">
+          <div class="p-12 text-center text-slate-400">Aguardando telemetria em tempo real do supervisor...</div>
+        </div>
+
+        <!-- Incidents Pagination Bar -->
+        <div id="incidents-pagination-bar" class="p-4 rounded-2xl glass-panel border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono">
+          <div class="text-slate-400 flex items-center gap-2">
+            <span>Exibindo <span id="incidents-page-range" class="text-white font-bold">0 - 0</span> de <span id="incidents-page-total" class="text-white font-bold">0</span> incidentes</span>
+            <span class="text-slate-600">|</span>
+            <label class="text-slate-400 flex items-center gap-1.5">
+              <span>Por pág:</span>
+              <select id="incidents-per-page-select" onchange="changeIncidentsPerPage(this.value)" class="bg-slate-900 border border-white/10 text-white rounded px-2 py-0.5 text-xs font-mono focus:outline-none">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+              </select>
+            </label>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="changeIncidentsPage(-999)" id="btn-incidents-first" title="Primeira Página" class="px-2.5 py-1.5 rounded-lg glass-panel hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none flex items-center transition-all">
+              <i data-lucide="chevrons-left" class="w-3.5 h-3.5"></i>
+            </button>
+            <button type="button" onclick="changeIncidentsPage(-1)" id="btn-incidents-prev" class="px-3 py-1.5 rounded-lg glass-panel hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 transition-all">
+              <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i> Anterior
+            </button>
+            <span id="incidents-page-indicator" class="px-3 py-1 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold">Página 1 de 1</span>
+            <button type="button" onclick="changeIncidentsPage(1)" id="btn-incidents-next" class="px-3 py-1.5 rounded-lg glass-panel hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 transition-all">
+              Próxima <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            </button>
+            <button type="button" onclick="changeIncidentsPage(999)" id="btn-incidents-last" title="Última Página" class="px-2.5 py-1.5 rounded-lg glass-panel hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none flex items-center transition-all">
+              <i data-lucide="chevrons-right" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================== VIEW 5: CHAOS & SIMULAÇÃO ==================== -->
+      <section id="view-chaos" class="hidden space-y-8">
+        
+        <div>
+          <h2 class="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
+            <i data-lucide="zap" class="w-6 h-6 text-amber-400"></i>
+            Laboratório de Chaos &amp; Resiliência
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">Validação do comportamento autônomo sob falhas graves de pods, nós e containers.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- CARD CHAOS 1: KUBERNETES CRASH -->
+          <div class="p-6 rounded-2xl glass-panel glass-panel-hover space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase text-amber-400 font-bold flex items-center gap-1.5">
+                <i data-lucide="cloud" class="w-4 h-4"></i> Kubernetes Workload
+              </span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 font-mono">Pod Failure</span>
+            </div>
+            <h3 class="text-base font-bold text-white">CrashLoopBackOff no Pod</h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Injeta um evento onde o container principal falha repetidamente com Exit Code 1. Testa a captura de logs anteriores (<code>--previous</code>), deduplicação no cooldown e abertura do chamado Jira.
+            </p>
+            <button onclick="simulateIncident('KUBERNETES')" class="w-full py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-300 font-bold text-xs flex items-center justify-center gap-2 transition-all">
+              <i data-lucide="play" class="w-3.5 h-3.5 text-amber-400"></i> Disparar Falha de CrashLoop
+            </button>
+          </div>
+
+          <!-- CARD CHAOS 2: DOCKER OOM -->
+          <div class="p-6 rounded-2xl glass-panel glass-panel-hover space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase text-emerald-400 font-bold flex items-center gap-1.5">
+                <i data-lucide="container" class="w-4 h-4"></i> Docker Container
+              </span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 font-mono">Memory Kill</span>
+            </div>
+            <h3 class="text-base font-bold text-white">OOMKilled no Container (Exit 137)</h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Simula o encerramento violento de um container por excesso de consumo de memória pelo Linux OOM-Killer. Valida a captura de métricas e abertura de chamado prioritário.
+            </p>
+            <button onclick="simulateIncident('DOCKER')" class="w-full py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/40 text-emerald-300 font-bold text-xs flex items-center justify-center gap-2 transition-all">
+              <i data-lucide="play" class="w-3.5 h-3.5 text-emerald-400"></i> Disparar Falha de OOMKilled
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ==================== VIEW 6: ARQUITETURA & SPEC ==================== -->
+      <section id="view-docs" class="hidden space-y-8">
+        
+        <div class="rounded-2xl glass-panel p-6 sm:p-8 space-y-6">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-300 text-xs font-semibold border border-amber-500/30 font-mono">
+            <i data-lucide="layers" class="w-3.5 h-3.5"></i> ESPECIFICAÇÃO DE ARQUITETURA UNIFICADA
+          </div>
+          
+          <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+            <span class="text-title-gradient">Guardian Platform Architecture</span>
+          </h2>
+          <p class="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-4xl">
+            O Guardian adota um modelo descentralizado baseado no conceito de <strong>Target Cirúrgico</strong>. Cada alvo definido pelo operador aloca dinamicamente goroutines em Go que conectam nos provedores pertinentes sem interferir no restante da infraestrutura.
+          </p>
+
+          <div class="overflow-x-auto rounded-xl border border-white/10 glass-panel">
+            <table class="w-full text-left text-xs font-mono">
+              <thead class="bg-slate-950/80 text-slate-300 uppercase border-b border-white/10">
+                <tr>
+                  <th class="p-3.5 text-slate-400">Componente</th>
+                  <th class="p-3.5 text-amber-400">Kubernetes Engine</th>
+                  <th class="p-3.5 text-emerald-400">Docker Engine</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/5 text-slate-300">
+                <tr>
+                  <td class="p-3.5 font-semibold text-slate-400">Descoberta</td>
+                  <td class="p-3.5">Leitura de <code>~/.kube/config</code> com highlight de contexto ativo</td>
+                  <td class="p-3.5">Conexão via Unix Socket ou TCP remoto</td>
+                </tr>
+                <tr>
+                  <td class="p-3.5 font-semibold text-slate-400">Granularidade</td>
+                  <td class="p-3.5"><strong class="text-white">Namespace</strong> (ex: producao, billing)</td>
+                  <td class="p-3.5"><strong class="text-white">Stack Compose / Containers</strong></td>
+                </tr>
+                <tr>
+                  <td class="p-3.5 font-semibold text-slate-400">Mecanismo</td>
+                  <td class="p-3.5">client-go Informers &amp; Pod Watcher</td>
+                  <td class="p-3.5">Docker Engine Events Stream (die, oom)</td>
+                </tr>
+                <tr>
+                  <td class="p-3.5 font-semibold text-slate-400">Diagnóstico</td>
+                  <td class="p-3.5 text-amber-300">Logs do Pod anterior (<code>--previous</code>)</td>
+                  <td class="p-3.5 text-emerald-300">Logs do Container (<code>--tail=50</code>)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- MERMAID DIAGRAM -->
+        <div class="space-y-3">
+          <h3 class="text-lg font-bold text-white flex items-center gap-2">
+            <i data-lucide="git-branch" class="w-4 h-4 text-amber-400"></i>
+            Fluxo de Goroutines &amp; EventBus
+          </h3>
+          <div class="p-6 rounded-2xl glass-panel flex justify-center overflow-x-auto">
+            <div class="mermaid w-full">
 flowchart TD
-    subgraph UI ["Interface Web Obsidian-Glass (SSE + REST)"]
-        Dashboard["Dashboard com Targets K8s e Docker"]
+    subgraph UI ["Camada de Apresentação (Web UI & SSE Realtime)"]
+        Dashboard["Dashboard & Metrics Overview"]
         Modal["Configuração Dinâmica de Targets"]
-        LiveFeed["Live Stream de Eventos & Incidentes"]
+        LiveFeed["Live Stream de Incidentes (SSE)"]
     end
 
-    subgraph GuardianCore ["Guardian Core Engine (Go)"]
-        API["API REST & SSE Server"]
+    subgraph GuardianCore ["Guardian Core Engine (Go Concurrency)"]
+        API["REST API & SSE Broadcaster"]
         Supervisor["Dynamic Target Supervisor"]
         
         subgraph Providers ["Provedores Concorrentes"]
             K8sProvider["K8s Provider (client-go Informers)"]
-            DockerProvider["Docker Provider (Engine Events API)"]
+            DockerProvider["Docker Pool (Unix Socket & TCP Remote)"]
         end
 
-        EventBus["Barramento Unificado (IncidentEvent)"]
+        EventBus["Unified Incident EventBus"]
         
         subgraph ActionPipeline ["Pipeline de Automação & Resposta"]
-            Deduplicator["Anti-Spam & Deduplicação Cooldown"]
-            JiraAction["Jira REST Client (Contrato + Logs)"]
+            Deduplicator["Anti-Spam Deduplicator (Cooldown 60m)"]
+            JiraAction["Jira REST Client (Diagnóstico & Logs)"]
             Notifier["SSE Broadcaster em Tempo Real"]
         end
     end
 
     subgraph TargetInfra ["Infraestrutura Supervisionada"]
-        K8sCluster["Clusters Kubernetes (EKS, AKS, Kind, Minikube)"]
-        DockerServers["Ambientes Docker (Local Socket, SSH Remoto)"]
+        K8sCluster["Clusters Kubernetes (EKS, AKS, GKE, Kind, Minikube)"]
+        DockerServers["Docker Daemons (Local Socket & TCP Remoto)"]
     end
 
-    Modal -->|Cria Target| API
+    Modal -->|POST /api/targets| API
     API --> Supervisor
-    Supervisor -->|Goroutine Worker| K8sProvider
-    Supervisor -->|Goroutine Worker| DockerProvider
+    Supervisor -->|Inicia Worker| K8sProvider
+    Supervisor -->|Inicia Worker| DockerProvider
     
     K8sProvider -->|Watch Namespaces| K8sCluster
     DockerProvider -->|Stream Events| DockerServers
 
-    K8sProvider -->|Falha / OOM| EventBus
+    K8sProvider -->|Falha / CrashLoop| EventBus
     DockerProvider -->|Container Die / OOM| EventBus
 
     EventBus --> Deduplicator
     Deduplicator --> JiraAction
     Deduplicator --> Notifier
     Notifier --> LiveFeed
+            </div>
           </div>
         </div>
+
       </section>
 
-    </div>
+      <!-- ==================== VIEW 7: CONFIGURAÇÕES & JIRA ==================== -->
+      <section id="view-settings" class="hidden space-y-6">
+        
+        <div>
+          <h2 class="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
+            <i data-lucide="settings" class="w-6 h-6 text-amber-400"></i>
+            Configurações do Engine &amp; Integração Jira
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">Parâmetros ativos carregados do arquivo de ambiente ou flags de inicialização.</p>
+        </div>
 
-  </main>
+        <!-- CONTROLE INTERATIVO DO MODO OPERACIONAL -->
+        <div id="cfg-mode-card" class="p-6 rounded-2xl glass-panel space-y-4 border border-amber-500/30 bg-amber-500/5 transition-all">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2.5">
+                <span class="text-xs font-mono uppercase text-amber-400 font-bold tracking-wider flex items-center gap-1.5">
+                  <i data-lucide="sliders" class="w-4 h-4"></i> Controle do Modo de Operação (Dry-Run vs Produção)
+                </span>
+                <span id="cfg-mode-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-bold">MODO SIMULAÇÃO</span>
+              </div>
+              <p id="cfg-mode-description" class="text-xs text-slate-300 leading-relaxed max-w-2xl">
+                O modo atual é <b>Simulação (Dry-Run Ativo)</b>. Incidentes e falhas são interceptados e analisados em tempo real, mas <b>nenhum chamado oficial é gerado no Jira</b>. Ideal para testes e homologação.
+              </p>
+            </div>
+            
+            <button type="button" onclick="toggleDryRunMode()" id="cfg-dryrun-toggle-btn" class="px-5 py-3 rounded-xl btn-glass-primary text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 shadow-lg shadow-amber-500/20">
+              <i data-lucide="toggle-right" class="w-4 h-4"></i>
+              <span id="cfg-dryrun-btn-label">Mudar para Modo Produção Real</span>
+            </button>
+          </div>
+        </div>
 
-  <!-- MODAL: CRIAR NOVO TARGET (GLASS) -->
-  <div id="target-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
-    <div class="glass-panel border border-white/15 rounded-3xl max-w-lg w-full p-7 shadow-2xl space-y-6 relative overflow-hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <div class="p-6 rounded-2xl glass-panel space-y-4">
+            <h3 class="text-sm font-bold text-white font-mono uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="send" class="w-4 h-4 text-amber-400"></i> Parâmetros do Jira
+            </h3>
+            <div class="space-y-3 font-mono text-xs">
+              <div class="flex items-center justify-between pb-2 border-b border-white/5">
+                <span class="text-slate-400">Jira Base URL:</span>
+                <span id="cfg-jira-url" class="text-white truncate max-w-xs">-</span>
+              </div>
+              <div class="flex items-center justify-between pb-2 border-b border-white/5">
+                <span class="text-slate-400">Projeto Padrão:</span>
+                <span id="cfg-jira-proj" class="text-amber-300 font-bold">-</span>
+              </div>
+              <div class="flex items-center justify-between pb-2 border-b border-white/5">
+                <span class="text-slate-400">Modo Dry-Run:</span>
+                <span id="cfg-dry-run" class="text-amber-400 font-bold">-</span>
+              </div>
+              <div class="flex items-center justify-between pb-2 border-b border-white/5">
+                <span class="text-slate-400">Janela de Cooldown:</span>
+                <span class="text-white">60 minutos (deduplicação anti-spam)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-6 rounded-2xl glass-panel space-y-4">
+            <h3 class="text-sm font-bold text-white font-mono uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="shield" class="w-4 h-4 text-emerald-400"></i> Status do Sistema &amp; Versão
+            </h3>
+            <div class="space-y-3 font-mono text-xs">
+              <div class="flex items-center justify-between pb-2 border-b border-white/5">
+                <span class="text-slate-400">Versão:</span>
+                <span id="cfg-version" class="text-emerald-400 font-bold">2.0.0-enterprise</span>
+              </div>
+              <div class="flex items-center justify-between pb-2 border-b border-white/5">
+                <span class="text-slate-400">Licença:</span>
+                <span class="text-white">Apache 2.0 (Open Source)</span>
+              </div>
+              <div class="flex items-center justify-between pb-2 border-b border-white/5">
+                <span class="text-slate-400">Horário do Engine:</span>
+                <span id="cfg-time" class="text-slate-300">-</span>
+              </div>
+              <div class="flex items-center justify-between pb-2 border-b border-white/5">
+                <span class="text-slate-400">Arquivo de Exemplo:</span>
+                <span class="text-amber-300">.env.example</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- FOOTER CLEAN -->
+    <footer class="mt-auto border-t border-white/10 bg-[#04060c]/60 py-6 px-8 text-xs text-slate-500 font-mono flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <span class="text-slate-300 font-bold">Guardian Enterprise</span>
+        <span>•</span>
+        <span>Open Source Incident Automation Engine</span>
+      </div>
+      <div class="flex items-center gap-4 text-[11px]">
+        <a href="https://github.com/JairoJSilva/guardian-infra" target="_blank" rel="noopener" class="text-slate-400 hover:text-amber-300 transition-colors">GitHub</a>
+        <span>•</span>
+        <button onclick="navigateTo('docs')" class="text-slate-400 hover:text-amber-300 transition-colors">Arquitetura</button>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- ==================== MODAL: CONFIGURAR NOVO TARGET ==================== -->
+  <div id="target-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="glass-panel border border-white/15 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl space-y-6 relative overflow-hidden">
       
-      <!-- Top Bar Modal -->
       <div class="flex items-center justify-between border-b border-white/10 pb-4">
-        <h3 class="text-lg font-bold text-white flex items-center gap-2.5">
-          <i data-lucide="crosshair" class="w-5 h-5 text-amber-400"></i>
-          Configurar Novo Target
-        </h3>
-        <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/5 transition-all">
+        <div>
+          <h3 class="text-lg font-bold text-white flex items-center gap-2.5">
+            <i data-lucide="crosshair" class="w-5 h-5 text-amber-400"></i>
+            Configurar Target de Supervisão
+          </h3>
+          <p class="text-xs text-slate-400">Aloca uma goroutine dedicada para monitorar o escopo selecionado.</p>
+        </div>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-white/5 transition-all">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <form id="target-form" onsubmit="handleCreateTarget(event)" class="space-y-4 text-sm">
+      <form id="target-form" onsubmit="handleCreateTarget(event)" class="space-y-5 text-sm">
         
-        <!-- SELETOR K8S vs DOCKER (GLASS) -->
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-2 font-mono">Tipo de Infraestrutura</label>
           <div class="grid grid-cols-2 gap-3">
@@ -530,24 +1096,61 @@ flowchart TD
 
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1 font-mono">Nome de Referência do Target</label>
-          <input type="text" id="target-name" required placeholder="Ex: Core Pagamentos" class="w-full px-4 py-2.5 rounded-xl glass-input text-white placeholder:text-slate-500 text-xs">
+          <input type="text" id="target-name" required placeholder="Ex: Produção Checkout &amp; Pagamentos" class="w-full px-4 py-2.5 rounded-xl glass-input text-white placeholder:text-slate-500 text-xs">
         </div>
 
         <div>
           <label id="lbl-endpoint" class="block text-xs font-semibold text-slate-300 mb-1 font-mono">Cluster Kubernetes (Contexto)</label>
-          <select id="target-endpoint" onchange="updateScopeOptions()" class="w-full px-4 py-2.5 rounded-xl glass-input text-white font-mono text-xs cursor-pointer">
+          <select id="target-endpoint" onchange="onEndpointChange()" class="w-full px-4 py-2.5 rounded-xl glass-input text-white font-mono text-xs cursor-pointer">
           </select>
         </div>
 
-        <div>
-          <label id="lbl-scopes" class="block text-xs font-semibold text-slate-300 mb-1 font-mono">Namespaces para Supervisionar</label>
-          <div id="scope-checkboxes" class="p-3.5 rounded-xl glass-input max-h-36 overflow-y-auto space-y-2">
+        <!-- HOST DOCKER REMOTO -->
+        <div id="custom-docker-host-section" class="hidden space-y-2.5 p-3.5 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 transition-all">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-emerald-300 font-mono flex items-center gap-1.5">
+              <i data-lucide="network" class="w-3.5 h-3.5"></i> Endereço do Host Docker Remoto
+            </span>
+            <span class="text-[10px] text-slate-400 font-mono">TCP ou Unix Socket</span>
           </div>
-          <span class="text-[10px] text-slate-400 font-mono">Apenas o escopo selecionado alocará watchers no cluster ou host.</span>
+          <div class="flex gap-2">
+            <input type="text" id="custom-docker-endpoint" placeholder="Ex: tcp://192.168.1.100:2375 ou /var/run/docker.sock" class="flex-1 px-3 py-2 rounded-xl glass-input text-white text-xs font-mono placeholder:text-slate-500">
+            <button type="button" onclick="inspectCustomDockerHost()" id="btn-inspect-docker" class="px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 font-bold text-xs flex items-center gap-1.5 transition-all">
+              <i data-lucide="search" class="w-3.5 h-3.5"></i> Listar Containers
+            </button>
+          </div>
+          <div id="custom-docker-status" class="text-[11px] font-mono hidden pt-1"></div>
         </div>
 
-        <div class="space-y-2 pt-2 border-t border-white/10">
-          <span class="text-xs font-semibold text-slate-300 font-mono">Integração com Jira</span>
+        <!-- SCOPES -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label id="lbl-scopes" class="block text-xs font-semibold text-slate-300 font-mono">Namespaces para Supervisionar</label>
+            <div id="scopes-actions" class="hidden flex items-center gap-2">
+              <button type="button" onclick="toggleAllScopes(true)" class="text-[10px] text-emerald-400 hover:underline font-mono">Selecionar Todos</button>
+              <span class="text-slate-600 text-[10px]">|</span>
+              <button type="button" onclick="toggleAllScopes(false)" class="text-[10px] text-slate-400 hover:underline font-mono">Limpar</button>
+            </div>
+          </div>
+          <div id="scope-checkboxes" class="p-3.5 rounded-xl glass-input max-h-36 overflow-y-auto space-y-2">
+          </div>
+          <div class="flex items-center justify-between mt-1">
+            <span class="text-[10px] text-slate-400 font-mono">Apenas o escopo selecionado alocará watchers no cluster ou host.</span>
+            <span id="scope-selection-count" class="text-[10px] text-amber-400 font-mono"></span>
+          </div>
+        </div>
+
+        <!-- JIRA -->
+        <div class="space-y-3 pt-3 border-t border-white/10">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-300 font-mono flex items-center gap-1.5">
+              <i data-lucide="send" class="w-3.5 h-3.5 text-amber-400"></i> Automação Jira
+            </span>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-slate-400 font-mono">Projeto Jira:</span>
+              <input type="text" id="target-jira-project" placeholder="OPS" class="w-24 px-2.5 py-1 rounded-lg glass-input text-white text-[11px] font-mono uppercase placeholder:text-slate-500">
+            </div>
+          </div>
           <label class="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer">
             <input type="checkbox" id="target-jira-toggle" checked class="rounded border-white/20 bg-slate-900 text-amber-500 focus:ring-0">
             <span>Abrir chamados automaticamente no Jira anexando logs do crash</span>
@@ -562,65 +1165,401 @@ flowchart TD
     </div>
   </div>
 
-  <!-- SCRIPT DINÂMICO CONECTADO AO ENGINE GO -->
+  <!-- ==================== JAVASCRIPT DO CLIENTE ==================== -->
   <script>
+    let currentView = 'dashboard';
     let currentType = 'KUBERNETES';
     let environments = [];
+    let targets = [];
+    let eventsHistory = [];
     let eventSource = null;
+    let serverConfig = { project_key: 'OPS', jira_url: '', dry_run: true };
+    let currentTargetFilter = 'ALL';
+    let currentEventFilter = 'ALL';
+    let currentTopologyFilter = 'ALL';
+    let customDockerScopes = [];
+    let isSidebarCollapsed = false;
+
+    // Estados de Paginação & Caches
+    let targetsPage = 1;
+    let targetsPerPage = 5;
+    let filteredTargetsCache = [];
+
+    let topologyPage = 1;
+    let topologyPerPage = 6;
+    let filteredTopologyCache = [];
+
+    let incidentsPage = 1;
+    let incidentsPerPage = 10;
+    let filteredIncidentsCache = [];
 
     window.addEventListener('DOMContentLoaded', async () => {
       lucide.createIcons();
-      mermaid.run({ querySelector: '.mermaid' });
-      
-      await loadEnvironments();
-      await loadTargets();
-      await loadHistory();
+      // mermaid.run é executado sob demanda apenas ao abrir a view 'docs'
+
+      // Disparo em paralelo não-bloqueante para carregamento instantâneo (<50ms)
+      await Promise.allSettled([
+        loadHealth(),
+        loadTargets(),
+        loadHistory(),
+        loadEnvironments()
+      ]);
+
       initSSE();
       selectType('KUBERNETES');
+      updateKPICounters();
+
+      // Suporte a hash na URL
+      const hash = window.location.hash.replace('#', '');
+      if (['dashboard', 'targets', 'topology', 'incidents', 'chaos', 'docs', 'settings'].includes(hash)) {
+        navigateTo(hash);
+      }
     });
 
-    async function loadEnvironments() {
+    // ==================== NAVEGAÇÃO ENTRE TELAS ====================
+    const views = ['dashboard', 'targets', 'topology', 'incidents', 'chaos', 'docs', 'settings'];
+    const breadcrumbTitles = {
+      'dashboard': 'Dashboard & KPIs',
+      'targets': 'Targets & Watchers',
+      'topology': 'Topologia de Clusters',
+      'incidents': 'Live Incident Stream',
+      'chaos': 'Chaos & Simulação',
+      'docs': 'Arquitetura & Spec',
+      'settings': 'Configurações & Jira'
+    };
+
+    function navigateTo(viewId) {
+      currentView = viewId;
+      window.location.hash = viewId;
+
+      views.forEach(v => {
+        const el = document.getElementById(`view-${v}`);
+        const navEl = document.getElementById(`nav-${v}`);
+        if (el) el.classList.add('hidden');
+        if (navEl) {
+          navEl.className = "nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-xs transition-all text-slate-400 hover:text-white hover:bg-white/5 border border-transparent";
+        }
+      });
+
+      const activeView = document.getElementById(`view-${viewId}`);
+      const activeNav = document.getElementById(`nav-${viewId}`);
+      if (activeView) activeView.classList.remove('hidden');
+      if (activeNav) {
+        activeNav.className = "nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-xs transition-all text-amber-300 bg-amber-500/15 border border-amber-500/30";
+      }
+
+      const breadcrumbEl = document.getElementById('topbar-breadcrumb');
+      if (breadcrumbEl) breadcrumbEl.textContent = breadcrumbTitles[viewId] || viewId;
+
+      if (viewId === 'docs') {
+        setTimeout(() => mermaid.run({ querySelector: '.mermaid' }), 100);
+      }
+
+      lucide.createIcons();
+    }
+
+    function toggleSidebarCollapse() {
+      const sidebar = document.getElementById('sidebar');
+      const wrapper = document.getElementById('main-wrapper');
+      const icon = document.getElementById('sidebar-toggle-icon');
+
+      isSidebarCollapsed = !isSidebarCollapsed;
+
+      if (isSidebarCollapsed) {
+        sidebar.classList.remove('sidebar-expanded');
+        sidebar.classList.add('sidebar-collapsed');
+        wrapper.classList.remove('ml-[260px]');
+        wrapper.classList.add('ml-[76px]');
+        icon.setAttribute('data-lucide', 'chevrons-right');
+      } else {
+        sidebar.classList.remove('sidebar-collapsed');
+        sidebar.classList.add('sidebar-expanded');
+        wrapper.classList.remove('ml-[76px]');
+        wrapper.classList.add('ml-[260px]');
+        icon.setAttribute('data-lucide', 'chevrons-left');
+      }
+      lucide.createIcons();
+    }
+
+    // ==================== INTEGRAÇÕES API GO ====================
+    async function loadHealth() {
+      try {
+        const res = await fetch('/api/health');
+        if (res.ok) {
+          serverConfig = await res.json();
+          if (serverConfig.project_key) {
+            const input = document.getElementById('target-jira-project');
+            if (input) input.placeholder = serverConfig.project_key;
+            document.getElementById('kpi-jira-proj-key').textContent = `Proj: ${serverConfig.project_key}`;
+            document.getElementById('topbar-jira-text').textContent = `Jira: ${serverConfig.project_key}`;
+            document.getElementById('cfg-jira-proj').textContent = serverConfig.project_key;
+          }
+          if (serverConfig.jira_url) {
+            document.getElementById('cfg-jira-url').textContent = serverConfig.jira_url;
+          }
+          if (serverConfig.time) {
+            document.getElementById('cfg-time').textContent = new Date(serverConfig.time).toLocaleString('pt-BR');
+          }
+          if (serverConfig.version) {
+            document.getElementById('cfg-version').textContent = serverConfig.version;
+          }
+
+          updateDryRunUI(serverConfig.dry_run);
+        }
+      } catch (e) {
+        console.warn("Falha ao carregar health:", e);
+      }
+    }
+
+    function updateDryRunUI(isDryRun) {
+      // 1. Top Bar Pill
+      const topbarDot = document.getElementById('topbar-dryrun-dot');
+      const topbarText = document.getElementById('topbar-dryrun-text');
+      if (topbarDot) {
+        topbarDot.className = isDryRun 
+          ? 'h-2 w-2 rounded-full bg-amber-400 neon-pulse-gold animate-pulse' 
+          : 'h-2 w-2 rounded-full bg-emerald-400 neon-pulse-jade animate-pulse';
+      }
+      if (topbarText) {
+        topbarText.textContent = isDryRun ? 'Dry-Run: On' : 'Modo Produção';
+        topbarText.className = isDryRun ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold';
+      }
+
+      // 2. Dashboard KPI Card 4 Badge
+      const jiraBadge = document.getElementById('kpi-jira-mode-badge');
+      if (jiraBadge) {
+        jiraBadge.textContent = isDryRun ? 'Dry-Run: On' : 'Produção Real';
+        jiraBadge.className = isDryRun 
+          ? 'text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-mono hover:scale-105 transition-all cursor-pointer'
+          : 'text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-mono hover:scale-105 transition-all cursor-pointer';
+      }
+
+      // 3. Settings View Card
+      const cfgDryRun = document.getElementById('cfg-dry-run');
+      if (cfgDryRun) {
+        cfgDryRun.textContent = isDryRun ? 'Habilitado (Simulação - sem chamados reais)' : 'Desabilitado (Produção Real Ativa)';
+        cfgDryRun.className = isDryRun ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold';
+      }
+
+      const modeCard = document.getElementById('cfg-mode-card');
+      const modeBadge = document.getElementById('cfg-mode-badge');
+      const modeDesc = document.getElementById('cfg-mode-description');
+      const btnLabel = document.getElementById('cfg-dryrun-btn-label');
+      const toggleBtn = document.getElementById('cfg-dryrun-toggle-btn');
+
+      if (isDryRun) {
+        if (modeCard) modeCard.className = "p-6 rounded-2xl glass-panel space-y-4 border border-amber-500/30 bg-amber-500/5 transition-all";
+        if (modeBadge) {
+          modeBadge.textContent = "MODO SIMULAÇÃO";
+          modeBadge.className = "text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-bold";
+        }
+        if (modeDesc) {
+          modeDesc.innerHTML = "O modo atual é <b>Simulação (Dry-Run Ativo)</b>. Incidentes e falhas são interceptados e analisados em tempo real, mas <b>nenhum chamado oficial é gerado no Jira</b>. Ideal para testes e demonstrações.";
+        }
+        if (btnLabel) btnLabel.textContent = "Mudar para Modo Produção Real";
+        if (toggleBtn) toggleBtn.className = "px-5 py-3 rounded-xl btn-glass-primary text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 shadow-lg shadow-amber-500/20 cursor-pointer";
+      } else {
+        if (modeCard) modeCard.className = "p-6 rounded-2xl glass-panel space-y-4 border border-emerald-500/40 bg-emerald-500/10 transition-all";
+        if (modeBadge) {
+          modeBadge.textContent = "PRODUÇÃO REAL ATIVA";
+          modeBadge.className = "text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold";
+        }
+        if (modeDesc) {
+          modeDesc.innerHTML = "O modo atual é <b class='text-emerald-300'>PRODUÇÃO REAL</b>. O Guardian irá <b class='text-white'>abrir chamados verdadeiros no Jira</b> com logs anexados sempre que um Pod ou Container falhar nos targets supervisionados.";
+        }
+        if (btnLabel) btnLabel.textContent = "Voltar para Modo Simulação (Dry-Run)";
+        if (toggleBtn) toggleBtn.className = "px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 shadow-lg shadow-emerald-500/30 cursor-pointer";
+      }
+      lucide.createIcons();
+    }
+
+    async function toggleDryRunMode() {
+      try {
+        const res = await fetch('/api/settings/toggle-dry-run', { method: 'POST' });
+        if (res.ok) {
+          const data = await res.json();
+          serverConfig.dry_run = data.dry_run;
+          updateDryRunUI(data.dry_run);
+          showToast(data.dry_run ? 'Modo Simulação (Dry-Run) ativado.' : 'Modo PRODUÇÃO REAL ATIVADO! Chamados oficiais serão abertos no Jira.', data.dry_run ? 'warning' : 'success');
+        } else {
+          showToast('Erro ao alternar modo operacional.', 'warning');
+        }
+      } catch (e) {
+        showToast('Erro de conexão: ' + e.message, 'warning');
+      }
+    }
+
+    async function toggleTargetJira(id) {
+      try {
+        const res = await fetch(`/api/targets/${id}/toggle-jira`, { method: 'POST' });
+        if (res.ok) {
+          const updated = await res.json();
+          await loadTargets();
+          const state = updated.actions && updated.actions.create_jira_issue;
+          showToast(`Jira ${state ? 'ATIVADO' : 'DESATIVADO'} para o target ${updated.name}`, state ? 'success' : 'warning');
+        } else {
+          showToast('Erro ao alternar Jira no target', 'warning');
+        }
+      } catch (e) {
+        showToast('Erro de conexão: ' + e.message, 'warning');
+      }
+    }
+
+    function showToast(message, type = 'info') {
+      let toast = document.getElementById('guardian-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'guardian-toast';
+        document.body.appendChild(toast);
+      }
+
+      const iconSvg = type === 'success' 
+        ? `<svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>`
+        : type === 'warning'
+        ? `<svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`
+        : `<svg class="w-4 h-4 text-cyan-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"></circle><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-4m0-4h.01"></path></svg>`;
+
+      const border = type === 'success' 
+        ? 'border-emerald-500/60 text-emerald-200 bg-slate-950/95 shadow-emerald-500/20' 
+        : type === 'warning'
+        ? 'border-amber-500/60 text-amber-200 bg-slate-950/95 shadow-amber-500/20'
+        : 'border-cyan-500/60 text-cyan-200 bg-slate-950/95 shadow-cyan-500/20';
+      
+      toast.className = `fixed bottom-6 right-6 z-50 px-5 py-3.5 rounded-2xl border ${border} text-xs font-mono font-bold shadow-2xl flex items-center gap-3 transition-all duration-300 transform translate-y-0 opacity-100`;
+      toast.innerHTML = `${iconSvg} <span>${message}</span>`;
+
+      setTimeout(() => {
+        toast.className = toast.className.replace('translate-y-0 opacity-100', 'translate-y-12 opacity-0 pointer-events-none');
+      }, 4500);
+    }
+
+    async function loadEnvironments(force = false) {
+      const grid = document.getElementById('environments-grid');
+      if (force && grid) {
+        grid.innerHTML = `<div class="p-6 rounded-2xl glass-panel animate-pulse text-xs text-slate-400 font-mono col-span-full">Atualizando descoberta de infraestrutura...</div>`;
+      }
       try {
         const res = await fetch('/api/discovery/environments');
         if (res.ok) {
           environments = await res.json();
-          renderEnvironmentsGrid();
+          renderEnvironmentsGrid(true);
+          updateKPICounters();
         }
       } catch (e) {
         console.warn("Falha ao carregar environments:", e);
       }
     }
 
-    function renderEnvironmentsGrid() {
-      const grid = document.getElementById('environments-grid');
-      if (!environments.length) return;
+    function setTopologyFilter(filter) {
+      currentTopologyFilter = filter;
+      topologyPage = 1;
 
-      grid.innerHTML = environments.map(env => {
+      const btnAll = document.getElementById('topo-filter-all');
+      const btnK8s = document.getElementById('topo-filter-k8s');
+      const btnDocker = document.getElementById('topo-filter-docker');
+
+      const activeClass = "px-3 py-1 rounded-lg font-mono text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40";
+      const inactiveClass = "px-3 py-1 rounded-lg font-mono text-[11px] text-slate-400 hover:text-white";
+
+      if (btnAll) btnAll.className = filter === 'ALL' ? activeClass : inactiveClass;
+      if (btnK8s) btnK8s.className = filter === 'KUBERNETES' ? activeClass : inactiveClass;
+      if (btnDocker) btnDocker.className = filter === 'DOCKER' ? activeClass : inactiveClass;
+
+      renderEnvironmentsGrid(false);
+    }
+
+    function changeTopologyPage(delta) {
+      const totalPages = Math.ceil(filteredTopologyCache.length / topologyPerPage) || 1;
+      if (delta === -999) topologyPage = 1;
+      else if (delta === 999) topologyPage = totalPages;
+      else topologyPage += delta;
+
+      if (topologyPage < 1) topologyPage = 1;
+      if (topologyPage > totalPages) topologyPage = totalPages;
+
+      renderEnvironmentsGrid(false);
+    }
+
+    function renderEnvironmentsGrid(resetPage = false) {
+      const grid = document.getElementById('environments-grid');
+      if (!grid) return;
+
+      let filtered = [...environments];
+      if (currentTopologyFilter !== 'ALL') {
+        filtered = filtered.filter(e => e.type === currentTopologyFilter);
+      }
+      filteredTopologyCache = filtered;
+
+      if (resetPage) topologyPage = 1;
+
+      const total = filtered.length;
+      const totalPages = Math.ceil(total / topologyPerPage) || 1;
+      if (topologyPage > totalPages) topologyPage = totalPages;
+      if (topologyPage < 1) topologyPage = 1;
+
+      const startIdx = (topologyPage - 1) * topologyPerPage;
+      const endIdx = Math.min(startIdx + topologyPerPage, total);
+      const paged = filtered.slice(startIdx, endIdx);
+
+      const rangeEl = document.getElementById('topology-page-range');
+      const totalEl = document.getElementById('topology-page-total');
+      const indicatorEl = document.getElementById('topology-page-indicator');
+      const btnPrev = document.getElementById('btn-topo-prev');
+      const btnNext = document.getElementById('btn-topo-next');
+
+      if (rangeEl) rangeEl.textContent = total > 0 ? `${startIdx + 1} - ${endIdx}` : '0 - 0';
+      if (totalEl) totalEl.textContent = total;
+      if (indicatorEl) indicatorEl.textContent = `Página ${topologyPage} de ${totalPages}`;
+      if (btnPrev) btnPrev.disabled = topologyPage <= 1;
+      if (btnNext) btnNext.disabled = topologyPage >= totalPages;
+
+      if (!filtered.length) {
+        grid.innerHTML = `<div class="p-8 rounded-2xl glass-panel text-center text-xs text-slate-400 font-mono col-span-full">Nenhum cluster ou ambiente encontrado com o filtro selecionado.</div>`;
+        return;
+      }
+
+      grid.innerHTML = paged.map(env => {
         const isK8s = env.type === 'KUBERNETES';
         const typeBadge = isK8s 
           ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold font-mono">K8S</span>`
           : `<span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold font-mono">DOCKER</span>`;
 
-        const isReady = env.status === 'READY';
-        const dot = isReady 
-          ? `<span class="h-2 w-2 rounded-full bg-emerald-400 neon-pulse-jade"></span>`
-          : `<span class="h-2 w-2 rounded-full bg-slate-500"></span>`;
+        let dot = `<span class="h-2 w-2 rounded-full bg-slate-500"></span>`;
+        let statusColor = 'text-slate-500';
+        if (env.status === 'READY') {
+          dot = `<span class="h-2 w-2 rounded-full bg-emerald-400 neon-pulse-jade"></span>`;
+          statusColor = 'text-emerald-400';
+        } else if (env.status === 'CONFIGURED') {
+          dot = `<span class="h-2 w-2 rounded-full bg-amber-400"></span>`;
+          statusColor = 'text-amber-400';
+        } else if (env.status === 'UNREACHABLE' || env.status === 'UNAVAILABLE') {
+          dot = `<span class="h-2 w-2 rounded-full bg-rose-500"></span>`;
+          statusColor = 'text-rose-400';
+        }
 
         const scopesCount = (env.scopes && env.scopes.length) ? `${env.scopes.length} escopos detectados` : 'Sem escopos';
 
         return `
-          <div class="p-4 rounded-2xl glass-panel glass-panel-hover">
-            <div class="flex items-center justify-between">
-              <span class="font-bold text-xs text-white flex items-center gap-2 font-mono">
-                ${dot}
-                ${env.name}
-              </span>
-              ${typeBadge}
+          <div class="p-5 rounded-2xl glass-panel glass-panel-hover flex flex-col justify-between space-y-4">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-xs text-white flex items-center gap-2 font-mono truncate mr-2" title="${env.name}">
+                  ${dot}
+                  ${env.name}
+                </span>
+                ${typeBadge}
+              </div>
+              <p class="text-[11px] text-slate-400 mt-2 truncate font-mono" title="${env.description || env.endpoint}">${env.description || env.endpoint}</p>
             </div>
-            <p class="text-[11px] text-slate-400 mt-2 truncate font-mono">${env.description || env.endpoint}</p>
-            <div class="text-xs ${isReady ? 'text-emerald-400' : 'text-slate-500'} font-medium mt-3 pt-2 border-t border-white/5 flex items-center justify-between font-mono">
-              <span class="text-[11px]">${env.status}</span>
-              <span class="text-slate-500 text-[10px]">${scopesCount}</span>
+
+            <div>
+              <div class="text-xs ${statusColor} font-medium pt-3 border-t border-white/5 flex items-center justify-between font-mono">
+                <span class="text-[11px] font-bold">${env.status}</span>
+                <span class="text-slate-500 text-[10px]">${scopesCount}</span>
+              </div>
+              <button type="button" onclick="quickCreateTargetFromEnv('${env.type}', '${encodeURIComponent(env.endpoint || env.name)}', '${encodeURIComponent(env.name)}')" class="w-full mt-3 py-2 rounded-xl bg-white/5 hover:bg-amber-500/15 text-slate-300 hover:text-amber-300 border border-white/10 hover:border-amber-500/30 text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all">
+                <i data-lucide="crosshair" class="w-3.5 h-3.5"></i> Supervisionar este Host
+              </button>
             </div>
           </div>
         `;
@@ -628,29 +1567,124 @@ flowchart TD
       lucide.createIcons();
     }
 
+    function quickCreateTargetFromEnv(type, endpointEncoded, nameEncoded) {
+      const endpoint = decodeURIComponent(endpointEncoded);
+      const name = decodeURIComponent(nameEncoded);
+
+      openModal();
+      selectType(type);
+      
+      const nameInput = document.getElementById('target-name');
+      if (nameInput) nameInput.value = `Supervisão ${name}`;
+
+      const endpointSelect = document.getElementById('target-endpoint');
+      if (endpointSelect) {
+        endpointSelect.value = endpoint;
+        onEndpointChange();
+      }
+    }
+
     async function loadTargets() {
       try {
         const res = await fetch('/api/targets');
         if (res.ok) {
-          const targets = await res.json();
-          renderTargetsTable(targets);
+          targets = await res.json();
+          renderTargetsTable(false);
+          renderDashboardTargets();
+          updateKPICounters();
         }
       } catch (e) {
         console.warn("Falha ao listar targets:", e);
       }
     }
 
-    function renderTargetsTable(targets) {
-      const tbody = document.getElementById('targets-table-body');
-      const activeCount = targets.filter(t => t.status === 'ACTIVE').length;
-      document.getElementById('targets-count').textContent = `${activeCount} de ${targets.length} ativos`;
+    function changeTargetsPage(delta) {
+      const totalPages = Math.ceil(filteredTargetsCache.length / targetsPerPage) || 1;
+      if (delta === -999) targetsPage = 1;
+      else if (delta === 999) targetsPage = totalPages;
+      else targetsPage += delta;
 
-      if (!targets.length) {
-        tbody.innerHTML = `<tr><td colspan="7" class="py-10 text-center text-xs text-slate-400 font-mono">Nenhum target configurado no momento.</td></tr>`;
+      if (targetsPage < 1) targetsPage = 1;
+      if (targetsPage > totalPages) targetsPage = totalPages;
+
+      renderTargetsTable(false);
+    }
+
+    function changeTargetsPerPage(val) {
+      targetsPerPage = parseInt(val, 10) || 5;
+      targetsPage = 1;
+      renderTargetsTable(false);
+    }
+
+    function setTargetFilter(type) {
+      currentTargetFilter = type;
+      targetsPage = 1;
+      
+      const btnAll = document.getElementById('filter-btn-all');
+      const btnK8s = document.getElementById('filter-btn-k8s');
+      const btnDocker = document.getElementById('filter-btn-docker');
+
+      const activeClass = "px-3 py-1 rounded-lg font-mono text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40";
+      const inactiveClass = "px-3 py-1 rounded-lg font-mono text-[11px] text-slate-400 hover:text-white";
+
+      if (btnAll) btnAll.className = type === 'ALL' ? activeClass : inactiveClass;
+      if (btnK8s) btnK8s.className = type === 'KUBERNETES' ? activeClass : inactiveClass;
+      if (btnDocker) btnDocker.className = type === 'DOCKER' ? activeClass : inactiveClass;
+
+      renderTargetsTable(false);
+    }
+
+    function filterTargetsTable() {
+      targetsPage = 1;
+      renderTargetsTable(false);
+    }
+
+    function renderTargetsTable(resetPage = true) {
+      const tbody = document.getElementById('targets-table-body');
+      const searchTerm = (document.getElementById('target-search-input')?.value || '').toLowerCase().trim();
+
+      let filtered = targets;
+      if (currentTargetFilter !== 'ALL') {
+        filtered = filtered.filter(t => t.type === currentTargetFilter);
+      }
+      if (searchTerm) {
+        filtered = filtered.filter(t => 
+          t.name.toLowerCase().includes(searchTerm) || 
+          t.endpoint.toLowerCase().includes(searchTerm) ||
+          (t.scopes && t.scopes.some(s => s.toLowerCase().includes(searchTerm)))
+        );
+      }
+      filteredTargetsCache = filtered;
+
+      if (resetPage) targetsPage = 1;
+
+      const total = filtered.length;
+      const totalPages = Math.ceil(total / targetsPerPage) || 1;
+      if (targetsPage > totalPages) targetsPage = totalPages;
+      if (targetsPage < 1) targetsPage = 1;
+
+      const startIdx = (targetsPage - 1) * targetsPerPage;
+      const endIdx = Math.min(startIdx + targetsPerPage, total);
+      const paged = filtered.slice(startIdx, endIdx);
+
+      const rangeEl = document.getElementById('targets-page-range');
+      const totalEl = document.getElementById('targets-page-total');
+      const indicatorEl = document.getElementById('targets-page-indicator');
+      const btnPrev = document.getElementById('btn-targets-prev');
+      const btnNext = document.getElementById('btn-targets-next');
+
+      if (rangeEl) rangeEl.textContent = total > 0 ? `${startIdx + 1} - ${endIdx}` : '0 - 0';
+      if (totalEl) totalEl.textContent = total;
+      if (indicatorEl) indicatorEl.textContent = `Página ${targetsPage} de ${totalPages}`;
+      if (btnPrev) btnPrev.disabled = targetsPage <= 1;
+      if (btnNext) btnNext.disabled = targetsPage >= totalPages;
+
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-12 text-center text-xs text-slate-400 font-mono">Nenhum target corresponde aos critérios de busca ou filtro.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = targets.map(t => {
+      tbody.innerHTML = paged.map(t => {
         const isK8s = t.type === 'KUBERNETES';
         const typeBadge = isK8s 
           ? `<span class="px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/35 text-[11px] font-bold font-mono">Kubernetes</span>`
@@ -664,28 +1698,113 @@ flowchart TD
           : `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/5 text-slate-400 border border-white/10 font-mono">Pausado</span>`;
 
         const toggleText = isActive ? 'Pausar' : 'Ativar';
-        const toggleClass = isActive ? 'bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 border-amber-500/30' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border-emerald-500/30';
+        const toggleClass = isActive 
+          ? 'bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 border-amber-500/30' 
+          : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border-emerald-500/30';
 
-        const scopesBadges = (t.scopes || []).map(s => `<span class="px-2 py-0.5 rounded-lg bg-white/5 text-slate-300 text-[11px] font-mono border border-white/5">${s}</span>`).join(' ');
+        const scopesList = t.scopes || [];
+        const visibleScopes = scopesList.slice(0, 3);
+        const remainingCount = scopesList.length - 3;
+        
+        let scopesBadges = visibleScopes.map(s => `<span class="px-2 py-0.5 rounded-lg bg-white/5 text-slate-300 text-[10px] font-mono border border-white/5">${s}</span>`).join(' ');
+        if (remainingCount > 0) {
+          scopesBadges += ` <span class="px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-300 text-[10px] font-mono border border-amber-500/20">+${remainingCount}</span>`;
+        }
+
+        const jiraProj = (t.actions && t.actions.jira_project_key) ? t.actions.jira_project_key : 'OPS';
+        const isJiraOn = t.actions && t.actions.create_jira_issue;
+        const jiraBadge = `
+          <button onclick="toggleTargetJira('${t.id}')" title="Clique para alternar abertura de chamados no Jira para este target" class="px-2.5 py-1 rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${isJiraOn ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/25' : 'bg-slate-800 text-slate-400 border border-white/5 hover:text-white hover:bg-slate-700'}">
+            <span class="h-1.5 w-1.5 rounded-full ${isJiraOn ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}"></span>
+            <span>${isJiraOn ? `${jiraProj} (Ativo)` : 'Desativado'}</span>
+          </button>
+        `;
 
         return `
           <tr class="hover:bg-white/[0.03] transition-colors">
-            <td class="py-4 px-6 font-semibold text-white">${t.name}</td>
-            <td class="py-4 px-6">${typeBadge}</td>
-            <td class="py-4 px-6 font-mono text-xs text-slate-300">${t.endpoint}</td>
-            <td class="py-4 px-6"><div class="flex flex-wrap gap-1 max-w-xs">${scopesBadges}</div></td>
-            <td class="py-4 px-6">
-              ${t.actions.create_jira_issue ? `<span class="text-xs text-emerald-400 flex items-center gap-1.5 font-mono"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Sim</span>` : `<span class="text-xs text-slate-500 font-mono">Não</span>`}
+            <td class="py-4 px-5">
+              <div class="font-bold text-white text-xs flex items-center gap-2">
+                <span class="h-2 w-2 rounded-full ${isActive ? 'bg-emerald-400' : 'bg-slate-600'}"></span>
+                ${t.name}
+              </div>
+              <span class="text-[10px] text-slate-500 font-mono">${t.id}</span>
             </td>
-            <td class="py-4 px-6">${statusBadge}</td>
-            <td class="py-4 px-6 text-right space-x-2">
+            <td class="py-4 px-5">${typeBadge}</td>
+            <td class="py-4 px-5 font-mono text-xs text-slate-300 truncate max-w-xs" title="${t.endpoint}">
+              ${t.endpoint}
+            </td>
+            <td class="py-4 px-5"><div class="flex flex-wrap gap-1 items-center">${scopesBadges}</div></td>
+            <td class="py-4 px-5">${jiraBadge}</td>
+            <td class="py-4 px-5">${statusBadge}</td>
+            <td class="py-4 px-5 text-right space-x-2">
               <button onclick="toggleTarget('${t.id}')" class="px-3 py-1 rounded-xl border ${toggleClass} text-xs font-medium transition-all">${toggleText}</button>
-              <button onclick="deleteTarget('${t.id}')" class="px-2.5 py-1 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 text-xs font-medium transition-all"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+              <button onclick="deleteTarget('${t.id}')" title="Excluir target" class="px-2.5 py-1 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 text-xs font-medium transition-all"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
             </td>
           </tr>
         `;
       }).join('');
       lucide.createIcons();
+    }
+
+    function renderDashboardTargets() {
+      const tbody = document.getElementById('dashboard-targets-table');
+      if (!tbody) return;
+
+      if (!targets.length) {
+        tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-xs text-slate-400 font-mono">Nenhum target configurado no momento.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = targets.slice(0, 4).map(t => {
+        const isK8s = t.type === 'KUBERNETES';
+        const typeBadge = isK8s 
+          ? `<span class="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/35 text-[10px] font-bold font-mono">K8s</span>`
+          : `<span class="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/35 text-[10px] font-bold font-mono">Docker</span>`;
+
+        const isActive = t.status === 'ACTIVE';
+        const dot = isActive ? 'bg-emerald-400' : 'bg-slate-600';
+        const scopesStr = (t.scopes || []).slice(0, 2).join(', ') + ((t.scopes && t.scopes.length > 2) ? ` (+${t.scopes.length - 2})` : '');
+
+        return `
+          <tr class="hover:bg-white/[0.03]">
+            <td class="py-3 px-4 font-bold text-xs text-white flex items-center gap-2">
+              <span class="h-2 w-2 rounded-full ${dot}"></span>
+              ${t.name}
+            </td>
+            <td class="py-3 px-4">${typeBadge}</td>
+            <td class="py-3 px-4 font-mono text-xs text-slate-300">${scopesStr || '-'}</td>
+            <td class="py-3 px-4">
+              <span class="text-[11px] font-mono ${isActive ? 'text-emerald-400' : 'text-slate-500'} font-bold">${t.status}</span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function updateKPICounters() {
+      // Environments
+      const k8sCount = environments.filter(e => e.type === 'KUBERNETES').length;
+      const dockerCount = environments.filter(e => e.type === 'DOCKER').length;
+      document.getElementById('kpi-environments-count').textContent = environments.length;
+      document.getElementById('kpi-environments-sub').textContent = `${k8sCount} K8s | ${dockerCount} Docker`;
+      document.getElementById('nav-badge-envs').textContent = environments.length;
+
+      // Targets
+      const activeTargets = targets.filter(t => t.status === 'ACTIVE').length;
+      document.getElementById('kpi-targets-active').textContent = activeTargets;
+      document.getElementById('kpi-targets-total').textContent = `de ${targets.length} alocados`;
+      document.getElementById('nav-badge-targets').textContent = activeTargets;
+      
+      let totalScopes = 0;
+      targets.forEach(t => {
+        if (t.scopes) totalScopes += t.scopes.length;
+      });
+      document.getElementById('kpi-scopes-count').textContent = totalScopes;
+
+      // Incidents & Jira
+      document.getElementById('kpi-incidents-count').textContent = eventsHistory.length;
+      const jiraCount = eventsHistory.filter(e => e.jira_issue).length;
+      document.getElementById('kpi-jira-tickets-count').textContent = jiraCount;
     }
 
     async function toggleTarget(id) {
@@ -700,7 +1819,7 @@ flowchart TD
     }
 
     async function deleteTarget(id) {
-      if (!confirm("Deseja realmente remover este target do supervisor?")) return;
+      if (!confirm("Deseja realmente remover este target de supervisão?")) return;
       try {
         const res = await fetch(`/api/targets/${id}`, { method: 'DELETE' });
         if (res.ok) {
@@ -716,10 +1835,11 @@ flowchart TD
         const res = await fetch('/api/events/history');
         if (res.ok) {
           const events = await res.json();
-          const feed = document.getElementById('live-feed-container');
           if (events && events.length) {
-            feed.innerHTML = '';
-            events.reverse().forEach(evt => appendEventToFeed(evt));
+            eventsHistory = events.reverse(); // Mais recentes primeiro
+            renderEventFeed(true);
+            renderDashboardFeedPreview();
+            updateKPICounters();
           }
         }
       } catch (e) {
@@ -727,12 +1847,147 @@ flowchart TD
       }
     }
 
+    function changeIncidentsPage(delta) {
+      const totalPages = Math.ceil(filteredIncidentsCache.length / incidentsPerPage) || 1;
+      if (delta === -999) incidentsPage = 1;
+      else if (delta === 999) incidentsPage = totalPages;
+      else incidentsPage += delta;
+
+      if (incidentsPage < 1) incidentsPage = 1;
+      if (incidentsPage > totalPages) incidentsPage = totalPages;
+
+      renderEventFeed(false);
+    }
+
+    function changeIncidentsPerPage(val) {
+      incidentsPerPage = parseInt(val, 10) || 10;
+      incidentsPage = 1;
+      renderEventFeed(false);
+    }
+
+    function setEventFilter(filter) {
+      currentEventFilter = filter;
+      incidentsPage = 1;
+      const btnAll = document.getElementById('evt-filter-all');
+      const btnCrit = document.getElementById('evt-filter-crit');
+      const btnJira = document.getElementById('evt-filter-jira');
+
+      const activeClass = "px-3 py-1 rounded-lg font-mono text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40";
+      const inactiveClass = "px-3 py-1 rounded-lg font-mono text-[11px] text-slate-400 hover:text-white";
+
+      if (btnAll) btnAll.className = filter === 'ALL' ? activeClass : inactiveClass;
+      if (btnCrit) btnCrit.className = filter === 'CRITICAL' ? activeClass : inactiveClass;
+      if (btnJira) btnJira.className = filter === 'JIRA' ? activeClass : inactiveClass;
+
+      renderEventFeed(false);
+    }
+
+    function clearEventFeed() {
+      eventsHistory = [];
+      incidentsPage = 1;
+      renderEventFeed(true);
+      renderDashboardFeedPreview();
+      updateKPICounters();
+    }
+
+    function renderEventFeed(resetPage = false) {
+      const feed = document.getElementById('live-feed-container');
+      if (!feed) return;
+      
+      let list = [...eventsHistory];
+      if (currentEventFilter === 'CRITICAL') {
+        list = list.filter(e => e.severity === 'CRITICAL' || e.exit_code > 0);
+      } else if (currentEventFilter === 'JIRA') {
+        list = list.filter(e => e.jira_issue);
+      }
+      filteredIncidentsCache = list;
+
+      if (resetPage) incidentsPage = 1;
+
+      const total = list.length;
+      const totalPages = Math.ceil(total / incidentsPerPage) || 1;
+      if (incidentsPage > totalPages) incidentsPage = totalPages;
+      if (incidentsPage < 1) incidentsPage = 1;
+
+      const startIdx = (incidentsPage - 1) * incidentsPerPage;
+      const endIdx = Math.min(startIdx + incidentsPerPage, total);
+      const paged = list.slice(startIdx, endIdx);
+
+      const rangeEl = document.getElementById('incidents-page-range');
+      const totalEl = document.getElementById('incidents-page-total');
+      const indicatorEl = document.getElementById('incidents-page-indicator');
+      const btnFirst = document.getElementById('btn-incidents-first');
+      const btnPrev = document.getElementById('btn-incidents-prev');
+      const btnNext = document.getElementById('btn-incidents-next');
+      const btnLast = document.getElementById('btn-incidents-last');
+
+      if (rangeEl) rangeEl.textContent = total > 0 ? `${startIdx + 1} - ${endIdx}` : '0 - 0';
+      if (totalEl) totalEl.textContent = total;
+      if (indicatorEl) indicatorEl.textContent = `Página ${incidentsPage} de ${totalPages}`;
+
+      const atStart = incidentsPage <= 1;
+      const atEnd = incidentsPage >= totalPages;
+      if (btnFirst) btnFirst.disabled = atStart;
+      if (btnPrev) btnPrev.disabled = atStart;
+      if (btnNext) btnNext.disabled = atEnd;
+      if (btnLast) btnLast.disabled = atEnd;
+
+      if (!list.length) {
+        feed.innerHTML = `<div class="p-12 text-center text-slate-400 font-mono">Nenhum evento registrado com o filtro selecionado.</div>`;
+        return;
+      }
+
+      feed.innerHTML = '';
+      paged.forEach(evt => {
+        const card = createEventElement(evt);
+        feed.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function renderDashboardFeedPreview() {
+      const preview = document.getElementById('dashboard-feed-preview');
+      if (!preview) return;
+
+      if (!eventsHistory.length) {
+        preview.innerHTML = `<div class="p-6 text-center text-slate-400">Nenhum incidente recente detectado.</div>`;
+        return;
+      }
+
+      preview.innerHTML = eventsHistory.slice(0, 3).map(evt => {
+        const isCrit = evt.severity === 'CRITICAL';
+        const color = isCrit ? 'text-red-400' : 'text-amber-300';
+        let jiraStatus = '';
+        if (evt.jira_issue) {
+          jiraStatus = evt.jira_issue.startsWith('DRYRUN-')
+            ? `<span class="text-[10px] text-amber-400 font-mono">Simulado: ${evt.jira_issue}</span>`
+            : `<span class="text-[10px] text-emerald-400 font-mono font-bold">Jira: ${evt.jira_issue}</span>`;
+        } else if (evt.jira_error) {
+          jiraStatus = `<span class="text-[10px] text-rose-400 font-mono truncate" title="${evt.jira_error}">Erro Jira</span>`;
+        }
+        return `
+          <div class="p-3 rounded-xl bg-white/5 border border-white/5 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="${color} font-bold">[${evt.reason}]</span>
+              <span class="text-slate-500 text-[10px]">${new Date(evt.timestamp).toLocaleTimeString('pt-BR')}</span>
+            </div>
+            <p class="text-white text-xs truncate">${evt.entity_name} (${evt.scope})</p>
+            ${jiraStatus}
+          </div>
+        `;
+      }).join('');
+    }
+
     function initSSE() {
       eventSource = new EventSource('/api/events/live');
       eventSource.onmessage = (e) => {
         try {
           const event = JSON.parse(e.data);
-          appendEventToFeed(event);
+          eventsHistory.unshift(event);
+          if (eventsHistory.length > 200) eventsHistory.pop();
+          renderEventFeed(false);
+          renderDashboardFeedPreview();
+          updateKPICounters();
         } catch (err) {
           console.error("Falha no parse do SSE:", err);
         }
@@ -742,8 +1997,7 @@ flowchart TD
       };
     }
 
-    function appendEventToFeed(evt) {
-      const feed = document.getElementById('live-feed-container');
+    function createEventElement(evt) {
       const isK8s = evt.type === 'KUBERNETES';
       const typeBadge = isK8s 
         ? `<span class="px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 font-bold text-[10px] font-mono border border-amber-500/35">K8S</span>`
@@ -755,45 +2009,63 @@ flowchart TD
 
       const timeStr = new Date(evt.timestamp).toLocaleTimeString('pt-BR');
 
-      const jiraBadge = evt.jira_issue
-        ? `<div class="text-[11px] text-emerald-400 pt-1.5 flex items-center gap-1.5 font-mono">
-             <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400"></i>
-             Chamado Jira: <strong class="underline font-bold text-amber-300">${evt.jira_issue}</strong> (Logs & Diagnóstico anexados)
-           </div>`
-        : '';
+      let jiraBadge = '';
+      if (evt.jira_issue) {
+        if (evt.jira_issue.startsWith('DRYRUN-')) {
+          jiraBadge = `
+            <div class="text-[11px] text-amber-300 pt-1.5 flex items-center gap-1.5 font-mono flex-wrap">
+              <span class="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-bold text-[10px]">🟡 SIMULAÇÃO (DRY-RUN)</span>
+              <span>Chamado Simulado: <strong class="text-white">${evt.jira_issue}</strong> (nenhum ticket real criado)</span>
+            </div>`;
+        } else {
+          const jiraHref = serverConfig && serverConfig.jira_url ? `${serverConfig.jira_url}/browse/${evt.jira_issue}` : '#';
+          jiraBadge = `
+            <div class="text-[11px] text-emerald-400 pt-1.5 flex items-center gap-1.5 font-mono flex-wrap">
+              <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold text-[10px]">🟢 JIRA OFICIAL</span>
+              <span>Chamado Aberto: <a href="${jiraHref}" target="_blank" class="underline font-bold text-amber-300 hover:text-white">${evt.jira_issue}</a> (Logs anexados)</span>
+            </div>`;
+        }
+      } else if (evt.jira_error) {
+        jiraBadge = `
+          <div class="text-[11px] text-rose-400 pt-1.5 flex items-center gap-1.5 font-mono flex-wrap">
+            <span class="px-2 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 font-bold text-[10px]">🔴 JIRA NÃO ABERTO</span>
+            <span class="truncate max-w-xl text-slate-300" title="${evt.jira_error}">${evt.jira_error}</span>
+          </div>`;
+      }
 
       const logSnippet = evt.logs 
-        ? `<div class="mt-2 p-3 bg-black/90 rounded-xl border border-white/10 text-[11px] text-slate-300 overflow-x-auto max-h-24 whitespace-pre font-mono">${evt.logs}</div>`
+        ? `<div class="mt-2.5 rounded-xl border border-white/10 bg-black/95 overflow-hidden">
+             <div class="px-3 py-1.5 bg-white/5 border-b border-white/10 flex items-center justify-between text-[10px] text-slate-400 font-mono">
+               <span class="flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-red-500/80 inline-block"></span> Tail de Diagnóstico</span>
+               <button onclick="navigator.clipboard.writeText(\`${encodeURIComponent(evt.logs)}\`)" class="text-amber-300 hover:underline">Copiar Log</button>
+             </div>
+             <div class="p-3 text-[11px] text-slate-300 overflow-x-auto max-h-28 whitespace-pre font-mono leading-relaxed">${evt.logs}</div>
+           </div>`
         : '';
 
       const borderLeftClass = evt.severity === 'CRITICAL' ? 'border-l-4 border-l-red-500' : 'border-l-4 border-l-amber-400';
 
       const card = document.createElement('div');
-      card.className = `p-4 rounded-2xl glass-panel glass-panel-hover ${borderLeftClass} flex items-start justify-between`;
+      card.className = `p-4 rounded-2xl glass-panel glass-panel-hover ${borderLeftClass} flex items-start justify-between transition-all`;
       card.innerHTML = `
-        <div class="space-y-1 w-full mr-3">
+        <div class="space-y-1.5 w-full mr-3">
           <div class="flex items-center gap-2 flex-wrap">
             ${typeBadge}
             <span class="text-red-400 font-bold">[${evt.reason}]</span>
             <span class="text-slate-400 font-mono">Ambiente: <span class="text-white">${evt.environment}</span> | Escopo: <span class="text-white">${evt.scope}</span></span>
             <span class="text-slate-500 text-[10px] ml-auto font-mono">${timeStr}</span>
           </div>
-          <p class="text-slate-200 text-xs">Entidade <span class="text-amber-300 font-bold">${evt.entity_name}</span> encerrou com Exit Code <span class="text-red-400 font-bold">${evt.exit_code}</span>.</p>
+          <p class="text-slate-200 text-xs">Entidade <span class="text-amber-300 font-bold font-mono">${evt.entity_name}</span> encerrou com Exit Code <span class="text-red-400 font-bold">${evt.exit_code}</span>.</p>
           ${logSnippet}
           ${jiraBadge}
         </div>
         ${severityBadge}
       `;
-
-      if (feed.children.length === 1 && feed.children[0].textContent.includes('Aguardando')) {
-        feed.innerHTML = '';
-      }
-
-      feed.prepend(card);
-      lucide.createIcons();
+      return card;
     }
 
     async function simulateIncident(type) {
+      showToast(`Disparando falha simulada (${type})...`, 'info');
       try {
         const res = await fetch('/api/simulate', {
           method: 'POST',
@@ -801,10 +2073,14 @@ flowchart TD
           body: JSON.stringify({ type: type })
         });
         if (res.ok) {
-          console.log("Incidente simulado disparado com sucesso!");
+          const data = await res.json();
+          const evt = data.event || {};
+          showToast(`Incidente simulado disparado para ${evt.entity_name || type}!`, 'success');
+        } else {
+          showToast('Falha na resposta da simulação.', 'warning');
         }
       } catch (e) {
-        alert("Falha na simulação: " + e.message);
+        showToast('Falha na simulação: ' + e.message, 'warning');
       }
     }
 
@@ -821,56 +2097,183 @@ flowchart TD
       if (type === 'KUBERNETES') {
         btnK8s.className = "p-3.5 rounded-2xl border border-amber-500/60 bg-amber-500/15 text-amber-300 font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/10";
         btnDocker.className = "p-3.5 rounded-2xl border border-white/10 bg-white/5 text-slate-400 font-semibold text-xs flex items-center justify-center gap-2 hover:border-white/20";
-        lblEndpoint.textContent = "Cluster Kubernetes (Contexto)";
+        lblEndpoint.textContent = "Cluster Kubernetes (Contexto do Kubeconfig)";
         lblScopes.textContent = "Namespaces para Supervisionar (Multi-seleção)";
+
+        if (filteredEnvs.length) {
+          endpointSelect.innerHTML = filteredEnvs.map(e => `<option value="${e.endpoint || e.name}">${e.name} — ${e.description || e.endpoint}</option>`).join('');
+        } else {
+          endpointSelect.innerHTML = `<option value="">Nenhum cluster Kubernetes encontrado no kubeconfig</option>`;
+        }
       } else {
         btnDocker.className = "p-3.5 rounded-2xl border border-emerald-500/60 bg-emerald-500/15 text-emerald-300 font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/10";
         btnK8s.className = "p-3.5 rounded-2xl border border-white/10 bg-white/5 text-slate-400 font-semibold text-xs flex items-center justify-center gap-2 hover:border-white/20";
         lblEndpoint.textContent = "Docker Host / Context";
-        lblScopes.textContent = "Compose Stacks / Labels para Supervisionar";
+        lblScopes.textContent = "Containers / Stacks para Supervisionar";
+
+        let optionsHtml = '';
+        if (filteredEnvs.length) {
+          optionsHtml += filteredEnvs.map(e => `<option value="${e.endpoint || e.name}">${e.name} (${e.description || e.endpoint})</option>`).join('');
+        }
+        optionsHtml += `<option value="__CUSTOM_DOCKER__">➕ Apontar Novo Host Docker (Remoto TCP / Socket)...</option>`;
+        endpointSelect.innerHTML = optionsHtml;
       }
 
-      if (filteredEnvs.length) {
-        endpointSelect.innerHTML = filteredEnvs.map(e => `<option value="${e.name}">${e.name} (${e.description || e.endpoint})</option>`).join('');
-      } else {
-        endpointSelect.innerHTML = `<option value="">Nenhum ambiente encontrado</option>`;
-      }
-
-      updateScopeOptions();
+      onEndpointChange();
       lucide.createIcons();
     }
 
-    function updateScopeOptions() {
-      const endpointName = document.getElementById('target-endpoint').value;
-      const container = document.getElementById('scope-checkboxes');
-      const env = environments.find(e => e.name === endpointName);
-      const scopes = (env && env.scopes) ? env.scopes : [];
+    function onEndpointChange() {
+      const endpointSelect = document.getElementById('target-endpoint');
+      const customSection = document.getElementById('custom-docker-host-section');
+      const scopesActions = document.getElementById('scopes-actions');
 
-      if (!scopes.length) {
-        container.innerHTML = `<div class="text-xs text-slate-500 font-mono">Nenhum escopo encontrado para este host.</div>`;
+      if (currentType === 'DOCKER' && endpointSelect.value === '__CUSTOM_DOCKER__') {
+        customSection.classList.remove('hidden');
+        scopesActions.classList.remove('hidden');
+        if (customDockerScopes.length > 0) {
+          renderScopesList(customDockerScopes);
+        } else {
+          const container = document.getElementById('scope-checkboxes');
+          container.innerHTML = `<div class="text-xs text-slate-400 font-mono text-center py-4">Informe o endereço do Host acima (ex: <code class="text-emerald-300">tcp://192.168.1.50:2375</code>) e clique em <b>"Listar Containers"</b> para carregar os alvos.</div>`;
+        }
+      } else {
+        customSection.classList.add('hidden');
+        updateScopeOptions();
+      }
+      updateScopeCount();
+    }
+
+    async function inspectCustomDockerHost() {
+      const input = document.getElementById('custom-docker-endpoint');
+      const btn = document.getElementById('btn-inspect-docker');
+      const statusBox = document.getElementById('custom-docker-status');
+      const endpoint = input.value.trim();
+
+      if (!endpoint) {
+        alert('Por favor informe o endereço do Docker host (ex: tcp://192.168.1.100:2375 ou /var/run/docker.sock)');
+        input.focus();
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> Conectando...`;
+      statusBox.classList.remove('hidden');
+      statusBox.innerHTML = `<span class="text-slate-400">Verificando conectividade com ${endpoint}...</span>`;
+
+      try {
+        const res = await fetch(`/api/discovery/docker/inspect?endpoint=${encodeURIComponent(endpoint)}`);
+        const data = await res.json();
+
+        if (data.connected && data.status === 'READY') {
+          statusBox.innerHTML = `<span class="text-emerald-400 font-bold">✓ Conectado com sucesso!</span> <span class="text-slate-300">${data.containers_count} container(s) detectados no host.</span>`;
+          customDockerScopes = data.scopes || [];
+          renderScopesList(customDockerScopes, true);
+          document.getElementById('scopes-actions').classList.remove('hidden');
+        } else {
+          statusBox.innerHTML = `<span class="text-rose-400 font-bold">⚠️ Falha na conexão:</span> <span class="text-slate-300">${data.error_message || 'Host Docker inacessível.'}</span>`;
+          const container = document.getElementById('scope-checkboxes');
+          container.innerHTML = `
+            <div class="text-xs text-amber-300/80 font-mono py-2">
+              Não foi possível listar containers automaticamente. Você pode digitar os nomes dos containers manualmente abaixo:
+            </div>
+            <div class="flex gap-2 mt-2">
+              <input type="text" id="manual-scope-input" placeholder="Nome do container (ex: app-backend)" class="flex-1 px-3 py-1.5 rounded-lg glass-input text-white text-xs font-mono">
+              <button type="button" onclick="addManualScope()" class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-mono font-bold">+ Adicionar</button>
+            </div>
+            <div id="manual-scopes-list" class="space-y-1 mt-2"></div>
+          `;
+        }
+      } catch (e) {
+        statusBox.innerHTML = `<span class="text-rose-400 font-bold">Erro de requisição:</span> <span class="text-slate-300">${e.message}</span>`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="search" class="w-3.5 h-3.5"></i> Listar Containers`;
+        lucide.createIcons();
+      }
+    }
+
+    function addManualScope() {
+      const input = document.getElementById('manual-scope-input');
+      const val = input.value.trim();
+      if (!val) return;
+      if (!customDockerScopes.includes(val)) {
+        customDockerScopes.push(val);
+      }
+      input.value = '';
+      renderScopesList(customDockerScopes, true);
+    }
+
+    function renderScopesList(scopes, defaultChecked = false) {
+      const container = document.getElementById('scope-checkboxes');
+      if (!scopes || !scopes.length) {
+        container.innerHTML = `<div class="text-xs text-slate-500 font-mono">Nenhum escopo/container disponível.</div>`;
+        updateScopeCount();
         return;
       }
 
       container.innerHTML = scopes.map(item => `
         <label class="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer hover:text-white transition-colors">
-          <input type="checkbox" name="target-scopes" value="${item}" class="rounded border-white/20 bg-slate-900 text-amber-500 focus:ring-0">
+          <input type="checkbox" name="target-scopes" value="${item}" ${defaultChecked ? 'checked' : ''} onchange="updateScopeCount()" class="rounded border-white/20 bg-slate-900 text-amber-500 focus:ring-0">
           <span class="font-mono">${item}</span>
         </label>
       `).join('');
+      updateScopeCount();
+    }
+
+    function toggleAllScopes(checked) {
+      const checkboxes = document.querySelectorAll('input[name="target-scopes"]');
+      checkboxes.forEach(c => c.checked = checked);
+      updateScopeCount();
+    }
+
+    function updateScopeCount() {
+      const checked = document.querySelectorAll('input[name="target-scopes"]:checked').length;
+      const countEl = document.getElementById('scope-selection-count');
+      if (countEl) {
+        countEl.textContent = checked > 0 ? `${checked} selecionado(s)` : '';
+      }
+    }
+
+    function updateScopeOptions() {
+      const endpointName = document.getElementById('target-endpoint').value;
+      const env = environments.find(e => (e.endpoint === endpointName || e.name === endpointName));
+      const scopes = (env && env.scopes) ? env.scopes : [];
+      renderScopesList(scopes, false);
+      const scopesActions = document.getElementById('scopes-actions');
+      if (scopes && scopes.length > 0) {
+        scopesActions.classList.remove('hidden');
+      } else {
+        scopesActions.classList.add('hidden');
+      }
     }
 
     async function handleCreateTarget(e) {
       e.preventDefault();
-      const name = document.getElementById('target-name').value;
-      const endpoint = document.getElementById('target-endpoint').value;
+      const name = document.getElementById('target-name').value.trim();
+      let endpoint = document.getElementById('target-endpoint').value.trim();
+
+      if (currentType === 'DOCKER' && endpoint === '__CUSTOM_DOCKER__') {
+        const customEp = document.getElementById('custom-docker-endpoint').value.trim();
+        if (!customEp) {
+          alert('Por favor informe o endereço do Docker Host no campo indicado!');
+          document.getElementById('custom-docker-endpoint').focus();
+          return;
+        }
+        endpoint = customEp;
+      }
+
       const checkboxes = document.querySelectorAll('input[name="target-scopes"]:checked');
       const scopes = Array.from(checkboxes).map(c => c.value);
       const jiraEnabled = document.getElementById('target-jira-toggle').checked;
 
       if (scopes.length === 0) {
-        alert('Por favor, selecione ao menos um namespace ou stack!');
+        alert('Por favor, selecione ao menos um namespace ou container!');
         return;
       }
+
+      const rawJiraProj = document.getElementById('target-jira-project').value.trim();
+      const jiraProject = (rawJiraProj || (serverConfig && serverConfig.project_key) || "OPS").toUpperCase();
 
       const payload = {
         name: name,
@@ -885,8 +2288,8 @@ flowchart TD
         },
         actions: {
           create_jira_issue: jiraEnabled,
-          jira_project_key: "OPS",
-          contrato: "INTERNO"
+          jira_project_key: jiraProject,
+          contrato: ""
         }
       };
 
@@ -900,7 +2303,10 @@ flowchart TD
         if (res.ok) {
           closeModal();
           document.getElementById('target-form').reset();
+          customDockerScopes = [];
+          await loadEnvironments();
           await loadTargets();
+          navigateTo('targets');
         } else {
           const err = await res.json();
           alert('Erro ao criar target: ' + (err.error || 'Falha'));
@@ -910,27 +2316,13 @@ flowchart TD
       }
     }
 
-    function switchTab(tab) {
-      const docsContent = document.getElementById('tab-content-docs');
-      const demoContent = document.getElementById('tab-content-demo');
-      const docsBtn = document.getElementById('tab-btn-docs');
-      const demoBtn = document.getElementById('tab-btn-demo');
-
-      if (tab === 'docs') {
-        docsContent.classList.remove('hidden');
-        demoContent.classList.add('hidden');
-        docsBtn.className = "px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all btn-glass-primary text-slate-950 font-bold";
-        demoBtn.className = "px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all text-slate-400 hover:text-white hover:bg-white/5";
-      } else {
-        docsContent.classList.add('hidden');
-        demoContent.classList.remove('hidden');
-        demoBtn.className = "px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all btn-glass-primary text-slate-950 font-bold";
-        docsBtn.className = "px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all text-slate-400 hover:text-white hover:bg-white/5";
-        lucide.createIcons();
-      }
-    }
-
     function openModal() {
+      if (serverConfig && serverConfig.project_key) {
+        const projInput = document.getElementById('target-jira-project');
+        if (projInput && !projInput.value) {
+          projInput.value = serverConfig.project_key;
+        }
+      }
       document.getElementById('target-modal').classList.remove('hidden');
       document.getElementById('target-modal').classList.add('flex');
     }

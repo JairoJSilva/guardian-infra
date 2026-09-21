@@ -9,10 +9,10 @@ func TestCleanURL(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{"https://jira.mv.com.br/projects/OPS/queues/custom/5607", "https://jira.mv.com.br"},
-		{"https://jira.mv.com.br/", "https://jira.mv.com.br"},
+		{"https://jira.acme.corp/projects/OPS/queues/custom/5607", "https://jira.acme.corp"},
+		{"https://jira.acme.corp/", "https://jira.acme.corp"},
 		{"http://localhost:8080/api", "http://localhost:8080"},
-		{"", "https://jira.mv.com.br"},
+		{"", ""},
 	}
 
 	for _, tt := range tests {

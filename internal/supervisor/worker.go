@@ -10,29 +10,29 @@ import (
 )
 
 type TargetWorker struct {
-	target       *domain.Target
-	ctx          context.Context
-	cancel       context.CancelFunc
-	k8sPool      *k8s.ClientPool
-	dockerClient *docker.DockerClient
-	outChan      chan<- *domain.IncidentEvent
+	target     *domain.Target
+	ctx        context.Context
+	cancel     context.CancelFunc
+	k8sPool    *k8s.ClientPool
+	dockerPool *docker.DockerPool
+	outChan    chan<- *domain.IncidentEvent
 }
 
 func NewTargetWorker(
 	target *domain.Target,
 	parentCtx context.Context,
 	k8sPool *k8s.ClientPool,
-	dockerClient *docker.DockerClient,
+	dockerPool *docker.DockerPool,
 	outChan chan<- *domain.IncidentEvent,
 ) *TargetWorker {
 	ctx, cancel := context.WithCancel(parentCtx)
 	return &TargetWorker{
-		target:       target,
-		ctx:          ctx,
-		cancel:       cancel,
-		k8sPool:      k8sPool,
-		dockerClient: dockerClient,
-		outChan:      outChan,
+		target:     target,
+		ctx:        ctx,
+		cancel:     cancel,
+		k8sPool:    k8sPool,
+		dockerPool: dockerPool,
+		outChan:    outChan,
 	}
 }
 
@@ -46,9 +46,10 @@ func (w *TargetWorker) Start() {
 				log.Printf("[Supervisor Worker] Erro no watcher K8s para %s: %v", w.target.Name, err)
 			}
 		} else if w.target.Type == domain.EnvDocker {
-			watcher := docker.NewDockerWatcher(w.dockerClient, w.target)
+			client := w.dockerPool.GetClient(w.target.Endpoint)
+			watcher := docker.NewDockerWatcher(client, w.target)
 			if err := watcher.Watch(w.ctx, w.outChan); err != nil {
-				log.Printf("[Supervisor Worker] Erro no watcher Docker para %s: %v", w.target.Name, err)
+				log.Printf("[Supervisor Worker] Erro no watcher Docker para %s (%s): %v", w.target.Name, w.target.Endpoint, err)
 			}
 		} else {
 			log.Printf("[Supervisor Worker] Tipo de ambiente desconhecido para target %s: %s", w.target.ID, w.target.Type)

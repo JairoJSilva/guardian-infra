@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"guardian/internal/actions"
@@ -72,9 +73,11 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/targets", s.handleTargets)
 	s.mux.HandleFunc("/api/targets/", s.handleTargetByID)
 	s.mux.HandleFunc("/api/discovery/environments", s.handleDiscoveryEnvironments)
+	s.mux.HandleFunc("/api/discovery/docker/inspect", s.handleDockerInspect)
 	s.mux.HandleFunc("/api/events/live", s.handleLiveEvents)
 	s.mux.HandleFunc("/api/events/history", s.handleEventsHistory)
 	s.mux.HandleFunc("/api/simulate", s.handleSimulate)
+	s.mux.HandleFunc("/api/settings/toggle-dry-run", s.handleToggleDryRun)
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
@@ -82,10 +85,30 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 		"status":      "UP",
 		"version":     "2.0.0-hybrid",
 		"mode":        "hybrid-supervisor",
-		"dry_run":     s.cfg.DryRun,
+		"dry_run":     s.cfg.IsDryRun(),
 		"jira_url":    s.cfg.JiraBaseURL,
 		"project_key": s.cfg.JiraProjectKey,
 		"time":        time.Now().Format(time.RFC3339),
+	})
+}
+
+func (s *Server) handleToggleDryRun(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		respondError(w, http.StatusMethodNotAllowed, "Método não permitido")
+		return
+	}
+
+	newDryRun := s.cfg.ToggleDryRun()
+	modeName := "PRODUÇÃO REAL (Chamados reais no Jira)"
+	if newDryRun {
+		modeName = "SIMULAÇÃO (Dry-Run Ativo - sem chamados reais)"
+	}
+	log.Printf("[API Settings] Modo de operação alterado dinamicamente pela interface para: %s", modeName)
+
+	respondJSON(w, http.StatusOK, map[string]interface{}{
+		"dry_run": newDryRun,
+		"mode":    modeName,
+		"message": "Modo de operação alternado com sucesso",
 	})
 }
 
@@ -147,6 +170,22 @@ func (s *Server) handleTargetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(parts) == 2 && parts[1] == "toggle-jira" && r.Method == http.MethodPost {
+		t, err := s.storage.Get(targetID)
+		if err != nil {
+			respondError(w, http.StatusNotFound, err.Error())
+			return
+		}
+		t.Actions.CreateJiraIssue = !t.Actions.CreateJiraIssue
+		t.UpdatedAt = time.Now()
+		if err := s.storage.Save(t); err != nil {
+			respondError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		respondJSON(w, http.StatusOK, t)
+		return
+	}
+
 	switch r.Method {
 	case http.MethodGet:
 		t, err := s.storage.Get(targetID)
@@ -169,11 +208,45 @@ func (s *Server) handleTargetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleDiscoveryEnvironments(w http.ResponseWriter, r *http.Request) {
-	k8sEnvs := s.k8sDiscovery.DiscoverEnvironments()
-	dockerEnvs := s.dockerDiscovery.DiscoverEnvironments()
+	var (
+		k8sEnvs    []domain.EnvironmentInfo
+		dockerEnvs []domain.EnvironmentInfo
+		wg         sync.WaitGroup
+	)
+
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		k8sEnvs = s.k8sDiscovery.DiscoverEnvironments()
+	}()
+	go func() {
+		defer wg.Done()
+		dockerEnvs = s.dockerDiscovery.DiscoverEnvironments()
+	}()
+	wg.Wait()
 
 	all := append(k8sEnvs, dockerEnvs...)
 	respondJSON(w, http.StatusOK, all)
+}
+
+func (s *Server) handleDockerInspect(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		respondError(w, http.StatusMethodNotAllowed, "Método não permitido")
+		return
+	}
+
+	endpoint := strings.TrimSpace(r.URL.Query().Get("endpoint"))
+	if endpoint == "" {
+		endpoint = "/var/run/docker.sock"
+	}
+
+	res, err := s.dockerDiscovery.InspectEndpoint(r.Context(), endpoint)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondJSON(w, http.StatusOK, res)
 }
 
 func (s *Server) handleEventsHistory(w http.ResponseWriter, r *http.Request) {
@@ -237,16 +310,17 @@ func (s *Server) handleSimulate(w http.ResponseWriter, r *http.Request) {
 		req.Type = domain.EnvKubernetes
 	}
 	if req.EntityName == "" {
+		simSuffix := fmt.Sprintf("%04d", time.Now().UnixNano()%10000)
 		if req.Type == domain.EnvKubernetes {
-			req.EntityName = "payment-service-84f98d7b"
-			req.Environment = "aks-prod-brazil"
+			req.EntityName = fmt.Sprintf("payment-service-%s", simSuffix)
+			req.Environment = "k8s-cluster"
 			req.Scope = "billing"
 			req.Reason = "CrashLoopBackOff"
 			req.ExitCode = 1
 			req.Severity = "WARNING"
 			req.Logs = "[FATAL] Conexão recusada no banco de dados após 3 tentativas\n[ERROR] panic: runtime error: invalid memory address or nil pointer dereference"
 		} else {
-			req.EntityName = "redis-cache-main-1"
+			req.EntityName = fmt.Sprintf("redis-cache-%s", simSuffix)
 			req.Environment = "docker-local"
 			req.Scope = "redis-cache"
 			req.Reason = "OOMKilled"

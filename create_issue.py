@@ -11,13 +11,13 @@ import requests
 env_path = Path(__file__).parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
-raw_url = os.getenv("JIRA_BASE_URL", "https://jira.mv.com.br").strip()
+raw_url = os.getenv("JIRA_BASE_URL", "https://jira.example.com").strip()
 parsed = urlparse(raw_url)
 JIRA_BASE_URL = f"{parsed.scheme}://{parsed.netloc}" if parsed.netloc else raw_url.rstrip("/")
 JIRA_USER = os.getenv("JIRA_USER", "").strip()
 JIRA_PASSWORD = os.getenv("JIRA_PASSWORD", "").strip()
 
-def create_issue(summary: str, description: str = "", project_key: str = "OPS", issue_type: str = "Solicitação de serviço", contrato: str = None):
+def create_issue(summary: str, description: str = "", project_key: str = "OPS", issue_type: str = "Incident", contrato: str = None):
     if not JIRA_USER or not JIRA_PASSWORD:
         print("[!] ERRO: JIRA_USER ou JIRA_PASSWORD não configurados no .env")
         sys.exit(1)

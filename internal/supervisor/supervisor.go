@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"sync"
 
 	"guardian/internal/actions"
@@ -18,7 +19,7 @@ type Supervisor struct {
 	ctx          context.Context
 	cancel       context.CancelFunc
 	k8sPool      *k8s.ClientPool
-	dockerClient *docker.DockerClient
+	dockerPool   *docker.DockerPool
 	storage      *storage.Storage
 	deduplicator *actions.Deduplicator
 	jiraClient   *actions.JiraClient
@@ -29,7 +30,7 @@ type Supervisor struct {
 
 func NewSupervisor(
 	k8sPool *k8s.ClientPool,
-	dockerClient *docker.DockerClient,
+	dockerPool *docker.DockerPool,
 	store *storage.Storage,
 	dedup *actions.Deduplicator,
 	jira *actions.JiraClient,
@@ -40,7 +41,7 @@ func NewSupervisor(
 		ctx:          ctx,
 		cancel:       cancel,
 		k8sPool:      k8sPool,
-		dockerClient: dockerClient,
+		dockerPool:   dockerPool,
 		storage:      store,
 		deduplicator: dedup,
 		jiraClient:   jira,
@@ -79,8 +80,9 @@ func (s *Supervisor) eventLoop() {
 func (s *Supervisor) processEvent(event *domain.IncidentEvent) {
 	fingerprint := event.Fingerprint()
 
-	// Anti-Spam / Deduplicação
-	if s.deduplicator.IsInCooldown(fingerprint) {
+	// Anti-Spam / Deduplicação: Simulações intencionais não devem ser bloqueadas pelo cooldown
+	isSimulation := event.TargetID == "target-simulated" || strings.HasPrefix(event.ID, "evt-sim-")
+	if !isSimulation && s.deduplicator.IsInCooldown(fingerprint) {
 		log.Printf("[Supervisor] 🛡️ [Anti-Spam] Incidente %s suprimido por cooldown ativo.", fingerprint)
 		return
 	}
@@ -93,10 +95,16 @@ func (s *Supervisor) processEvent(event *domain.IncidentEvent) {
 		key, err := s.jiraClient.CreateIncidentIssue(event, target)
 		if err != nil {
 			log.Printf("[Supervisor] ❌ Falha ao criar chamado no Jira: %v", err)
+			event.JiraError = err.Error()
 		} else {
 			event.JiraIssue = key
-			s.deduplicator.Record(fingerprint)
+			if !isSimulation {
+				s.deduplicator.Record(fingerprint)
+			}
 		}
+	} else {
+		log.Printf("[Supervisor] ℹ️ Abertura de Jira desativada na configuração do target: %s", target.Name)
+		event.JiraError = "Jira desativado na configuração deste Target"
 	}
 
 	// Transmissão para Live Feed em tempo real
@@ -112,7 +120,7 @@ func (s *Supervisor) startWorker(target *domain.Target) {
 		return
 	}
 
-	worker := NewTargetWorker(target, s.ctx, s.k8sPool, s.dockerClient, s.eventChan)
+	worker := NewTargetWorker(target, s.ctx, s.k8sPool, s.dockerPool, s.eventChan)
 	s.workers[target.ID] = worker
 	worker.Start()
 	log.Printf("[Supervisor] [✓] Worker iniciado para Target: %s (%s)", target.Name, target.ID)

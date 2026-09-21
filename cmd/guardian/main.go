@@ -53,11 +53,11 @@ func main() {
 	k8sPool := k8s.NewClientPool(cfg.KubeConfigPath)
 	k8sDisc := k8s.NewK8sDiscovery(k8sPool, cfg.KubeConfigPath)
 
-	dockerClient := docker.NewDockerClient(cfg.DockerSocketPath)
-	dockerDisc := docker.NewDockerDiscovery(dockerClient)
+	dockerPool := docker.NewDockerPool(cfg.DockerSocketPath)
+	dockerDisc := docker.NewDockerDiscovery(dockerPool, store)
 
 	// 4. Inicializa Supervisor de Targets Híbrido
-	superv := supervisor.NewSupervisor(k8sPool, dockerClient, store, dedup, jira, notifier)
+	superv := supervisor.NewSupervisor(k8sPool, dockerPool, store, dedup, jira, notifier)
 	superv.Start()
 
 	// 5. Inicializa Servidor HTTP e Rotas da API
@@ -67,12 +67,18 @@ func main() {
 	mainMux := http.NewServeMux()
 	mainMux.Handle("/api/", apiServer.Handler())
 
-	// Sub-FS para servir o index.html na raiz
+	// Sub-FS para servir o index.html na raiz sem cache agressivo do navegador
 	webFS, err := fs.Sub(web.Assets, ".")
 	if err != nil {
 		log.Fatalf("Erro ao carregar assets web: %v", err)
 	}
-	mainMux.Handle("/", http.FileServer(http.FS(webFS)))
+	fileServer := http.FileServer(http.FS(webFS))
+	mainMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+		w.Header().Set("Pragma", "no-cache")
+		w.Header().Set("Expires", "0")
+		fileServer.ServeHTTP(w, r)
+	})
 
 	httpServer := &http.Server{
 		Addr:    fmt.Sprintf("0.0.0.0:%d", cfg.HTTPPort),

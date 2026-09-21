@@ -125,7 +125,7 @@ cmd_k8s() {
 }
 
 cmd_docker() {
-    local container="${1:-flowti-app}"
+    local container="${1:-web-app}"
     local failure="${2:-CrashLoopBackOff}"
     local logs=""
 
@@ -229,7 +229,7 @@ cmd_qa() {
 }
 
 cmd_dev() {
-    local component="${1:-flowti-api}"
+    local component="${1:-backend-api}"
     local failure="${2:-NullPointerException}"
     local error_msg="${3:-}"
 
@@ -365,10 +365,10 @@ main() {
             echo ""
             echo -e "${BOLD}Exemplos:${RESET}"
             echo -e "  ./guardian.sh k8s target-app default CrashLoopBackOff"
-            echo -e "  ./guardian.sh docker flowti-mysql OOMKilled"
+            echo -e "  ./guardian.sh docker mysql-db OOMKilled"
             echo -e "  ./guardian.sh db api-backend Deadlock PostgreSQL"
-            echo -e "  ./guardian.sh qa portal-paciente Regression"
-            echo -e "  ./guardian.sh dev flowti-api NullPointerException"
+            echo -e "  ./guardian.sh qa web-portal Regression"
+            echo -e "  ./guardian.sh dev backend-api NullPointerException"
             echo ""
             ;;
         *)

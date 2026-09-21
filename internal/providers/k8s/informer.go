@@ -54,12 +54,14 @@ func (w *K8sWatcher) Watch(ctx context.Context, out chan<- *domain.IncidentEvent
 func (w *K8sWatcher) scan(ctx context.Context, out chan<- *domain.IncidentEvent) {
 	clientset, err := w.pool.GetClientForContext(w.target.Endpoint)
 	if err != nil {
+		log.Printf("[K8sWatcher] ⚠️ [Target: %s] Falha ao obter client K8s para contexto '%s': %v", w.target.Name, w.target.Endpoint, err)
 		return
 	}
 
 	for _, ns := range w.target.Scopes {
 		pods, err := clientset.CoreV1().Pods(ns).List(ctx, metav1.ListOptions{})
 		if err != nil {
+			log.Printf("[K8sWatcher] ⚠️ [Target: %s] Falha ao listar pods no namespace '%s': %v", w.target.Name, ns, err)
 			continue
 		}
 
@@ -70,6 +72,30 @@ func (w *K8sWatcher) scan(ctx context.Context, out chan<- *domain.IncidentEvent)
 }
 
 func (w *K8sWatcher) inspectPod(ctx context.Context, clientset *kubernetes.Clientset, pod *corev1.Pod, ns string, out chan<- *domain.IncidentEvent) {
+	// Se o pod inteiro estiver em status Failed
+	if pod.Status.Phase == corev1.PodFailed {
+		reason := "PodFailed"
+		if pod.Status.Reason != "" {
+			reason = pod.Status.Reason
+		}
+		event := &domain.IncidentEvent{
+			ID:          fmt.Sprintf("evt-k8s-%d", time.Now().UnixNano()),
+			Type:        domain.EnvKubernetes,
+			TargetID:    w.target.ID,
+			Environment: w.target.Endpoint,
+			Scope:       ns,
+			EntityName:  pod.Name,
+			Image:       pod.Spec.Containers[0].Image,
+			Reason:      reason,
+			ExitCode:    1,
+			Logs:        w.fetchPodLogs(ctx, clientset, pod.Name, ns, pod.Spec.Containers[0].Name),
+			Timestamp:   time.Now(),
+			Severity:    "CRITICAL",
+		}
+		out <- event
+		return
+	}
+
 	// Analisa cada container do Pod
 	for _, cs := range pod.Status.ContainerStatuses {
 		isFailed := false
@@ -77,10 +103,10 @@ func (w *K8sWatcher) inspectPod(ctx context.Context, clientset *kubernetes.Clien
 		exitCode := 0
 		severity := "WARNING"
 
-		// 1. Container aguardando com erro (ex: CrashLoopBackOff)
+		// 1. Container aguardando com erro
 		if cs.State.Waiting != nil {
 			wReason := cs.State.Waiting.Reason
-			if wReason == "CrashLoopBackOff" || wReason == "Error" || wReason == "ImagePullBackOff" {
+			if wReason == "CrashLoopBackOff" || wReason == "Error" || wReason == "ImagePullBackOff" || wReason == "ErrImagePull" || wReason == "CreateContainerConfigError" || wReason == "CreateContainerError" {
 				isFailed = true
 				reason = wReason
 				if cs.LastTerminationState.Terminated != nil {
