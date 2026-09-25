@@ -145,6 +145,10 @@ chmod +x "${BIN_DIR}/guardian" "${BIN_DIR}/guardian-app" "${BIN_DIR}/guardian-ct
 # 6. Instalação de Ícones e Atalhos de Desktop
 echo -e "${CYAN}[4/6] Registrando aplicativo no menu do sistema (Zorin/GNOME)...${RESET}"
 cp packaging/desktop/guardian.svg "${ICONS_DIR}/guardian.svg"
+if [[ -f "packaging/desktop/guardian.png" ]]; then
+    mkdir -p "${ICONS_DIR%/*/*}/512x512/apps" 2>/dev/null || true
+    cp packaging/desktop/guardian.png "${ICONS_DIR%/*/*}/512x512/apps/guardian.png" 2>/dev/null || true
+fi
 cp packaging/desktop/guardian.desktop "${APPS_DIR}/guardian.desktop"
 chmod +x "${APPS_DIR}/guardian.desktop"
 
