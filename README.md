@@ -1,8 +1,9 @@
 # Guardian — Autonomous Enterprise SRE & Incident Automation Platform
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-v3.0.0_Enterprise-6366f1?style=for-the-badge&logo=shield" alt="Version v3.0.0" />
-  <img src="https://img.shields.io/badge/Language-Go_1.22+-00ADD8?style=for-the-badge&logo=go" alt="Go Language" />
+  <img src="https://img.shields.io/badge/Version-v3.1.0_Enterprise-6366f1?style=for-the-badge&logo=shield" alt="Version v3.1.0" />
+  <img src="https://img.shields.io/badge/Core_Language-Go_1.22+-00ADD8?style=for-the-badge&logo=go" alt="Go Language" />
+  <img src="https://img.shields.io/badge/Platform-Linux_%26_Windows_(.exe)-brightgreen?style=for-the-badge&logo=windows" alt="Linux & Windows" />
   <img src="https://img.shields.io/badge/Kubernetes-client--go_v0.30-326CE5?style=for-the-badge&logo=kubernetes" alt="Kubernetes" />
   <img src="https://img.shields.io/badge/Docker-Native_Engine-2496ED?style=for-the-badge&logo=docker" alt="Docker" />
   <img src="https://img.shields.io/badge/Jira-REST_API_v2-0052CC?style=for-the-badge&logo=jira" alt="Jira" />
@@ -12,9 +13,9 @@
 
 ## 1. Visão Geral
 
-O **Guardian** é uma plataforma corporativa e autônoma de observabilidade, supervisão de infraestrutura e resposta automatizada a incidentes para times de SRE e DevOps.
+O **Guardian** é uma plataforma corporativa e autônoma de observabilidade, supervisão de infraestrutura e resposta automatizada a incidentes para times de SRE e DevOps, **oficialmente desenvolvida e padronizada em linguagem Go**.
 
-A versão **v3.0.0 (Enterprise Hybrid)** consolida o Guardian como um **aplicativo standalone único**, eliminando a necessidade de serviços picotados ou containers auxiliares de monitoramento. Todo o ciclo de vida — desde a detecção em tempo real de falhas no Kubernetes ou Docker até a abertura de incidentes formatados no Jira — roda diretamente em um único binário nativo com servidor web e dashboard embutidos.
+A arquitetura moderna consolida o Guardian como um **aplicativo nativo multiplataforma (Linux & Windows)**, eliminando a necessidade de runtimes externos, scripts interpretados ou containers auxiliares de monitoramento. Todo o ciclo de vida — desde a detecção em tempo real de falhas no Kubernetes ou Docker até a abertura de incidentes formatados no Jira — roda diretamente em um único binário nativo com servidor web e dashboard embutidos.
 
 ---
 
@@ -198,7 +199,39 @@ Acesse a interface no seu navegador ou janela de aplicativo: **`http://localhost
 
 ---
 
-## 5. Flags de Linha de Comando
+## 5. Suporte Oficial a Windows (`guardian.exe`)
+
+O Guardian é oficialmente compilado para Windows x64 (`amd64`), oferecendo paridade total de recursos, telemetria em tempo real e automação Jira:
+
+### 🚀 Executando no Windows
+* **Opção 1 (Launcher Interativo):** Dê um duplo-clique no arquivo `guardian.bat`. Ele detectará o binário e iniciará automaticamente a aplicação no navegador ou em janela de aplicativo standalone (Edge / Chrome).
+* **Opção 2 (Prompt de Comando ou PowerShell):**
+  ```powershell
+  # Abrir diretamente com interface gráfica desktop nativa
+  .\guardian.exe -gui
+
+  # Iniciar como servidor na porta 8092
+  .\guardian.exe -port 8092
+
+  # Executar em modo Dry-Run (simulação)
+  .\guardian.exe -dry-run=true
+
+  # Informar kubeconfig do Windows
+  .\guardian.exe -kubeconfig "$env:USERPROFILE\.kube\config"
+  ```
+
+### ⚙️ Como Compilar para Windows no Linux (Cross-Compilation)
+Para gerar o executável Windows (`guardian.exe` e `bin/guardian.exe`):
+```bash
+make exe
+# ou manualmente:
+GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o guardian.exe ./cmd/guardian
+```
+O binário resultante é 100% autossuficiente e standalone, sem necessidade de instalação de Python, runtimes ou dependências externas no Windows.
+
+---
+
+## 6. Flags de Linha de Comando
 
 | Flag | Tipo | Padrão | Descrição |
 | :--- | :--- | :--- | :--- |
@@ -209,7 +242,9 @@ Acesse a interface no seu navegador ou janela de aplicativo: **`http://localhost
 
 ---
 
-## 6. Variáveis de Ambiente (`.env`)
+---
+
+## 7. Variáveis de Ambiente (`.env`)
 
 Crie ou edite o arquivo `.env` na raiz do projeto para configurar integrações corporativas:
 
@@ -231,13 +266,13 @@ PORT=8092
 
 ---
 
-## 7. Estrutura do Repositório
+## 8. Estrutura do Repositório
 
 ```text
 guardian-infra/
 ├── cmd/
 │   └── guardian/
-│       └── main.go                 # Entrypoint da aplicação Go v3.0.0
+│       └── main.go                 # Entrypoint da aplicação Go v3.1.0
 ├── internal/
 │   ├── api/                        # Servidor HTTP, rotas REST e SSE Live Stream
 │   ├── supervisor/                 # Gerenciamento dinâmico do ciclo de vida dos Targets
@@ -246,9 +281,15 @@ guardian-infra/
 │   │   └── docker/                 # Inspecção de containers e stream de eventos do Docker
 │   ├── actions/                    # Pipeline de ações (Jira Client com Wiki Markup)
 │   ├── domain/                     # Modelos de domínio (Target, IncidentEvent)
+│   ├── desktop/                    # Launcher gráfico multiplataforma (Linux & Windows)
+│   ├── version/                    # Controle dinâmico de versão e build
 │   └── storage/                    # Persistência de estado local (targets.json)
+├── packaging/                      # Manifestos .desktop, ícones e systemd
+├── scripts/                        # Scripts de automação, packaging e versionamento
 ├── web/                            # Interface gráfica web (HTML, Tailwind CSS, Lucide, SSE)
-├── targets.json                    # Armazenamento local dos targets configurados
+├── guardian.exe                    # Executável compilado nativo para Windows
+├── guardian.bat                    # Script launcher de inicialização no Windows
+├── Makefile                        # Automação de compilação, testes, empacotamento e releases
 ├── go.mod                          # Módulos e dependências oficiais do Go
 ├── go.sum                          # Checksums das dependências
 └── README.md                       # Este documento
@@ -256,7 +297,7 @@ guardian-infra/
 
 ---
 
-## 8. Principais Rotas da API REST
+## 9. Principais Rotas da API REST
 
 | Método | Endpoint | Descrição |
 | :--- | :--- | :--- |
@@ -273,10 +314,16 @@ guardian-infra/
 
 ---
 
-## 9. Histórico de Versões
+## 10. Histórico de Versões
 
-* **`v3.0.0` (Versão Atual - 21/Set/2026):**
-  * Unificação definitiva em aplicativo standalone único em Go.
+* **`v3.1.0` (Versão Atual - 25/Set/2026):**
+  * Oficialização e consolidação da linguagem Go como motor central nativo e exclusivo do Guardian.
+  * Suporte oficial completo a **Windows** (`guardian.exe` standalone de 33MB e script launcher `guardian.bat`).
+  * Launcher desktop nativo multiplataforma (Edge / Chrome / Brave em modo `--app` no Linux e Windows).
+  * Injeção dinâmica de metadados de versão (`Version`, `GitCommit`, `BuildDate`) via ldflags.
+  * Novos comandos no Makefile (`make exe`, `make update`, `make rollback`, `make deb`).
+* **`v3.0.0`:**
+  * Unificação definitiva em aplicativo standalone em Go.
   * Suporte híbrido (Kubernetes multicluster + Docker socket nativo).
   * Web UI executiva completa com modo escuro, sidebar e live stream SSE.
   * Formatação Wiki Markup corporativa no Jira sem emojis 4-bytes.

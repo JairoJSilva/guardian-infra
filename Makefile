@@ -8,8 +8,9 @@ GIT_COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "dev")
 BUILD_DATE := $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 LDFLAGS := -s -w -X 'guardian/internal/version.Version=$(VERSION)' -X 'guardian/internal/version.GitCommit=$(GIT_COMMIT)' -X 'guardian/internal/version.BuildDate=$(BUILD_DATE)'
 BIN := bin/guardian
+BIN_WIN := bin/guardian.exe
 
-.PHONY: all build install install-system update rollback uninstall purge status version deb run app clean bump-patch bump-minor bump-major help
+.PHONY: all build exe build-windows install install-system update rollback uninstall purge status version deb run app clean bump-patch bump-minor bump-major help
 
 all: build
 
@@ -20,6 +21,16 @@ build:
 	go build -ldflags="$(LDFLAGS)" -o $(BIN) ./cmd/guardian
 	@chmod +x $(BIN)
 	@echo "✅ Binário compilado com sucesso em $(BIN)"
+
+## Compila o executável standalone nativo para Windows (.exe)
+exe: build-windows
+
+build-windows:
+	@echo "⚙️  Compilando Guardian Windows .exe v$(VERSION) ($(GIT_COMMIT), $(BUILD_DATE))..."
+	@mkdir -p bin
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="$(LDFLAGS)" -o $(BIN_WIN) ./cmd/guardian
+	@cp -f $(BIN_WIN) guardian.exe
+	@echo "✅ Binário Windows (.exe) compilado com sucesso em $(BIN_WIN) e guardian.exe"
 
 ## Instala no desktop do usuário local (~/.local) sem necessidade de sudo
 install:
