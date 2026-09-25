@@ -27,7 +27,7 @@
           },
           colors: {
             guardian: {
-              neon: '#39FF14',
+              amber: '#FFBF00', gold: '#FFC700',
               amber: '#FFBF00',
               black: '#121212',
               grey: '#2F2F2F',
@@ -52,9 +52,9 @@
       themeVariables: {
         darkMode: true,
         background: '#121212',
-        primaryColor: '#39FF14',
+        primaryColor: '#FFBF00',
         primaryTextColor: '#E0E0E0',
-        primaryBorderColor: '#39FF14',
+        primaryBorderColor: '#FFBF00',
         lineColor: '#FFBF00',
         secondaryColor: '#2F2F2F',
         tertiaryColor: '#181818'
@@ -69,22 +69,22 @@
       --card-bg: rgba(47, 47, 47, 0.70);
       --card-bg-hover: rgba(58, 58, 58, 0.85);
       --card-border: rgba(255, 255, 255, 0.08);
-      --card-border-hover: rgba(57, 255, 20, 0.45);
-      --neon-green: #39FF14;
+      --card-border-hover: rgba(255, 191, 0, 0.45);
+      --neon-amber: #FFBF00; --neon-gold: #FFC700;
       --amber: #FFBF00;
       --deep-black: #121212;
       --dark-grey: #2F2F2F;
       --tech-white: #E0E0E0;
       --muted-grey: #888888;
       --glass-shadow: 0 16px 40px 0 rgba(0, 0, 0, 0.80), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
-      --title-grad: linear-gradient(135deg, #FFFFFF 0%, #E0E0E0 45%, #39FF14 85%, #FFBF00 100%);
-      --accent-grad: linear-gradient(135deg, #39FF14 0%, #2bd40e 60%, #FFBF00 100%);
+      --title-grad: linear-gradient(135deg, #FFFFFF 0%, #E0E0E0 45%, #FFD000 85%, #FFBF00 100%);
+      --accent-grad: linear-gradient(135deg, #FFD000 0%, #FFBF00 60%, #E5AC00 100%);
     }
 
     body {
       background-color: var(--bg-base);
       background-image: 
-        radial-gradient(rgba(57, 255, 20, 0.035) 1px, transparent 1px),
+        radial-gradient(rgba(255, 191, 0, 0.035) 1px, transparent 1px),
         linear-gradient(180deg, rgba(18, 18, 18, 0.95) 0%, #121212 100%);
       background-size: 32px 32px, 100% 100%;
       color: var(--tech-white);
@@ -102,10 +102,10 @@
       z-index: 0;
       opacity: 0.14;
     }
-    .ambient-neon {
+    .ambient-amber-top {
       width: 650px;
       height: 650px;
-      background: radial-gradient(circle, #39FF14 0%, #2bd40e 60%, transparent 100%);
+      background: radial-gradient(circle, #FFBF00 0%, #d49f00 60%, transparent 100%);
       top: -160px;
       left: 100px;
     }
@@ -132,7 +132,7 @@
     .glass-panel-hover:hover {
       background: var(--card-bg-hover);
       border-color: var(--card-border-hover);
-      box-shadow: 0 20px 48px 0 rgba(0, 0, 0, 0.85), 0 0 24px 0 rgba(57, 255, 20, 0.15), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+      box-shadow: 0 20px 48px 0 rgba(0, 0, 0, 0.85), 0 0 24px 0 rgba(255, 191, 0, 0.15), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
       transform: translateY(-2px);
     }
 
@@ -164,14 +164,14 @@
       background: var(--accent-grad);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.25);
-      box-shadow: 0 4px 20px 0 rgba(57, 255, 20, 0.35), inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
+      box-shadow: 0 4px 20px 0 rgba(255, 191, 0, 0.35), inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       color: #121212;
       font-weight: 700;
     }
     .btn-glass-primary:hover {
-      background: linear-gradient(135deg, #4fff2e 0%, #34e414 50%, #FFBF00 100%);
-      box-shadow: 0 6px 26px 0 rgba(57, 255, 20, 0.50), inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
+      background: linear-gradient(135deg, #FFE066 0%, #FFD000 50%, #FFBF00 100%);
+      box-shadow: 0 6px 26px 0 rgba(255, 191, 0, 0.50), inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
       transform: translateY(-1px);
     }
 
@@ -184,7 +184,7 @@
     }
     .btn-glass-secondary:hover {
       background: rgba(58, 58, 58, 0.85);
-      border-color: rgba(57, 255, 20, 0.3);
+      border-color: rgba(255, 191, 0, 0.3);
       color: #ffffff;
       transform: translateY(-1px);
     }
@@ -199,14 +199,11 @@
     }
     .glass-input:focus {
       outline: none;
-      border-color: #39FF14;
-      box-shadow: 0 0 18px rgba(57, 255, 20, 0.25), inset 0 0 6px rgba(57, 255, 20, 0.15);
+      border-color: #FFBF00;
+      box-shadow: 0 0 18px rgba(255, 191, 0, 0.25), inset 0 0 6px rgba(255, 191, 0, 0.15);
     }
 
     /* Pulses & Highlights */
-    .neon-pulse-green {
-      box-shadow: 0 0 14px rgba(57, 255, 20, 0.85);
-    }
     .neon-pulse-amber {
       box-shadow: 0 0 14px rgba(255, 191, 0, 0.85);
     }
@@ -219,14 +216,14 @@
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .card-dark:hover {
-      border-color: rgba(57, 255, 20, 0.35);
+      border-color: rgba(255, 191, 0, 0.35);
     }
 
-    /* Active Selected Incident Card with Neon Green Glow */
+    /* Active Selected Incident Card with Amber Glow */
     .incident-card-active {
-      border-color: rgba(57, 255, 20, 0.85) !important;
-      background: rgba(57, 255, 20, 0.08) !important;
-      box-shadow: 0 0 20px rgba(57, 255, 20, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 191, 0, 0.85) !important;
+      background: rgba(255, 191, 0, 0.08) !important;
+      box-shadow: 0 0 20px rgba(255, 191, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12);
     }
 
     /* Custom Scrollbar */
@@ -242,7 +239,7 @@
       border-radius: 9999px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #39FF14;
+      background: #FFBF00;
     }
 
     .mermaid svg {
@@ -278,10 +275,10 @@
     }
   </style>
 </head>
-<body class="selection:bg-[#39FF14]/25 selection:text-[#39FF14] relative text-[#E0E0E0] flex min-h-screen">
+<body class="selection:bg-[#FFBF00]/25 selection:text-[#FFBF00] relative text-[#E0E0E0] flex min-h-screen">
 
   <!-- AMBIENT GLOW ORBS -->
-  <div class="ambient-orb ambient-neon"></div>
+  <div class="ambient-orb ambient-amber-top"></div>
   <div class="ambient-orb ambient-amber"></div>
 
   <!-- ==================== SIDEBAR LATERAL FIXO ==================== -->
@@ -290,13 +287,13 @@
     <!-- TOP BRAND LOGO -->
     <div class="space-y-6">
       <div class="brand-container flex items-center gap-3 px-3 cursor-pointer" onclick="navigateTo('dashboard')">
-        <div class="h-10 w-10 rounded-xl bg-[#121212] border border-[#2F2F2F] shadow-lg shadow-[#39FF14]/15 flex items-center justify-center shrink-0 p-1 hover:border-[#39FF14]/40 transition-all">
-          <img src="/assets/logo-shield-128.png" alt="Guardian" class="h-full w-full object-contain filter drop-shadow-[0_0_8px_rgba(57,255,20,0.35)]">
+        <div class="h-10 w-10 rounded-xl bg-[#121212] border border-[#2F2F2F] shadow-lg shadow-[#FFBF00]/15 flex items-center justify-center shrink-0 p-1 hover:border-[#FFBF00]/40 transition-all">
+          <img src="/assets/logo-shield-128.png" alt="Guardian" class="h-full w-full object-contain filter drop-shadow-[0_0_8px_rgba(255,191,0,0.35)]">
         </div>
         <div class="brand-text overflow-hidden">
           <div class="flex items-center gap-1.5">
             <span class="font-black text-base tracking-tight text-title-gradient">GUARDIAN</span>
-            <span class="text-[9px] px-1.5 py-0.5 rounded bg-[#39FF14]/15 text-[#39FF14] border border-[#39FF14]/30 font-mono font-bold">SRE</span>
+            <span class="text-[9px] px-1.5 py-0.5 rounded bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/30 font-mono font-bold">SRE</span>
           </div>
           <p class="text-[9px] text-[#888888] font-mono tracking-wider uppercase truncate">Observabilidade &amp; Resposta</p>
         </div>
@@ -311,9 +308,9 @@
             Operacional
           </div>
           
-          <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-xs transition-all text-[#39FF14] bg-[#39FF14]/15 border border-[#39FF14]/30 font-semibold shadow-sm shadow-[#39FF14]/10">
+          <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-xs transition-all text-[#FFBF00] bg-[#FFBF00]/15 border border-[#FFBF00]/30 font-semibold shadow-sm shadow-[#FFBF00]/10">
             <div class="flex items-center gap-3">
-              <i data-lucide="layout-dashboard" class="w-4 h-4 text-[#39FF14] shrink-0"></i>
+              <i data-lucide="layout-dashboard" class="w-4 h-4 text-[#FFBF00] shrink-0"></i>
               <span class="nav-text">Dashboard &amp; KPIs</span>
             </div>
           </button>
@@ -323,7 +320,7 @@
               <i data-lucide="crosshair" class="w-4 h-4 shrink-0"></i>
               <span class="nav-text">Targets &amp; Watchers</span>
             </div>
-            <span id="nav-badge-targets" class="nav-badge text-[10px] px-2 py-0.5 rounded-full bg-[#39FF14]/15 text-[#39FF14] border border-[#39FF14]/30 font-mono font-bold">0</span>
+            <span id="nav-badge-targets" class="nav-badge text-[10px] px-2 py-0.5 rounded-full bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/30 font-mono font-bold">0</span>
           </button>
 
           <button onclick="navigateTo('topology')" id="nav-topology" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-xs transition-all text-[#888888] hover:text-[#E0E0E0] hover:bg-white/5 border border-transparent">
@@ -346,7 +343,7 @@
               <i data-lucide="activity" class="w-4 h-4 text-red-400 shrink-0"></i>
               <span class="nav-text">Live Incident Stream</span>
             </div>
-            <span class="nav-badge h-2 w-2 rounded-full bg-[#39FF14] neon-pulse-green animate-ping mr-1"></span>
+            <span class="nav-badge h-2 w-2 rounded-full bg-[#FFBF00] neon-pulse-amber animate-ping mr-1"></span>
           </button>
 
           <button onclick="navigateTo('chaos')" id="nav-chaos" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-xs transition-all text-[#888888] hover:text-[#E0E0E0] hover:bg-white/5 border border-transparent">
@@ -385,13 +382,13 @@
     <div class="space-y-3 pt-4 border-t border-[#2F2F2F] px-1">
       <div class="brand-text flex items-center justify-between text-[11px] font-mono text-[#888888] px-2">
         <span class="flex items-center gap-2">
-          <span class="h-2 w-2 rounded-full bg-[#39FF14] neon-pulse-green"></span>
+          <span class="h-2 w-2 rounded-full bg-[#FFBF00] neon-pulse-amber"></span>
           Engine Online
         </span>
         <span class="text-[#888888]">Go 1.23</span>
       </div>
 
-      <a href="https://github.com/JairoJSilva/guardian-infra" target="_blank" rel="noopener" class="nav-item flex items-center justify-between p-2 rounded-xl bg-white/5 hover:bg-[#39FF14]/10 border border-white/5 hover:border-[#39FF14]/30 text-[#888888] hover:text-[#39FF14] text-xs font-mono transition-all">
+      <a href="https://github.com/JairoJSilva/guardian-infra" target="_blank" rel="noopener" class="nav-item flex items-center justify-between p-2 rounded-xl bg-white/5 hover:bg-[#FFBF00]/10 border border-white/5 hover:border-[#FFBF00]/30 text-[#888888] hover:text-[#FFBF00] text-xs font-mono transition-all">
         <div class="flex items-center gap-2.5">
           <i data-lucide="github" class="w-4 h-4 text-[#FFBF00] shrink-0"></i>
           <span class="nav-text">GitHub OSS</span>
@@ -417,14 +414,14 @@
       <div class="flex items-center gap-2 text-xs font-mono">
         <span class="text-[#888888]">Guardian</span>
         <span class="text-[#888888]">/</span>
-        <span id="topbar-breadcrumb" class="text-[#39FF14] font-semibold uppercase tracking-wider">Dashboard &amp; KPIs</span>
+        <span id="topbar-breadcrumb" class="text-[#FFBF00] font-semibold uppercase tracking-wider">Dashboard &amp; KPIs</span>
       </div>
 
       <!-- STATUS & AÇÃO PRINCIPAL -->
       <div class="flex items-center gap-3">
         <div class="hidden sm:flex items-center gap-2 text-xs font-mono px-3 py-1.5 rounded-full glass-panel text-[#E0E0E0]">
           <span id="topbar-jira-pill" class="flex items-center gap-1.5">
-            <i data-lucide="send" class="w-3.5 h-3.5 text-[#39FF14]"></i>
+            <i data-lucide="send" class="w-3.5 h-3.5 text-[#FFBF00]"></i>
             <span id="topbar-jira-text">Jira: OPS</span>
           </span>
           <span class="text-[#2F2F2F]">|</span>
@@ -435,7 +432,7 @@
           </button>
         </div>
 
-        <button onclick="openModal()" class="px-4 py-2 rounded-xl btn-glass-primary flex items-center gap-2 text-xs font-bold shadow-lg shadow-[#39FF14]/20">
+        <button onclick="openModal()" class="px-4 py-2 rounded-xl btn-glass-primary flex items-center gap-2 text-xs font-bold shadow-lg shadow-[#FFBF00]/20">
           <i data-lucide="plus-circle" class="w-4 h-4 text-[#121212]"></i>
           <span>Novo Target</span>
         </button>
@@ -452,8 +449,8 @@
         <!-- HERO EXECUTIVE BANNER -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 glass-panel rounded-2xl p-6 sm:p-8">
           <div class="space-y-2">
-            <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#39FF14]/15 border border-[#39FF14]/30 text-[#39FF14] text-[11px] font-mono">
-              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-[#39FF14]"></i>
+            <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#FFBF00]/15 border border-[#FFBF00]/30 text-[#FFBF00] text-[11px] font-mono">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-[#FFBF00]"></i>
               Autonomous Target SRE &amp; Reliability Platform
             </div>
             <h1 class="text-2xl sm:text-3xl font-black text-[#E0E0E0] tracking-tight">
@@ -465,8 +462,8 @@
           </div>
 
           <div class="flex items-center gap-2.5 shrink-0">
-            <button onclick="navigateTo('targets')" class="px-4 py-2.5 rounded-xl btn-glass-secondary text-xs font-semibold text-[#E0E0E0] flex items-center gap-2 hover:border-[#39FF14]/40">
-              <i data-lucide="crosshair" class="w-4 h-4 text-[#39FF14]"></i>
+            <button onclick="navigateTo('targets')" class="px-4 py-2.5 rounded-xl btn-glass-secondary text-xs font-semibold text-[#E0E0E0] flex items-center gap-2 hover:border-[#FFBF00]/40">
+              <i data-lucide="crosshair" class="w-4 h-4 text-[#FFBF00]"></i>
               Gerenciar Targets
             </button>
             <button onclick="navigateTo('incidents')" class="px-4 py-2.5 rounded-xl btn-glass-secondary text-xs font-semibold text-[#E0E0E0] flex items-center gap-2 hover:border-red-400/40">
@@ -482,9 +479,9 @@
           <div class="p-5 rounded-2xl glass-panel glass-panel-hover space-y-3 cursor-pointer" onclick="navigateTo('topology')">
             <div class="flex items-center justify-between">
               <span class="text-xs font-mono uppercase text-[#888888] font-semibold tracking-wider flex items-center gap-1.5">
-                <i data-lucide="server" class="w-4 h-4 text-[#39FF14]"></i> Ambientes
+                <i data-lucide="server" class="w-4 h-4 text-[#FFBF00]"></i> Ambientes
               </span>
-              <span class="text-[10px] px-2 py-0.5 rounded-full bg-[#39FF14]/15 text-[#39FF14] border border-[#39FF14]/30 font-mono">Conectado</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/30 font-mono">Conectado</span>
             </div>
             <div class="flex items-baseline justify-between">
               <span id="kpi-environments-count" class="text-3xl font-extrabold text-[#E0E0E0] font-mono">0</span>
@@ -492,16 +489,16 @@
             </div>
             <div class="text-[11px] text-[#888888] pt-2 border-t border-white/5 flex items-center justify-between">
               <span>Descoberta Kubeconfig</span>
-              <span class="text-[#39FF14] font-bold font-mono">Online</span>
+              <span class="text-[#FFBF00] font-bold font-mono">Online</span>
             </div>
           </div>
 
           <div class="p-5 rounded-2xl glass-panel glass-panel-hover space-y-3 cursor-pointer" onclick="navigateTo('targets')">
             <div class="flex items-center justify-between">
               <span class="text-xs font-mono uppercase text-[#888888] font-semibold tracking-wider flex items-center gap-1.5">
-                <i data-lucide="crosshair" class="w-4 h-4 text-[#39FF14]"></i> Targets Ativos
+                <i data-lucide="crosshair" class="w-4 h-4 text-[#FFBF00]"></i> Targets Ativos
               </span>
-              <span class="text-[10px] px-2 py-0.5 rounded-full bg-[#39FF14]/15 text-[#39FF14] border border-[#39FF14]/30 font-mono">Goroutines</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/30 font-mono">Goroutines</span>
             </div>
             <div class="flex items-baseline justify-between">
               <span id="kpi-targets-active" class="text-3xl font-extrabold text-[#E0E0E0] font-mono">0</span>
@@ -509,7 +506,7 @@
             </div>
             <div class="text-[11px] text-[#888888] pt-2 border-t border-white/5 flex items-center justify-between">
               <span>Escopos supervisionados</span>
-              <span id="kpi-scopes-count" class="text-[#39FF14] font-bold font-mono">0</span>
+              <span id="kpi-scopes-count" class="text-[#FFBF00] font-bold font-mono">0</span>
             </div>
           </div>
 
@@ -526,7 +523,7 @@
             </div>
             <div class="text-[11px] text-[#888888] pt-2 border-t border-white/5 flex items-center justify-between">
               <span>Filtro Cooldown</span>
-              <span class="text-[#39FF14] font-bold font-mono">60m Cooldown</span>
+              <span class="text-[#FFBF00] font-bold font-mono">60m Cooldown</span>
             </div>
           </div>
 
@@ -543,7 +540,7 @@
             </div>
             <div class="text-[11px] text-[#888888] pt-2 border-t border-white/5 flex items-center justify-between">
               <span>Diagnóstico Automático</span>
-              <span class="text-[#39FF14] font-bold font-mono">&lt; 1.2s</span>
+              <span class="text-[#FFBF00] font-bold font-mono">&lt; 1.2s</span>
             </div>
           </div>
 
@@ -556,10 +553,10 @@
           <div class="lg:col-span-2 space-y-4">
             <div class="flex items-center justify-between">
               <h3 class="text-base font-bold text-[#E0E0E0] flex items-center gap-2">
-                <i data-lucide="crosshair" class="w-4 h-4 text-[#39FF14]"></i>
+                <i data-lucide="crosshair" class="w-4 h-4 text-[#FFBF00]"></i>
                 Targets sob Supervisão Ativa
               </h3>
-              <button onclick="navigateTo('targets')" class="text-xs text-[#39FF14] hover:underline font-mono">Ver todos &rarr;</button>
+              <button onclick="navigateTo('targets')" class="text-xs text-[#FFBF00] hover:underline font-mono">Ver todos &rarr;</button>
             </div>
 
             <div class="rounded-2xl glass-panel overflow-hidden border border-[#2F2F2F]">
@@ -613,8 +610,8 @@
             <button onclick="simulateIncident('KUBERNETES')" class="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-[#FFBF00]/10 hover:bg-[#FFBF00]/20 border border-[#FFBF00]/40 text-[#FFBF00] font-semibold text-xs flex items-center justify-center gap-1.5 transition-all">
               <i data-lucide="play" class="w-3 h-3 text-[#FFBF00]"></i> Simular K8s Crash
             </button>
-            <button onclick="simulateIncident('DOCKER')" class="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-[#39FF14]/10 hover:bg-[#39FF14]/20 border border-[#39FF14]/40 text-[#39FF14] font-semibold text-xs flex items-center justify-center gap-1.5 transition-all">
-              <i data-lucide="play" class="w-3 h-3 text-[#39FF14]"></i> Simular Docker OOM
+            <button onclick="simulateIncident('DOCKER')" class="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-[#FFBF00]/10 hover:bg-[#FFBF00]/20 border border-[#FFBF00]/40 text-[#FFBF00] font-semibold text-xs flex items-center justify-center gap-1.5 transition-all">
+              <i data-lucide="play" class="w-3 h-3 text-[#FFBF00]"></i> Simular Docker OOM
             </button>
           </div>
         </div>
@@ -627,7 +624,7 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h2 class="text-2xl font-bold text-[#E0E0E0] tracking-tight flex items-center gap-2.5">
-              <i data-lucide="crosshair" class="w-6 h-6 text-[#39FF14]"></i>
+              <i data-lucide="crosshair" class="w-6 h-6 text-[#FFBF00]"></i>
               Targets Supervisionados
             </h2>
             <p class="text-xs text-[#888888] mt-1">Gerenciamento cirúrgico de workloads monitorados ativamente pelo supervisor Go.</p>
@@ -640,12 +637,12 @@
             </div>
 
             <div class="flex items-center p-1 rounded-xl glass-panel border border-[#2F2F2F] text-xs">
-              <button onclick="setTargetFilter('ALL')" id="filter-btn-all" class="px-3 py-1 rounded-lg font-mono text-[11px] font-bold bg-[#39FF14]/15 text-[#39FF14] border border-[#39FF14]/30">Todos</button>
+              <button onclick="setTargetFilter('ALL')" id="filter-btn-all" class="px-3 py-1 rounded-lg font-mono text-[11px] font-bold bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/30">Todos</button>
               <button onclick="setTargetFilter('KUBERNETES')" id="filter-btn-k8s" class="px-3 py-1 rounded-lg font-mono text-[11px] text-[#888888] hover:text-[#E0E0E0]">K8s</button>
               <button onclick="setTargetFilter('DOCKER')" id="filter-btn-docker" class="px-3 py-1 rounded-lg font-mono text-[11px] text-[#888888] hover:text-[#E0E0E0]">Docker</button>
             </div>
 
-            <button onclick="openModal()" class="px-4 py-2 rounded-xl btn-glass-primary flex items-center gap-2 text-xs font-bold shadow-lg shadow-[#39FF14]/20">
+            <button onclick="openModal()" class="px-4 py-2 rounded-xl btn-glass-primary flex items-center gap-2 text-xs font-bold shadow-lg shadow-[#FFBF00]/20">
               <i data-lucide="plus" class="w-3.5 h-3.5 text-[#121212]"></i>
               <span>Novo Target</span>
             </button>
@@ -692,7 +689,7 @@
               <button type="button" onclick="changeTargetsPage(-1)" id="btn-targets-prev" class="px-3 py-1.5 rounded-lg glass-panel hover:bg-white/5 text-[#E0E0E0] border border-[#2F2F2F] disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 transition-all">
                 <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i> Anterior
               </button>
-              <span id="targets-page-indicator" class="px-3 py-1 rounded-lg bg-[#39FF14]/15 text-[#39FF14] border border-[#39FF14]/30 font-bold">Página 1 de 1</span>
+              <span id="targets-page-indicator" class="px-3 py-1 rounded-lg bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/30 font-bold">Página 1 de 1</span>
               <button type="button" onclick="changeTargetsPage(1)" id="btn-targets-next" class="px-3 py-1.5 rounded-lg glass-panel hover:bg-white/5 text-[#E0E0E0] border border-[#2F2F2F] disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 transition-all">
                 Próxima <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
               </button>
@@ -708,7 +705,7 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h2 class="text-2xl font-bold text-[#E0E0E0] tracking-tight flex items-center gap-2.5">
-              <i data-lucide="server" class="w-6 h-6 text-[#39FF14]"></i>
+              <i data-lucide="server" class="w-6 h-6 text-[#FFBF00]"></i>
               Topologia de Ambientes &amp; Clusters
             </h2>
             <p class="text-xs text-[#888888] mt-1">Clusters Kubernetes detectados no Kubeconfig e Daemons Docker conectados.</p>
@@ -716,13 +713,13 @@
 
           <div class="flex items-center gap-2.5 flex-wrap">
             <div class="flex items-center p-1 rounded-xl glass-panel border border-[#2F2F2F] text-xs">
-              <button onclick="setTopologyFilter('ALL')" id="topo-filter-all" class="px-3 py-1 rounded-lg font-mono text-[11px] font-bold bg-[#39FF14]/15 text-[#39FF14] border border-[#39FF14]/30">Todos</button>
+              <button onclick="setTopologyFilter('ALL')" id="topo-filter-all" class="px-3 py-1 rounded-lg font-mono text-[11px] font-bold bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/30">Todos</button>
               <button onclick="setTopologyFilter('KUBERNETES')" id="topo-filter-k8s" class="px-3 py-1 rounded-lg font-mono text-[11px] text-[#888888] hover:text-[#E0E0E0]">K8s</button>
               <button onclick="setTopologyFilter('DOCKER')" id="topo-filter-docker" class="px-3 py-1 rounded-lg font-mono text-[11px] text-[#888888] hover:text-[#E0E0E0]">Docker</button>
             </div>
 
             <button onclick="loadEnvironments(true)" class="px-3.5 py-1.5 rounded-xl btn-glass-secondary text-xs font-mono text-[#E0E0E0] hover:text-white flex items-center gap-2">
-              <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-[#39FF14]"></i>
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-[#FFBF00]"></i>
               <span>Atualizar Descoberta</span>
             </button>
           </div>
@@ -743,7 +740,7 @@
             <button type="button" onclick="changeTopologyPage(-1)" id="btn-topo-prev" class="px-3 py-1.5 rounded-lg glass-panel hover:bg-white/5 text-[#E0E0E0] border border-[#2F2F2F] disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 transition-all">
               <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i> Anterior
             </button>
-            <span id="topology-page-indicator" class="px-3 py-1 rounded-lg bg-[#39FF14]/15 text-[#39FF14] border border-[#39FF14]/30 font-bold">Página 1 de 1</span>
+            <span id="topology-page-indicator" class="px-3 py-1 rounded-lg bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/30 font-bold">Página 1 de 1</span>
             <button type="button" onclick="changeTopologyPage(1)" id="btn-topo-next" class="px-3 py-1.5 rounded-lg glass-panel hover:bg-white/5 text-[#E0E0E0] border border-[#2F2F2F] disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 transition-all">
               Próxima <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
             </button>
@@ -766,7 +763,7 @@
 
           <div class="flex items-center gap-2.5 flex-wrap">
             <div class="flex items-center p-1 rounded-xl glass-panel border border-[#2F2F2F] text-xs">
-              <button onclick="setEventFilter('ALL')" id="evt-filter-all" class="px-3 py-1 rounded-lg font-mono text-[11px] font-bold bg-[#39FF14]/15 text-[#39FF14] border border-[#39FF14]/30">Todos</button>
+              <button onclick="setEventFilter('ALL')" id="evt-filter-all" class="px-3 py-1 rounded-lg font-mono text-[11px] font-bold bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/30">Todos</button>
               <button onclick="setEventFilter('CRITICAL')" id="evt-filter-crit" class="px-3 py-1 rounded-lg font-mono text-[11px] text-[#888888] hover:text-[#E0E0E0]">Críticos</button>
               <button onclick="setEventFilter('JIRA')" id="evt-filter-jira" class="px-3 py-1 rounded-lg font-mono text-[11px] text-[#888888] hover:text-[#E0E0E0]">Com Jira</button>
             </div>
@@ -775,8 +772,8 @@
               <i data-lucide="trash" class="w-3.5 h-3.5"></i> Limpar
             </button>
 
-            <span class="text-xs text-[#39FF14] font-mono flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-panel border border-[#39FF14]/30 bg-[#39FF14]/10">
-              <span class="h-2 w-2 rounded-full bg-[#39FF14] neon-pulse-neon animate-ping"></span>
+            <span class="text-xs text-[#FFBF00] font-mono flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-panel border border-[#FFBF00]/30 bg-[#FFBF00]/10">
+              <span class="h-2 w-2 rounded-full bg-[#FFBF00] neon-pulse-amber animate-ping"></span>
               SSE Conectado
             </span>
           </div>
@@ -808,7 +805,7 @@
             <button type="button" onclick="changeIncidentsPage(-1)" id="btn-incidents-prev" class="px-3 py-1.5 rounded-lg glass-panel hover:bg-white/5 text-[#E0E0E0] border border-[#2F2F2F] disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 transition-all">
               <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i> Anterior
             </button>
-            <span id="incidents-page-indicator" class="px-3 py-1 rounded-lg bg-[#39FF14]/15 text-[#39FF14] border border-[#39FF14]/30 font-bold">Página 1 de 1</span>
+            <span id="incidents-page-indicator" class="px-3 py-1 rounded-lg bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/30 font-bold">Página 1 de 1</span>
             <button type="button" onclick="changeIncidentsPage(1)" id="btn-incidents-next" class="px-3 py-1.5 rounded-lg glass-panel hover:bg-white/5 text-[#E0E0E0] border border-[#2F2F2F] disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 transition-all">
               Próxima <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
             </button>
@@ -853,17 +850,17 @@
           <!-- CARD CHAOS 2: DOCKER OOM -->
           <div class="p-6 rounded-2xl glass-panel glass-panel-hover border border-[#2F2F2F] space-y-4">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-mono uppercase text-[#39FF14] font-bold flex items-center gap-1.5">
+              <span class="text-xs font-mono uppercase text-[#FFBF00] font-bold flex items-center gap-1.5">
                 <i data-lucide="container" class="w-4 h-4"></i> Docker Container
               </span>
-              <span class="text-[10px] px-2 py-0.5 rounded-full bg-[#39FF14]/15 text-[#39FF14] border border-[#39FF14]/30 font-mono">Memory Kill</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/30 font-mono">Memory Kill</span>
             </div>
             <h3 class="text-base font-bold text-[#E0E0E0]">OOMKilled no Container (Exit 137)</h3>
             <p class="text-xs text-[#888888] leading-relaxed">
               Simula o encerramento violento de um container por excesso de consumo de memória pelo Linux OOM-Killer. Valida a captura de métricas e abertura de chamado prioritário.
             </p>
-            <button onclick="simulateIncident('DOCKER')" class="w-full py-2.5 rounded-xl bg-[#39FF14]/15 hover:bg-[#39FF14]/25 border border-[#39FF14]/40 text-[#39FF14] font-bold text-xs flex items-center justify-center gap-2 transition-all">
-              <i data-lucide="play" class="w-3.5 h-3.5 text-[#39FF14]"></i> Disparar Falha de OOMKilled
+            <button onclick="simulateIncident('DOCKER')" class="w-full py-2.5 rounded-xl bg-[#FFBF00]/15 hover:bg-[#FFBF00]/25 border border-[#FFBF00]/40 text-[#FFBF00] font-bold text-xs flex items-center justify-center gap-2 transition-all">
+              <i data-lucide="play" class="w-3.5 h-3.5 text-[#FFBF00]"></i> Disparar Falha de OOMKilled
             </button>
           </div>
 
@@ -875,7 +872,7 @@
       <section id="view-docs" class="hidden space-y-8">
         
         <div class="rounded-2xl glass-panel border border-[#2F2F2F] p-6 sm:p-8 space-y-6">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#39FF14]/10 text-[#39FF14] text-xs font-semibold border border-[#39FF14]/30 font-mono">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFBF00]/10 text-[#FFBF00] text-xs font-semibold border border-[#FFBF00]/30 font-mono">
             <i data-lucide="layers" class="w-3.5 h-3.5"></i> ESPECIFICAÇÃO DE ARQUITETURA UNIFICADA
           </div>
           
@@ -892,7 +889,7 @@
                 <tr>
                   <th class="p-3.5 text-[#888888]">Componente</th>
                   <th class="p-3.5 text-[#FFBF00]">Kubernetes Engine</th>
-                  <th class="p-3.5 text-[#39FF14]">Docker Engine</th>
+                  <th class="p-3.5 text-[#FFBF00]">Docker Engine</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-[#2F2F2F] text-[#E0E0E0]">
@@ -914,7 +911,7 @@
                 <tr>
                   <td class="p-3.5 font-semibold text-[#888888]">Diagnóstico</td>
                   <td class="p-3.5 text-[#FFBF00]">Logs do Pod anterior (<code>--previous</code>)</td>
-                  <td class="p-3.5 text-[#39FF14]">Logs do Container (<code>--tail=50</code>)</td>
+                  <td class="p-3.5 text-[#FFBF00]">Logs do Container (<code>--tail=50</code>)</td>
                 </tr>
               </tbody>
             </table>
@@ -924,7 +921,7 @@
         <!-- MERMAID DIAGRAM -->
         <div class="space-y-3">
           <h3 class="text-lg font-bold text-[#E0E0E0] flex items-center gap-2">
-            <i data-lucide="git-branch" class="w-4 h-4 text-[#39FF14]"></i>
+            <i data-lucide="git-branch" class="w-4 h-4 text-[#FFBF00]"></i>
             Fluxo de Goroutines &amp; EventBus
           </h3>
           <div class="p-6 rounded-2xl glass-panel border border-[#2F2F2F] flex justify-center overflow-x-auto">
@@ -985,7 +982,7 @@ flowchart TD
         
         <div>
           <h2 class="text-2xl font-bold text-[#E0E0E0] tracking-tight flex items-center gap-2.5">
-            <i data-lucide="settings" class="w-6 h-6 text-[#39FF14]"></i>
+            <i data-lucide="settings" class="w-6 h-6 text-[#FFBF00]"></i>
             Configurações do Engine &amp; Integração Jira
           </h2>
           <p class="text-xs text-[#888888] mt-1">Parâmetros ativos carregados do arquivo de ambiente ou flags de inicialização.</p>
@@ -1006,7 +1003,7 @@ flowchart TD
               </p>
             </div>
             
-            <button type="button" onclick="toggleDryRunMode()" id="cfg-dryrun-toggle-btn" class="px-5 py-3 rounded-xl btn-glass-primary text-[#121212] font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 shadow-lg shadow-[#39FF14]/20">
+            <button type="button" onclick="toggleDryRunMode()" id="cfg-dryrun-toggle-btn" class="px-5 py-3 rounded-xl btn-glass-primary text-[#121212] font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 shadow-lg shadow-[#FFBF00]/20">
               <i data-lucide="toggle-right" class="w-4 h-4"></i>
               <span id="cfg-dryrun-btn-label">Mudar para Modo Produção Real</span>
             </button>
@@ -1026,7 +1023,7 @@ flowchart TD
               </div>
               <div class="flex items-center justify-between pb-2 border-b border-[#2F2F2F]">
                 <span class="text-[#888888]">Projeto Padrão:</span>
-                <span id="cfg-jira-proj" class="text-[#39FF14] font-bold">-</span>
+                <span id="cfg-jira-proj" class="text-[#FFBF00] font-bold">-</span>
               </div>
               <div class="flex items-center justify-between pb-2 border-b border-[#2F2F2F]">
                 <span class="text-[#888888]">Modo Dry-Run:</span>
@@ -1041,12 +1038,12 @@ flowchart TD
 
           <div class="p-6 rounded-2xl glass-panel border border-[#2F2F2F] space-y-4">
             <h3 class="text-sm font-bold text-[#E0E0E0] font-mono uppercase tracking-wider flex items-center gap-2">
-              <i data-lucide="shield" class="w-4 h-4 text-[#39FF14]"></i> Status do Sistema &amp; Versão
+              <i data-lucide="shield" class="w-4 h-4 text-[#FFBF00]"></i> Status do Sistema &amp; Versão
             </h3>
             <div class="space-y-3 font-mono text-xs">
               <div class="flex items-center justify-between pb-2 border-b border-[#2F2F2F]">
                 <span class="text-[#888888]">Versão:</span>
-                <span id="cfg-version" class="text-[#39FF14] font-bold">2.0.0-enterprise</span>
+                <span id="cfg-version" class="text-[#FFBF00] font-bold">2.0.0-enterprise</span>
               </div>
               <div class="flex items-center justify-between pb-2 border-b border-[#2F2F2F]">
                 <span class="text-[#888888]">Licença:</span>
@@ -1077,9 +1074,9 @@ flowchart TD
         <span>Open Source Incident Automation Engine</span>
       </div>
       <div class="flex items-center gap-4 text-[11px]">
-        <a href="https://github.com/JairoJSilva/guardian-infra" target="_blank" rel="noopener" class="text-[#888888] hover:text-[#39FF14] transition-colors">GitHub</a>
+        <a href="https://github.com/JairoJSilva/guardian-infra" target="_blank" rel="noopener" class="text-[#888888] hover:text-[#FFBF00] transition-colors">GitHub</a>
         <span>•</span>
-        <button onclick="navigateTo('docs')" class="text-[#888888] hover:text-[#39FF14] transition-colors">Arquitetura</button>
+        <button onclick="navigateTo('docs')" class="text-[#888888] hover:text-[#FFBF00] transition-colors">Arquitetura</button>
       </div>
     </footer>
 
@@ -1092,7 +1089,7 @@ flowchart TD
       <div class="flex items-center justify-between border-b border-[#2F2F2F] pb-4">
         <div>
           <h3 class="text-lg font-bold text-[#E0E0E0] flex items-center gap-2.5">
-            <i data-lucide="crosshair" class="w-5 h-5 text-[#39FF14]"></i>
+            <i data-lucide="crosshair" class="w-5 h-5 text-[#FFBF00]"></i>
             Configurar Target de Supervisão
           </h3>
           <p class="text-xs text-[#888888]">Aloca uma goroutine dedicada para monitorar o escopo selecionado.</p>
@@ -1110,7 +1107,7 @@ flowchart TD
             <button type="button" id="btn-type-k8s" onclick="selectType('KUBERNETES')" class="p-3.5 rounded-2xl border border-[#FFBF00]/60 bg-[#FFBF00]/15 text-[#FFBF00] font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#FFBF00]/10">
               <i data-lucide="cloud" class="w-4 h-4"></i> Kubernetes
             </button>
-            <button type="button" id="btn-type-docker" onclick="selectType('DOCKER')" class="p-3.5 rounded-2xl border border-[#2F2F2F] bg-[#2F2F2F]/40 text-[#888888] font-semibold text-xs flex items-center justify-center gap-2 hover:border-[#39FF14]/40 hover:text-[#39FF14]">
+            <button type="button" id="btn-type-docker" onclick="selectType('DOCKER')" class="p-3.5 rounded-2xl border border-[#2F2F2F] bg-[#2F2F2F]/40 text-[#888888] font-semibold text-xs flex items-center justify-center gap-2 hover:border-[#FFBF00]/40 hover:text-[#FFBF00]">
               <i data-lucide="container" class="w-4 h-4"></i> Docker Puro
             </button>
           </div>
@@ -1128,16 +1125,16 @@ flowchart TD
         </div>
 
         <!-- HOST DOCKER REMOTO -->
-        <div id="custom-docker-host-section" class="hidden space-y-2.5 p-3.5 rounded-2xl border border-[#39FF14]/30 bg-[#39FF14]/5 transition-all">
+        <div id="custom-docker-host-section" class="hidden space-y-2.5 p-3.5 rounded-2xl border border-[#FFBF00]/30 bg-[#FFBF00]/5 transition-all">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-[#39FF14] font-mono flex items-center gap-1.5">
+            <span class="text-xs font-semibold text-[#FFBF00] font-mono flex items-center gap-1.5">
               <i data-lucide="network" class="w-3.5 h-3.5"></i> Endereço do Host Docker Remoto
             </span>
             <span class="text-[10px] text-[#888888] font-mono">TCP ou Unix Socket</span>
           </div>
           <div class="flex gap-2">
             <input type="text" id="custom-docker-endpoint" placeholder="Ex: tcp://192.168.1.100:2375 ou /var/run/docker.sock" class="flex-1 px-3 py-2 rounded-xl glass-input text-[#E0E0E0] text-xs font-mono placeholder:text-[#888888]">
-            <button type="button" onclick="inspectCustomDockerHost()" id="btn-inspect-docker" class="px-3.5 py-2 rounded-xl bg-[#39FF14]/20 hover:bg-[#39FF14]/30 text-[#39FF14] border border-[#39FF14]/40 font-bold text-xs flex items-center gap-1.5 transition-all">
+            <button type="button" onclick="inspectCustomDockerHost()" id="btn-inspect-docker" class="px-3.5 py-2 rounded-xl bg-[#FFBF00]/20 hover:bg-[#FFBF00]/30 text-[#FFBF00] border border-[#FFBF00]/40 font-bold text-xs flex items-center gap-1.5 transition-all">
               <i data-lucide="search" class="w-3.5 h-3.5"></i> Listar Containers
             </button>
           </div>
@@ -1149,7 +1146,7 @@ flowchart TD
           <div class="flex items-center justify-between mb-1">
             <label id="lbl-scopes" class="block text-xs font-semibold text-[#E0E0E0] font-mono">Namespaces para Supervisionar</label>
             <div id="scopes-actions" class="hidden flex items-center gap-2">
-              <button type="button" onclick="toggleAllScopes(true)" class="text-[10px] text-[#39FF14] hover:underline font-mono">Selecionar Todos</button>
+              <button type="button" onclick="toggleAllScopes(true)" class="text-[10px] text-[#FFBF00] hover:underline font-mono">Selecionar Todos</button>
               <span class="text-[#2F2F2F] text-[10px]">|</span>
               <button type="button" onclick="toggleAllScopes(false)" class="text-[10px] text-[#888888] hover:underline font-mono">Limpar</button>
             </div>
@@ -1158,7 +1155,7 @@ flowchart TD
           </div>
           <div class="flex items-center justify-between mt-1">
             <span class="text-[10px] text-[#888888] font-mono">Apenas o escopo selecionado alocará watchers no cluster ou host.</span>
-            <span id="scope-selection-count" class="text-[10px] text-[#39FF14] font-mono"></span>
+            <span id="scope-selection-count" class="text-[10px] text-[#FFBF00] font-mono"></span>
           </div>
         </div>
 
@@ -1174,14 +1171,14 @@ flowchart TD
             </div>
           </div>
           <label class="flex items-center gap-2.5 text-xs text-[#E0E0E0] cursor-pointer">
-            <input type="checkbox" id="target-jira-toggle" checked class="rounded border-[#2F2F2F] bg-[#121212] text-[#39FF14] focus:ring-0">
+            <input type="checkbox" id="target-jira-toggle" checked class="rounded border-[#2F2F2F] bg-[#121212] text-[#FFBF00] focus:ring-0">
             <span>Abrir chamados automaticamente no Jira anexando logs do crash</span>
           </label>
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-4 border-t border-[#2F2F2F]">
           <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl btn-glass-secondary text-[#888888] hover:text-[#E0E0E0] font-medium text-xs">Cancelar</button>
-          <button type="submit" class="px-5 py-2.5 rounded-xl btn-glass-primary text-[#121212] font-bold text-xs shadow-lg shadow-[#39FF14]/30">Alocar e Ativar Target</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl btn-glass-primary text-[#121212] font-bold text-xs shadow-lg shadow-[#FFBF00]/30">Alocar e Ativar Target</button>
         </div>
       </form>
     </div>
@@ -1267,7 +1264,7 @@ flowchart TD
       const activeNav = document.getElementById(`nav-${viewId}`);
       if (activeView) activeView.classList.remove('hidden');
       if (activeNav) {
-        activeNav.className = "nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-xs transition-all text-[#39FF14] bg-[#39FF14]/15 border border-[#39FF14]/30 font-semibold";
+        activeNav.className = "nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-xs transition-all text-[#FFBF00] bg-[#FFBF00]/15 border border-[#FFBF00]/30 font-semibold";
       }
 
       const breadcrumbEl = document.getElementById('topbar-breadcrumb');
@@ -1340,11 +1337,11 @@ flowchart TD
       if (topbarDot) {
         topbarDot.className = isDryRun 
           ? 'h-2 w-2 rounded-full bg-[#FFBF00] neon-pulse-amber animate-pulse' 
-          : 'h-2 w-2 rounded-full bg-[#39FF14] neon-pulse-neon animate-pulse';
+          : 'h-2 w-2 rounded-full bg-[#FFBF00] neon-pulse-amber animate-pulse';
       }
       if (topbarText) {
         topbarText.textContent = isDryRun ? 'Dry-Run: On' : 'Modo Produção';
-        topbarText.className = isDryRun ? 'text-[#FFBF00] font-bold' : 'text-[#39FF14] font-bold';
+        topbarText.className = isDryRun ? 'text-[#FFBF00] font-bold' : 'text-[#FFBF00] font-bold';
       }
 
       // 2. Dashboard KPI Card 4 Badge
@@ -1353,14 +1350,14 @@ flowchart TD
         jiraBadge.textContent = isDryRun ? 'Dry-Run: On' : 'Produção Real';
         jiraBadge.className = isDryRun 
           ? 'text-[10px] px-2 py-0.5 rounded-full bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/30 font-mono hover:scale-105 transition-all cursor-pointer'
-          : 'text-[10px] px-2 py-0.5 rounded-full bg-[#39FF14]/15 text-[#39FF14] border border-[#39FF14]/30 font-mono hover:scale-105 transition-all cursor-pointer';
+          : 'text-[10px] px-2 py-0.5 rounded-full bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/30 font-mono hover:scale-105 transition-all cursor-pointer';
       }
 
       // 3. Settings View Card
       const cfgDryRun = document.getElementById('cfg-dry-run');
       if (cfgDryRun) {
         cfgDryRun.textContent = isDryRun ? 'Habilitado (Simulação - sem chamados reais)' : 'Desabilitado (Produção Real Ativa)';
-        cfgDryRun.className = isDryRun ? 'text-[#FFBF00] font-bold' : 'text-[#39FF14] font-bold';
+        cfgDryRun.className = isDryRun ? 'text-[#FFBF00] font-bold' : 'text-[#FFBF00] font-bold';
       }
 
       const modeCard = document.getElementById('cfg-mode-card');
@@ -1379,15 +1376,15 @@ flowchart TD
           modeDesc.innerHTML = "O modo atual é <b>Simulação (Dry-Run Ativo)</b>. Incidentes e falhas são interceptados e analisados em tempo real, mas <b>nenhum chamado oficial é gerado no Jira</b>. Ideal para testes e demonstrações.";
         }
         if (btnLabel) btnLabel.textContent = "Mudar para Modo Produção Real";
-        if (toggleBtn) toggleBtn.className = "px-5 py-3 rounded-xl btn-glass-primary text-[#121212] font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 shadow-lg shadow-[#39FF14]/20 cursor-pointer";
+        if (toggleBtn) toggleBtn.className = "px-5 py-3 rounded-xl btn-glass-primary text-[#121212] font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 shadow-lg shadow-[#FFBF00]/20 cursor-pointer";
       } else {
-        if (modeCard) modeCard.className = "p-6 rounded-2xl glass-panel space-y-4 border border-[#39FF14]/30 bg-[#39FF14]/5 transition-all";
+        if (modeCard) modeCard.className = "p-6 rounded-2xl glass-panel space-y-4 border border-[#FFBF00]/30 bg-[#FFBF00]/5 transition-all";
         if (modeBadge) {
           modeBadge.textContent = "PRODUÇÃO REAL ATIVA";
-          modeBadge.className = "text-[10px] px-2 py-0.5 rounded-full bg-[#39FF14]/20 text-[#39FF14] border border-[#39FF14]/30 font-mono font-bold";
+          modeBadge.className = "text-[10px] px-2 py-0.5 rounded-full bg-[#FFBF00]/20 text-[#FFBF00] border border-[#FFBF00]/30 font-mono font-bold";
         }
         if (modeDesc) {
-          modeDesc.innerHTML = "O modo atual é <b class='text-[#39FF14]'>PRODUÇÃO REAL</b>. O Guardian irá <b class='text-[#E0E0E0]'>abrir chamados verdadeiros no Jira</b> com logs anexados sempre que um Pod ou Container falhar nos targets supervisionados.";
+          modeDesc.innerHTML = "O modo atual é <b class='text-[#FFBF00]'>PRODUÇÃO REAL</b>. O Guardian irá <b class='text-[#E0E0E0]'>abrir chamados verdadeiros no Jira</b> com logs anexados sempre que um Pod ou Container falhar nos targets supervisionados.";
         }
         if (btnLabel) btnLabel.textContent = "Voltar para Modo Simulação (Dry-Run)";
         if (toggleBtn) toggleBtn.className = "px-5 py-3 rounded-xl bg-[#FFBF00] hover:bg-[#FFBF00]/90 text-[#121212] font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 shadow-lg shadow-[#FFBF00]/20 cursor-pointer";
@@ -1436,13 +1433,13 @@ flowchart TD
       }
 
       const iconSvg = type === 'success' 
-        ? `<svg class="w-4 h-4 text-[#39FF14] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>`
+        ? `<svg class="w-4 h-4 text-[#FFBF00] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>`
         : type === 'warning'
         ? `<svg class="w-4 h-4 text-[#FFBF00] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`
-        : `<svg class="w-4 h-4 text-[#39FF14] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"></circle><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-4m0-4h.01"></path></svg>`;
+        : `<svg class="w-4 h-4 text-[#FFBF00] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"></circle><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-4m0-4h.01"></path></svg>`;
 
       const border = type === 'success' 
-        ? 'border-[#39FF14]/60 text-[#39FF14] bg-[#181818]/95 shadow-lg shadow-[#39FF14]/20' 
+        ? 'border-[#FFBF00]/60 text-[#FFBF00] bg-[#181818]/95 shadow-lg shadow-[#FFBF00]/20' 
         : type === 'warning'
         ? 'border-[#FFBF00]/60 text-[#FFBF00] bg-[#181818]/95 shadow-lg shadow-[#FFBF00]/20'
         : 'border-[#2F2F2F] text-[#E0E0E0] bg-[#181818]/95 shadow-lg';
@@ -1480,7 +1477,7 @@ flowchart TD
       const btnK8s = document.getElementById('topo-filter-k8s');
       const btnDocker = document.getElementById('topo-filter-docker');
 
-      const activeClass = "px-3 py-1 rounded-lg font-mono text-[11px] font-bold bg-[#39FF14]/15 text-[#39FF14] border border-[#39FF14]/30";
+      const activeClass = "px-3 py-1 rounded-lg font-mono text-[11px] font-bold bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/30";
       const inactiveClass = "px-3 py-1 rounded-lg font-mono text-[11px] text-[#888888] hover:text-[#E0E0E0]";
 
       if (btnAll) btnAll.className = filter === 'ALL' ? activeClass : inactiveClass;
@@ -1544,13 +1541,13 @@ flowchart TD
         const isK8s = env.type === 'KUBERNETES';
         const typeBadge = isK8s 
           ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/30 font-bold font-mono">K8S</span>`
-          : `<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#39FF14]/15 text-[#39FF14] border border-[#39FF14]/30 font-bold font-mono">DOCKER</span>`;
+          : `<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/30 font-bold font-mono">DOCKER</span>`;
 
         let dot = `<span class="h-2 w-2 rounded-full bg-[#888888]"></span>`;
         let statusColor = 'text-[#888888]';
         if (env.status === 'READY') {
-          dot = `<span class="h-2 w-2 rounded-full bg-[#39FF14] neon-pulse-neon"></span>`;
-          statusColor = 'text-[#39FF14]';
+          dot = `<span class="h-2 w-2 rounded-full bg-[#FFBF00] neon-pulse-amber"></span>`;
+          statusColor = 'text-[#FFBF00]';
         } else if (env.status === 'CONFIGURED') {
           dot = `<span class="h-2 w-2 rounded-full bg-[#FFBF00]"></span>`;
           statusColor = 'text-[#FFBF00]';
@@ -1579,7 +1576,7 @@ flowchart TD
                 <span class="text-[11px] font-bold">${env.status}</span>
                 <span class="text-[#888888] text-[10px]">${scopesCount}</span>
               </div>
-              <button type="button" onclick="quickCreateTargetFromEnv('${env.type}', '${encodeURIComponent(env.endpoint || env.name)}', '${encodeURIComponent(env.name)}')" class="w-full mt-3 py-2 rounded-xl bg-[#2F2F2F]/60 hover:bg-[#39FF14]/15 text-[#E0E0E0] hover:text-[#39FF14] border border-[#2F2F2F] hover:border-[#39FF14]/30 text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all">
+              <button type="button" onclick="quickCreateTargetFromEnv('${env.type}', '${encodeURIComponent(env.endpoint || env.name)}', '${encodeURIComponent(env.name)}')" class="w-full mt-3 py-2 rounded-xl bg-[#2F2F2F]/60 hover:bg-[#FFBF00]/15 text-[#E0E0E0] hover:text-[#FFBF00] border border-[#2F2F2F] hover:border-[#FFBF00]/30 text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all">
                 <i data-lucide="crosshair" class="w-3.5 h-3.5"></i> Supervisionar este Host
               </button>
             </div>
@@ -1646,7 +1643,7 @@ flowchart TD
       const btnK8s = document.getElementById('filter-btn-k8s');
       const btnDocker = document.getElementById('filter-btn-docker');
 
-      const activeClass = "px-3 py-1 rounded-lg font-mono text-[11px] font-bold bg-[#39FF14]/15 text-[#39FF14] border border-[#39FF14]/30";
+      const activeClass = "px-3 py-1 rounded-lg font-mono text-[11px] font-bold bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/30";
       const inactiveClass = "px-3 py-1 rounded-lg font-mono text-[11px] text-[#888888] hover:text-[#E0E0E0]";
 
       if (btnAll) btnAll.className = type === 'ALL' ? activeClass : inactiveClass;
@@ -1710,19 +1707,19 @@ flowchart TD
         const isK8s = t.type === 'KUBERNETES';
         const typeBadge = isK8s 
           ? `<span class="px-2.5 py-1 rounded-full bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/35 text-[11px] font-bold font-mono">Kubernetes</span>`
-          : `<span class="px-2.5 py-1 rounded-full bg-[#39FF14]/15 text-[#39FF14] border border-[#39FF14]/35 text-[11px] font-bold font-mono">Docker</span>`;
+          : `<span class="px-2.5 py-1 rounded-full bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/35 text-[11px] font-bold font-mono">Docker</span>`;
 
         const isActive = t.status === 'ACTIVE';
         const statusBadge = isActive
-          ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#39FF14]/10 text-[#39FF14] border border-[#39FF14]/30 font-mono">
-               <span class="h-1.5 w-1.5 rounded-full bg-[#39FF14] neon-pulse-neon animate-pulse"></span> Ativo
+          ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#FFBF00]/10 text-[#FFBF00] border border-[#FFBF00]/30 font-mono">
+               <span class="h-1.5 w-1.5 rounded-full bg-[#FFBF00] neon-pulse-amber animate-pulse"></span> Ativo
              </span>`
           : `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#2F2F2F]/40 text-[#888888] border border-[#2F2F2F] font-mono">Pausado</span>`;
 
         const toggleText = isActive ? 'Pausar' : 'Ativar';
         const toggleClass = isActive 
           ? 'bg-[#FFBF00]/10 text-[#FFBF00] hover:bg-[#FFBF00]/20 border border-[#FFBF00]/30' 
-          : 'bg-[#39FF14]/10 text-[#39FF14] hover:bg-[#39FF14]/20 border border-[#39FF14]/30';
+          : 'bg-[#FFBF00]/10 text-[#FFBF00] hover:bg-[#FFBF00]/20 border border-[#FFBF00]/30';
 
         const scopesList = t.scopes || [];
         const visibleScopes = scopesList.slice(0, 3);
@@ -1736,8 +1733,8 @@ flowchart TD
         const jiraProj = (t.actions && t.actions.jira_project_key) ? t.actions.jira_project_key : 'OPS';
         const isJiraOn = t.actions && t.actions.create_jira_issue;
         const jiraBadge = `
-          <button onclick="toggleTargetJira('${t.id}')" title="Clique para alternar abertura de chamados no Jira para este target" class="px-2.5 py-1 rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${isJiraOn ? 'bg-[#39FF14]/15 text-[#39FF14] border border-[#39FF14]/30 hover:bg-[#39FF14]/25' : 'bg-[#2F2F2F]/40 text-[#888888] border border-[#2F2F2F] hover:text-[#E0E0E0]'}">
-            <span class="h-1.5 w-1.5 rounded-full ${isJiraOn ? 'bg-[#39FF14] animate-pulse' : 'bg-[#888888]'}"></span>
+          <button onclick="toggleTargetJira('${t.id}')" title="Clique para alternar abertura de chamados no Jira para este target" class="px-2.5 py-1 rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${isJiraOn ? 'bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/30 hover:bg-[#FFBF00]/25' : 'bg-[#2F2F2F]/40 text-[#888888] border border-[#2F2F2F] hover:text-[#E0E0E0]'}">
+            <span class="h-1.5 w-1.5 rounded-full ${isJiraOn ? 'bg-[#FFBF00] animate-pulse' : 'bg-[#888888]'}"></span>
             <span>${isJiraOn ? `${jiraProj} (Ativo)` : 'Desativado'}</span>
           </button>
         `;
@@ -1746,7 +1743,7 @@ flowchart TD
           <tr class="hover:bg-white/[0.03] transition-colors">
             <td class="py-4 px-5">
               <div class="font-bold text-[#E0E0E0] text-xs flex items-center gap-2">
-                <span class="h-2 w-2 rounded-full ${isActive ? 'bg-[#39FF14]' : 'bg-[#888888]'}"></span>
+                <span class="h-2 w-2 rounded-full ${isActive ? 'bg-[#FFBF00]' : 'bg-[#888888]'}"></span>
                 ${t.name}
               </div>
               <span class="text-[10px] text-[#888888] font-mono">${t.id}</span>
@@ -1781,10 +1778,10 @@ flowchart TD
         const isK8s = t.type === 'KUBERNETES';
         const typeBadge = isK8s 
           ? `<span class="px-2 py-0.5 rounded-full bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/35 text-[10px] font-bold font-mono">K8s</span>`
-          : `<span class="px-2 py-0.5 rounded-full bg-[#39FF14]/15 text-[#39FF14] border border-[#39FF14]/35 text-[10px] font-bold font-mono">Docker</span>`;
+          : `<span class="px-2 py-0.5 rounded-full bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/35 text-[10px] font-bold font-mono">Docker</span>`;
 
         const isActive = t.status === 'ACTIVE';
-        const dot = isActive ? 'bg-[#39FF14]' : 'bg-[#888888]';
+        const dot = isActive ? 'bg-[#FFBF00]' : 'bg-[#888888]';
         const scopesStr = (t.scopes || []).slice(0, 2).join(', ') + ((t.scopes && t.scopes.length > 2) ? ` (+${t.scopes.length - 2})` : '');
 
         return `
@@ -1796,7 +1793,7 @@ flowchart TD
             <td class="py-3 px-4">${typeBadge}</td>
             <td class="py-3 px-4 font-mono text-xs text-[#888888]">${scopesStr || '-'}</td>
             <td class="py-3 px-4">
-              <span class="text-[11px] font-mono ${isActive ? 'text-[#39FF14]' : 'text-[#888888]'} font-bold">${t.status}</span>
+              <span class="text-[11px] font-mono ${isActive ? 'text-[#FFBF00]' : 'text-[#888888]'} font-bold">${t.status}</span>
             </td>
           </tr>
         `;
@@ -1894,7 +1891,7 @@ flowchart TD
       const btnCrit = document.getElementById('evt-filter-crit');
       const btnJira = document.getElementById('evt-filter-jira');
 
-      const activeClass = "px-3 py-1 rounded-lg font-mono text-[11px] font-bold bg-[#39FF14]/15 text-[#39FF14] border border-[#39FF14]/30";
+      const activeClass = "px-3 py-1 rounded-lg font-mono text-[11px] font-bold bg-[#FFBF00]/15 text-[#FFBF00] border border-[#FFBF00]/30";
       const inactiveClass = "px-3 py-1 rounded-lg font-mono text-[11px] text-[#888888] hover:text-[#E0E0E0]";
 
       if (btnAll) btnAll.className = filter === 'ALL' ? activeClass : inactiveClass;
@@ -1983,7 +1980,7 @@ flowchart TD
         if (evt.jira_issue) {
           jiraStatus = evt.jira_issue.startsWith('DRYRUN-')
             ? `<span class="text-[10px] text-[#FFBF00] font-mono">Simulado: ${evt.jira_issue}</span>`
-            : `<span class="text-[10px] text-[#39FF14] font-mono font-bold">Jira: ${evt.jira_issue}</span>`;
+            : `<span class="text-[10px] text-[#FFBF00] font-mono font-bold">Jira: ${evt.jira_issue}</span>`;
         } else if (evt.jira_error) {
           jiraStatus = `<span class="text-[10px] text-rose-400 font-mono truncate" title="${evt.jira_error}">Erro Jira</span>`;
         }
@@ -2120,7 +2117,7 @@ flowchart TD
 
       const typeBadge = isK8s 
         ? `<span class="px-2 py-0.5 rounded bg-[#FFBF00]/15 text-[#FFBF00] font-bold text-[10px] font-mono border border-[#FFBF00]/35">K8S</span>`
-        : `<span class="px-2 py-0.5 rounded bg-[#39FF14]/15 text-[#39FF14] font-bold text-[10px] font-mono border border-[#39FF14]/35">DOCKER</span>`;
+        : `<span class="px-2 py-0.5 rounded bg-[#FFBF00]/15 text-[#FFBF00] font-bold text-[10px] font-mono border border-[#FFBF00]/35">DOCKER</span>`;
 
       const severityDot = isCrit
         ? `<span class="inline-block h-2 w-2 rounded-full bg-red-500 shadow-[0_0_6px_#ef4444] flex-shrink-0"></span>`
@@ -2135,7 +2132,7 @@ flowchart TD
         if (evt.jira_issue.startsWith('DRYRUN-')) {
           jiraPill = `<span class="px-2 py-0.5 rounded-full bg-[#FFBF00]/20 border border-[#FFBF00]/35 text-[#FFBF00] font-bold text-[10px] font-mono whitespace-nowrap">🟡 ${evt.jira_issue}</span>`;
         } else {
-          jiraPill = `<span class="px-2 py-0.5 rounded-full bg-[#39FF14]/20 border border-[#39FF14]/35 text-[#39FF14] font-bold text-[10px] font-mono whitespace-nowrap">🟢 ${evt.jira_issue}</span>`;
+          jiraPill = `<span class="px-2 py-0.5 rounded-full bg-[#FFBF00]/20 border border-[#FFBF00]/35 text-[#FFBF00] font-bold text-[10px] font-mono whitespace-nowrap">🟢 ${evt.jira_issue}</span>`;
         }
       } else if (evt.jira_error) {
         jiraPill = `<span class="px-2 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/35 text-rose-300 font-bold text-[10px] font-mono whitespace-nowrap">🔴 Jira Erro</span>`;
@@ -2165,7 +2162,7 @@ flowchart TD
         <div class="flex items-center gap-2 flex-shrink-0">
           ${jiraPill}
           <span class="text-[#888888] text-[10px] font-mono whitespace-nowrap">${timeStr}</span>
-          <span class="text-[#888888] group-hover:text-[#39FF14] transition-colors" title="Ver detalhes">
+          <span class="text-[#888888] group-hover:text-[#FFBF00] transition-colors" title="Ver detalhes">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
           </span>
         </div>
@@ -2199,11 +2196,11 @@ flowchart TD
         } else {
           const jiraHref = serverConfig && serverConfig.jira_url ? `${serverConfig.jira_url}/browse/${evt.jira_issue}` : '#';
           jiraSection = `
-            <div class="flex items-center gap-2 p-3 rounded-xl bg-[#39FF14]/10 border border-[#39FF14]/30">
+            <div class="flex items-center gap-2 p-3 rounded-xl bg-[#FFBF00]/10 border border-[#FFBF00]/30">
               <span class="text-lg">🟢</span>
               <div>
-                <div class="text-[#39FF14] font-bold text-xs">CHAMADO JIRA ABERTO</div>
-                <a href="${jiraHref}" target="_blank" class="text-[#39FF14] font-bold font-mono text-sm underline hover:text-white">${evt.jira_issue}</a>
+                <div class="text-[#FFBF00] font-bold text-xs">CHAMADO JIRA ABERTO</div>
+                <a href="${jiraHref}" target="_blank" class="text-[#FFBF00] font-bold font-mono text-sm underline hover:text-white">${evt.jira_issue}</a>
                 <span class="text-[#888888] text-[11px]"> — Logs anexados ao ticket</span>
               </div>
             </div>`;
@@ -2241,7 +2238,7 @@ flowchart TD
               </div>
               <button
                 onclick="navigator.clipboard.writeText(document.getElementById('modal-log-content').textContent).then(()=>showToast('Log copiado!','success'))"
-                class="text-[10px] text-[#39FF14] hover:underline font-mono">Copiar Log</button>
+                class="text-[10px] text-[#FFBF00] hover:underline font-mono">Copiar Log</button>
             </div>
             <div class="rounded-xl border border-[#2F2F2F] bg-[#121212] overflow-auto max-h-64">
               <pre id="modal-log-content" class="p-4 text-[11px] text-[#E0E0E0] font-mono leading-relaxed whitespace-pre-wrap break-all">${evt.logs.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>
@@ -2255,7 +2252,7 @@ flowchart TD
 
       document.getElementById('imd-type-badge').innerHTML = isK8s
         ? `<span class="px-2 py-0.5 rounded bg-[#FFBF00]/15 text-[#FFBF00] font-bold text-[10px] font-mono border border-[#FFBF00]/35">KUBERNETES</span>`
-        : `<span class="px-2 py-0.5 rounded bg-[#39FF14]/15 text-[#39FF14] font-bold text-[10px] font-mono border border-[#39FF14]/35">DOCKER</span>`;
+        : `<span class="px-2 py-0.5 rounded bg-[#FFBF00]/15 text-[#FFBF00] font-bold text-[10px] font-mono border border-[#FFBF00]/35">DOCKER</span>`;
 
       document.getElementById('imd-reason').textContent = evt.reason || '—';
       document.getElementById('imd-entity').textContent = evt.entity_name || '—';
@@ -2318,7 +2315,7 @@ flowchart TD
 
       if (type === 'KUBERNETES') {
         btnK8s.className = "p-3.5 rounded-2xl border border-[#FFBF00]/60 bg-[#FFBF00]/15 text-[#FFBF00] font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#FFBF00]/10";
-        btnDocker.className = "p-3.5 rounded-2xl border border-[#2F2F2F] bg-[#2F2F2F]/40 text-[#888888] font-semibold text-xs flex items-center justify-center gap-2 hover:border-[#39FF14]/40 hover:text-[#39FF14]";
+        btnDocker.className = "p-3.5 rounded-2xl border border-[#2F2F2F] bg-[#2F2F2F]/40 text-[#888888] font-semibold text-xs flex items-center justify-center gap-2 hover:border-[#FFBF00]/40 hover:text-[#FFBF00]";
         lblEndpoint.textContent = "Cluster Kubernetes (Contexto do Kubeconfig)";
         lblScopes.textContent = "Namespaces para Supervisionar (Multi-seleção)";
 
@@ -2328,7 +2325,7 @@ flowchart TD
           endpointSelect.innerHTML = `<option value="">Nenhum cluster Kubernetes encontrado no kubeconfig</option>`;
         }
       } else {
-        btnDocker.className = "p-3.5 rounded-2xl border border-[#39FF14]/60 bg-[#39FF14]/15 text-[#39FF14] font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#39FF14]/10";
+        btnDocker.className = "p-3.5 rounded-2xl border border-[#FFBF00]/60 bg-[#FFBF00]/15 text-[#FFBF00] font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#FFBF00]/10";
         btnK8s.className = "p-3.5 rounded-2xl border border-[#2F2F2F] bg-[#2F2F2F]/40 text-[#888888] font-semibold text-xs flex items-center justify-center gap-2 hover:border-[#FFBF00]/40 hover:text-[#FFBF00]";
         lblEndpoint.textContent = "Docker Host / Context";
         lblScopes.textContent = "Containers / Stacks para Supervisionar";
@@ -2357,7 +2354,7 @@ flowchart TD
           renderScopesList(customDockerScopes);
         } else {
           const container = document.getElementById('scope-checkboxes');
-          container.innerHTML = `<div class="text-xs text-[#888888] font-mono text-center py-4">Informe o endereço do Host acima (ex: <code class="text-[#39FF14]">tcp://192.168.1.50:2375</code>) e clique em <b>"Listar Containers"</b> para carregar os alvos.</div>`;
+          container.innerHTML = `<div class="text-xs text-[#888888] font-mono text-center py-4">Informe o endereço do Host acima (ex: <code class="text-[#FFBF00]">tcp://192.168.1.50:2375</code>) e clique em <b>"Listar Containers"</b> para carregar os alvos.</div>`;
         }
       } else {
         customSection.classList.add('hidden');
@@ -2388,7 +2385,7 @@ flowchart TD
         const data = await res.json();
 
         if (data.connected && data.status === 'READY') {
-          statusBox.innerHTML = `<span class="text-[#39FF14] font-bold">✓ Conectado com sucesso!</span> <span class="text-[#E0E0E0]">${data.containers_count} container(s) detectados no host.</span>`;
+          statusBox.innerHTML = `<span class="text-[#FFBF00] font-bold">✓ Conectado com sucesso!</span> <span class="text-[#E0E0E0]">${data.containers_count} container(s) detectados no host.</span>`;
           customDockerScopes = data.scopes || [];
           renderScopesList(customDockerScopes, true);
           document.getElementById('scopes-actions').classList.remove('hidden');
@@ -2401,7 +2398,7 @@ flowchart TD
             </div>
             <div class="flex gap-2 mt-2">
               <input type="text" id="manual-scope-input" placeholder="Nome do container (ex: app-backend)" class="flex-1 px-3 py-1.5 rounded-lg glass-input text-[#E0E0E0] text-xs font-mono placeholder:text-[#888888]">
-              <button type="button" onclick="addManualScope()" class="px-3 py-1.5 rounded-lg bg-[#39FF14]/15 hover:bg-[#39FF14]/25 text-[#39FF14] border border-[#39FF14]/30 text-xs font-mono font-bold">+ Adicionar</button>
+              <button type="button" onclick="addManualScope()" class="px-3 py-1.5 rounded-lg bg-[#FFBF00]/15 hover:bg-[#FFBF00]/25 text-[#FFBF00] border border-[#FFBF00]/30 text-xs font-mono font-bold">+ Adicionar</button>
             </div>
             <div id="manual-scopes-list" class="space-y-1 mt-2"></div>
           `;
@@ -2435,8 +2432,8 @@ flowchart TD
       }
 
       container.innerHTML = scopes.map(item => `
-        <label class="flex items-center gap-2.5 text-xs text-[#E0E0E0] cursor-pointer hover:text-[#39FF14] transition-colors">
-          <input type="checkbox" name="target-scopes" value="${item}" ${defaultChecked ? 'checked' : ''} onchange="updateScopeCount()" class="rounded border-[#2F2F2F] bg-[#121212] text-[#39FF14] focus:ring-0">
+        <label class="flex items-center gap-2.5 text-xs text-[#E0E0E0] cursor-pointer hover:text-[#FFBF00] transition-colors">
+          <input type="checkbox" name="target-scopes" value="${item}" ${defaultChecked ? 'checked' : ''} onchange="updateScopeCount()" class="rounded border-[#2F2F2F] bg-[#121212] text-[#FFBF00] focus:ring-0">
           <span class="font-mono">${item}</span>
         </label>
       `).join('');
@@ -2568,7 +2565,7 @@ flowchart TD
           </div>
           <div class="flex items-center gap-2 flex-wrap">
             <span class="text-[#E0E0E0] font-bold text-sm font-mono" id="imd-reason"></span>
-            <span class="text-[#39FF14] font-semibold text-sm" id="imd-entity"></span>
+            <span class="text-[#FFBF00] font-semibold text-sm" id="imd-entity"></span>
           </div>
         </div>
         <button onclick="closeIncidentModal()" class="text-[#888888] hover:text-[#E0E0E0] transition-colors flex-shrink-0 p-1 rounded-lg hover:bg-white/5" title="Fechar">

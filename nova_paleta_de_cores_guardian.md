@@ -3,12 +3,12 @@
 
 A paleta de cores do Guardian foi desenvolvida para oferecer alto contraste e conforto visual em ambientes de observabilidade (especialmente em *Dark Mode*). Ela transmite uma estética técnica, moderna e operacional.
 
-### 🟢 Cores Principais (Destaque e Status)
+### 🟡 Cores Principais (Destaque e Status)
 
 | Cor | Nome | HEX | RGB | Uso Recomendado |
 | :--- | :--- | :--- | :--- | :--- |
-| ![#39FF14](https://via.placeholder.com/15/39FF14/39FF14.png) | **Neon Green** | `#39FF14` | `rgb(57, 255, 20)` | Cor primária da marca. Usada para status operacional, botões principais de sucesso, ícones de sistema online e gráficos de métricas saudáveis. |
-| ![#FFBF00](https://via.placeholder.com/15/FFBF00/FFBF00.png) | **Amber** | `#FFBF00` | `rgb(255, 191, 0)` | Cor secundária de contraste. Ideal para alertas (*warnings*), estados de transição (ex: *Dry-Run* ativo), notificações e elementos que exigem atenção sem indicar falha crítica. |
+| ![#FFBF00](https://via.placeholder.com/15/FFBF00/FFBF00.png) | **Amber / Yellow** | `#FFBF00` | `rgb(255, 191, 0)` | Cor primária oficial da marca. Usada para status operacional, botões principais de ação, escudo da logo, indicadores ativos, gráficos e badges. |
+| ![#FFC700](https://via.placeholder.com/15/FFC700/FFC700.png) | **Gold Amber** | `#FFC700` | `rgb(255, 199, 0)` | Gradiente de destaque primário e efeitos de iluminação/glow. |
 
 ### 🌑 Cores de Base (Fundos e Estrutura)
 
@@ -28,4 +28,4 @@ A paleta de cores do Guardian foi desenvolvida para oferecer alto contraste e co
 
 ### Dicas de Acessibilidade e Contraste
 * Sempre utilize o **Technical White** (`#E0E0E0`) sobre os fundos escuros (`#121212` e `#2F2F2F`) para garantir leitura fácil de logs e métricas.
-* O **Neon Green** e o **Amber** devem ser usados pontualmente (em botões, ícones, badges e linhas de gráficos) para que seus significados de "Sucesso" e "Alerta" não se percam pelo excesso.
+* O **Amber / Yellow** (`#FFBF00`) é a cor de destaque principal, conferindo alta visibilidade e elegância sobre a base Deep Black.
