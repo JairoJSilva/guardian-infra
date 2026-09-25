@@ -6,6 +6,10 @@
 > **Status**: Em Produção / Validação Híbrida  
 > **Integrações**: Jira Server / Data Center (Projeto OPS), Docker Engine API e Kubernetes Clusters  
 
+<p align="center">
+  <img src="imagens/guardian-dashboard.jpg" alt="Guardian SRE Command Center Dashboard" width="100%" />
+</p>
+
 ---
 
 ## 1. 🎯 Visão Executiva e Proposta de Valor
@@ -65,11 +69,19 @@ O **Guardian** é uma plataforma de observabilidade ativa e resposta diagnóstic
        └───────────────────────────────┘             └────────────────────────────────┘
 ```
 
+<p align="center">
+  <img src="imagens/guardian-topology.jpg" alt="Mapa de Topologia e Arquitetura Híbrida do Guardian" width="100%" />
+</p>
+
 ---
 
 ## 3. ⚙️ Supervisor Dinâmico de Targets (Core Engine em Go)
 
 O núcleo do Guardian foi projetado em Go para garantir consumo mínimo de memória (<30MB) e latência de processamento inferior a 5ms.
+
+<p align="center">
+  <img src="imagens/guardian-targets.jpg" alt="Painel de Gestão de Targets Multicluster e Docker" width="100%" />
+</p>
 
 ### 3.1. Abstração de Domínio Unificada
 O modelo `domain.Target` unifica clusters e servidores Docker:
@@ -131,6 +143,10 @@ O motor compõe um laudo estruturado:
 ## 5. 🎫 Automação de Chamados no Jira (Projeto OPS)
 
 A integração oficial do Guardian com o Jira está implementada em Go ([`internal/actions/jira.go`](file:///home/jairosjunior/Documentos/Jairo/automação-jira/guardian-infra/internal/actions/jira.go)) e em Python ([`guardian_ops/jira_client.py`](file:///home/jairosjunior/Documentos/Jairo/automação-jira/guardian-infra/guardian_ops/jira_client.py)).
+
+<p align="center">
+  <img src="imagens/guardian-incidents.jpg" alt="Stream de Incidentes e Chamado Automatizado no Jira" width="100%" />
+</p>
 
 ### 5.1. Anti-Spam e Deduplicação
 Para evitar a criação descontrolada de chamados quando um container reinicia em loop:

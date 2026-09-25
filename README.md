@@ -9,6 +9,10 @@
   <img src="https://img.shields.io/badge/Jira-REST_API_v2-0052CC?style=for-the-badge&logo=jira" alt="Jira" />
 </p>
 
+<p align="center">
+  <img src="docs/images/guardian-dashboard.jpg" alt="Guardian SRE Command Center Dashboard" width="100%" />
+</p>
+
 ---
 
 ## 1. Visão Geral
@@ -28,6 +32,11 @@ A arquitetura moderna consolida o Guardian como um **aplicativo nativo multiplat
   * Interface visual moderna em Dark Mode com navegação lateral (*Sidebar*).
   * Dashboard de targets com telemetria em tempo real, badges de status (*ACTIVE*, *PAUSED*, *ERROR*) e contadores executivos.
   * Live Stream de incidentes em tempo real utilizando Server-Sent Events (**SSE** na rota `/api/events/live`).
+
+<p align="center">
+  <img src="docs/images/guardian-targets.jpg" alt="Painel de Gestão de Targets Multicluster e Docker" width="100%" />
+</p>
+
 * ⚡ **Descoberta Multicluster com Cache e Paginação:**
   * Carregamento paralelo não-bloqueante de múltiplos clusters e hosts.
   * Paginação inteligente nos feeds de eventos e targets para ambientes de larga escala.
@@ -35,6 +44,10 @@ A arquitetura moderna consolida o Guardian como um **aplicativo nativo multiplat
   * **Wiki Markup Nativa:** Substituição completa de emojis 4-bytes por tabelas e painéis corporativos nativos do Jira, garantindo 100% de compatibilidade com qualquer banco (MySQL/PostgreSQL/Oracle) sem erros de codificação UTF-8.
   * **Deduplicação Inteligente (Anti-Spam):** Janela de cooldown configurável por assinatura única de incidente (*fingerprint*), evitando flood de chamados duplicados.
   * **Auto-Discovery de Issue Types:** Reconhece e mapeia dinamicamente os tipos de chamados aceitos pelo projeto no Jira.
+
+<p align="center">
+  <img src="docs/images/guardian-incidents.jpg" alt="Stream de Incidentes e Chamado Automatizado no Jira" width="100%" />
+</p>
 * 🎛️ **Controle Dinâmico de Operação:**
   * Alternância instantânea entre **Modo Dry-Run (Auditoria/Simulação)** e **Modo Produção (Atuação Ativa)** direto pela interface web sem precisar reiniciar o binário.
 * 📦 **Zero Dependências em Runtime:**
@@ -89,6 +102,10 @@ flowchart TD
     JiraAction -->|Tickets Formatados| JiraServer
 ```
 
+<p align="center">
+  <img src="docs/images/guardian-topology.jpg" alt="Mapa de Topologia e Arquitetura Híbrida do Guardian" width="100%" />
+</p>
+
 ---
 
 ## 4. Ciclo de Vida: Instalação, Atualização e Remoção no Linux
@@ -100,6 +117,10 @@ Para abrir o menu interativo com diagnóstico em tempo real:
 ```bash
 ./install.sh
 ```
+
+<p align="center">
+  <img src="docs/images/guardian-cli.jpg" alt="Gerenciador Central de Ciclo de Vida do Guardian (install.sh TUI)" width="100%" />
+</p>
 
 ---
 

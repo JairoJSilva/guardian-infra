@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 	"time"
 
@@ -25,33 +26,46 @@ import (
 )
 
 func main() {
+	cfg := config.LoadConfig()
+	appURL := fmt.Sprintf("http://localhost:%d", cfg.HTTPPort)
+
+	// 1. Verificação de instância em execução / duplo-clique no .exe no Windows:
+	// Se o usuário executou sem argumentos (duplo clique) ou usou 'open'/'gui'/'app':
+	isDoubleClickedOrNoArgs := len(os.Args) <= 1
+	isSubcommandOpen := len(os.Args) > 1 && (os.Args[1] == "open" || os.Args[1] == "gui" || os.Args[1] == "app")
+
+	if isDoubleClickedOrNoArgs || isSubcommandOpen {
+		// Se o servidor já estiver em execução em background/outro processo,
+		// apenas abre a janela do aplicativo desktop e sai sem erro de porta ocupada!
+		if desktop.WaitForServerReady(appURL, 400*time.Millisecond) {
+			log.Printf("🚀 Guardian já está ativo em %s. Abrindo janela desktop...", appURL)
+			_ = desktop.LaunchAppWindow(appURL)
+			return
+		}
+	}
+
 	// Subcomandos de conveniência CLI
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
 		case "version", "-v", "--version":
 			fmt.Printf("Guardian Autonomous SRE Platform %s\n", version.FullVersion())
 			return
-		case "open", "gui", "app":
-			cfg := config.LoadConfig()
-			appURL := fmt.Sprintf("http://localhost:%d", cfg.HTTPPort)
-			// Se o servidor já estiver em execução, apenas abre a janela
-			if desktop.WaitForServerReady(appURL, 500*time.Millisecond) {
-				log.Printf("🚀 Guardian já está ativo em %s. Abrindo janela desktop...", appURL)
-				_ = desktop.LaunchAppWindow(appURL)
-				return
-			}
-			// Se não estiver rodando, remove o subcomando e continua para iniciar com -gui
-			os.Args = append([]string{os.Args[0], "-gui"}, os.Args[2:]...)
 		}
 	}
 
-	cfg := config.LoadConfig()
+	// No Windows, por padrão abrir com dois cliques (.exe) SEMPRE abre a interface desktop
+	defaultGUI := false
+	if runtime.GOOS == "windows" {
+		defaultGUI = true
+	}
 
 	portFlag := flag.Int("port", cfg.HTTPPort, "Porta HTTP do servidor")
 	dryRunFlag := flag.Bool("dry-run", cfg.DryRun, "Executar em modo Dry-Run (sem criar chamados no Jira)")
 	kubeFlag := flag.String("kubeconfig", cfg.KubeConfigPath, "Caminho do arquivo kubeconfig")
 	dockerFlag := flag.String("docker-sock", cfg.DockerSocketPath, "Caminho do unix socket do Docker")
-	guiFlag := flag.Bool("gui", false, "Abre a interface gráfica nativa em janela desktop ao iniciar")
+	guiFlag := flag.Bool("gui", defaultGUI, "Abre a interface gráfica nativa em janela desktop ao iniciar")
+	headlessFlag := flag.Bool("headless", false, "Executa em modo headless / servidor sem abrir janela")
+	noGuiFlag := flag.Bool("no-gui", false, "Não abre a janela gráfica do navegador ao iniciar")
 	versionFlag := flag.Bool("version", false, "Exibe a versão do Guardian")
 	flag.Parse()
 
@@ -59,6 +73,9 @@ func main() {
 		fmt.Printf("Guardian Autonomous SRE Platform %s\n", version.FullVersion())
 		return
 	}
+
+	// Avalia se a GUI deve ser aberta (ativo por padrão no Windows com duplo clique)
+	shouldOpenGUI := (*guiFlag || (runtime.GOOS == "windows" && !*headlessFlag && !*noGuiFlag)) && !*headlessFlag && !*noGuiFlag
 
 	cfg.HTTPPort = *portFlag
 	cfg.DryRun = *dryRunFlag
@@ -122,10 +139,9 @@ func main() {
 		}
 	}()
 
-	// Se flag -gui foi informada, aguarda o servidor responder e abre a janela desktop
-	if *guiFlag {
+	// Se deve abrir a interface gráfica desktop (padrão absoluto no Windows com 2 cliques ou com -gui):
+	if shouldOpenGUI {
 		go func() {
-			appURL := fmt.Sprintf("http://localhost:%d", cfg.HTTPPort)
 			if desktop.WaitForServerReady(appURL, 5*time.Second) {
 				_ = desktop.LaunchAppWindow(appURL)
 			}

@@ -101,13 +101,23 @@ func LaunchAppWindow(appURL string) error {
 
 	// 1. Tenta navegador baseado em Chromium com --app (janela nativa sem barra de URL/abas)
 	if browserPath, ok := FindAppBrowser(); ok {
-		args := []string{
-			fmt.Sprintf("--app=%s", appURL),
-			fmt.Sprintf("--user-data-dir=%s", profileDir),
-			"--class=guardian",
-			"--name=guardian",
-			"--no-first-run",
-			"--no-default-browser-check",
+		var args []string
+		if runtime.GOOS == "windows" {
+			// No Windows, abrir diretamente com --app usa o processo do Edge/Chrome sem travar perfis
+			args = []string{
+				fmt.Sprintf("--app=%s", appURL),
+				"--no-first-run",
+				"--no-default-browser-check",
+			}
+		} else {
+			args = []string{
+				fmt.Sprintf("--app=%s", appURL),
+				fmt.Sprintf("--user-data-dir=%s", profileDir),
+				"--class=guardian",
+				"--name=guardian",
+				"--no-first-run",
+				"--no-default-browser-check",
+			}
 		}
 		cmd := exec.Command(browserPath, args...)
 		cmd.Stdout = nil
@@ -129,13 +139,18 @@ func LaunchAppWindow(appURL string) error {
 		}
 	}
 
-	// 3. Fallback no Windows (cmd /c start)
+	// 3. Fallback no Windows (cmd /c start "" <url>)
 	if runtime.GOOS == "windows" {
-		cmd := exec.Command("cmd", "/c", "start", appURL)
+		cmd := exec.Command("cmd", "/c", "start", "", appURL)
 		cmd.Stdout = nil
 		cmd.Stderr = nil
 		if err := cmd.Start(); err == nil {
 			log.Printf("🖥️ [Desktop Window] URL aberta via default browser (cmd /c start)")
+			return nil
+		}
+		cmdRundll := exec.Command("rundll32", "url.dll,FileProtocolHandler", appURL)
+		if err := cmdRundll.Start(); err == nil {
+			log.Printf("🖥️ [Desktop Window] URL aberta via rundll32")
 			return nil
 		}
 	}

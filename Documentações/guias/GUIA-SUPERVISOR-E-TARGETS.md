@@ -17,7 +17,11 @@ Um **Target** representa um alvo de monitoramento contínuo com escopo delimitad
 
 ## 2. 🖥️ Gerenciamento Visual pela Interface Web
 
-A interface Web do Guardian (**`http://localhost:8080`**) oferece controle visual e imediato sobre todos os targets:
+A interface Web do Guardian (**`http://localhost:8092`**) oferece controle visual e imediato sobre todos os targets:
+
+<p align="center">
+  <img src="../imagens/guardian-targets.jpg" alt="Painel de Gestão de Targets Multicluster e Docker" width="100%" />
+</p>
 
 ### Adicionando um Novo Target:
 1. Clique no botão **`+ Novo Target`** no cabeçalho do painel.
