@@ -7,7 +7,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${SCRIPT_DIR}"
 
-VERSION="3.0.0"
+VERSION=$(cat "${SCRIPT_DIR}/VERSION" 2>/dev/null || echo "3.1.0")
 ARCH="amd64"
 PACKAGE_NAME="guardian"
 BUILD_ROOT="${SCRIPT_DIR}/dist/deb_build"
@@ -23,8 +23,11 @@ mkdir -p "${BUILD_ROOT}/DEBIAN" \
          "${BUILD_ROOT}/etc/systemd/system" \
          "${SCRIPT_DIR}/dist"
 
-echo "⚙️ [Debian Packager] Compilando binário Go..."
-go build -ldflags="-s -w" -o "${SCRIPT_DIR}/bin/guardian" ./cmd/guardian
+echo "⚙️ [Debian Packager] Compilando binário Go v${VERSION}..."
+GIT_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "release")
+BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+LDFLAGS="-s -w -X 'guardian/internal/version.Version=${VERSION}' -X 'guardian/internal/version.GitCommit=${GIT_COMMIT}' -X 'guardian/internal/version.BuildDate=${BUILD_DATE}'"
+go build -ldflags="${LDFLAGS}" -o "${SCRIPT_DIR}/bin/guardian" ./cmd/guardian
 
 echo "📦 [Debian Packager] Estruturando pacote..."
 cp "${SCRIPT_DIR}/bin/guardian" "${BUILD_ROOT}/usr/local/bin/guardian"

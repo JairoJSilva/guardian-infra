@@ -6,5 +6,5 @@ guardian_cache.json
 cache/
 /guardian
 /targets.json
-bin/
+/bin/
 dist/

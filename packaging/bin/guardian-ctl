@@ -1,0 +1,300 @@
+#!/usr/bin/env bash
+# =============================================================================
+# guardian-ctl — Utilitário de Linha de Comando do Guardian SRE (Linux)
+# =============================================================================
+set -e
+
+REAL_HOME="${HOME}"
+if [[ -n "${SNAP_REAL_HOME:-}" ]] && touch "${SNAP_REAL_HOME}/.snap_test_write" 2>/dev/null; then
+    rm -f "${SNAP_REAL_HOME}/.snap_test_write"
+    REAL_HOME="${SNAP_REAL_HOME}"
+fi
+
+SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ "${SELF_DIR}" == "/usr/local/bin" || "${SELF_DIR}" == "/usr/bin" ]]; then
+    IS_SYSTEM=true
+    BIN_DIR="${SELF_DIR}"
+    CONFIG_FILE="/etc/guardian/guardian.env"
+    DATA_DIR="/var/lib/guardian"
+    LOG_FILE="/var/log/guardian/guardian.log"
+else
+    IS_SYSTEM=false
+    BIN_DIR="${REAL_HOME}/.local/bin"
+    CONFIG_FILE="${REAL_HOME}/.config/guardian/guardian.env"
+    DATA_DIR="${REAL_HOME}/.local/share/guardian"
+    LOG_FILE="${REAL_HOME}/.local/state/guardian/guardian.log"
+fi
+
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
+BLUE='\033[0;34m'; CYAN='\033[0;36m'; MAGENTA='\033[0;35m'
+BOLD='\033[1m'; RESET='\033[0m'
+
+PORT=8092
+if [[ -f "${CONFIG_FILE}" ]]; then
+    cfg_port=$(grep -E "^PORT=" "${CONFIG_FILE}" | cut -d'=' -f2 | tr -d ' "' || true)
+    if [[ -n "${cfg_port}" ]]; then
+        PORT="${cfg_port}"
+    fi
+fi
+
+APP_URL="http://localhost:${PORT}"
+HEALTH_URL="${APP_URL}/api/health"
+
+usage() {
+    echo -e "${BOLD}${BLUE}🛡️  Guardian SRE — Painel de Controle CLI${RESET}"
+    echo -e "Uso: ${BOLD}guardian-ctl [comando]${RESET}"
+    echo ""
+    echo "Operações do Serviço:"
+    echo -e "  ${CYAN}start${RESET}        Inicia o serviço em segundo plano (systemd ou daemon)"
+    echo -e "  ${CYAN}stop${RESET}         Para o serviço do Guardian"
+    echo -e "  ${CYAN}restart${RESET}      Reinicia o serviço"
+    echo -e "  ${CYAN}status${RESET}       Verifica status, saúde, targets ativos e telemetria"
+    echo -e "  ${CYAN}open${RESET}         Abre a interface gráfica na janela nativa desktop"
+    echo -e "  ${CYAN}logs${RESET}         Exibe os logs em tempo real (-f)"
+    echo -e "  ${CYAN}config${RESET}       Exibe o arquivo de configuração atual"
+    echo -e "  ${CYAN}info${RESET}         Exibe diagnóstico e caminhos de arquivos instalados"
+    echo -e "  ${CYAN}version${RESET}      Exibe a versão instalada"
+    echo ""
+    echo "Gerenciamento de Versão & Ciclo de Vida:"
+    echo -e "  ${MAGENTA}update${RESET}       Compila e atualiza o Guardian para a nova versão"
+    echo -e "  ${MAGENTA}rollback${RESET}     Reverte imediatamente para o binário anterior (.bak)"
+    echo -e "  ${RED}uninstall${RESET}    Desinstala o Guardian do sistema"
+    echo ""
+}
+
+is_running() {
+    curl -s --connect-timeout 1 "${HEALTH_URL}" >/dev/null 2>&1
+}
+
+cmd_status() {
+    echo -e "${BOLD}=== Status do Guardian SRE ===${RESET}"
+    if is_running; then
+        echo -e "Estado:   ${GREEN}${BOLD}● EM EXECUÇÃO${RESET}"
+        echo -e "URL:      ${CYAN}${APP_URL}${RESET}"
+        
+        local health_data
+        health_data=$(curl -s "${HEALTH_URL}" 2>/dev/null || echo "{}")
+        echo -e "Telemetria API: ${health_data}"
+        
+        local targets_count
+        targets_count=$(curl -s "${APP_URL}/api/targets" 2>/dev/null | grep -o '"id":' | wc -l || echo "0")
+        echo -e "Targets Ativos: ${BOLD}${targets_count}${RESET}"
+    else
+        echo -e "Estado:   ${RED}○ PARADO${RESET}"
+    fi
+
+    if command -v systemctl >/dev/null 2>&1; then
+        echo ""
+        echo -e "${BOLD}--- Status do Serviço systemd (User) ---${RESET}"
+        systemctl --user status guardian --no-pager 2>/dev/null || echo "Serviço systemd não carregado."
+    fi
+}
+
+cmd_start() {
+    if is_running; then
+        echo -e "${YELLOW}[AVISO]${RESET} Guardian já está em execução em ${APP_URL}"
+        return 0
+    fi
+
+    echo -e "${CYAN}[INFO]${RESET} Iniciando Guardian..."
+    if command -v systemctl >/dev/null 2>&1 && systemctl --user list-unit-files guardian.service >/dev/null 2>&1; then
+        systemctl --user start guardian
+    else
+        local bin_path="${BIN_DIR}/guardian"
+        if [[ ! -x "${bin_path}" ]]; then
+            bin_path=$(command -v guardian 2>/dev/null || true)
+        fi
+        if [[ -n "${bin_path}" && -x "${bin_path}" ]]; then
+            mkdir -p "$(dirname "${LOG_FILE}")"
+            nohup "${bin_path}" > "${LOG_FILE}" 2>&1 &
+        else
+            echo -e "${RED}[ERRO]${RESET} Binário do Guardian não encontrado em ${BIN_DIR}/guardian"
+            exit 1
+        fi
+    fi
+
+    for i in {1..20}; do
+        if is_running; then
+            echo -e "${GREEN}[OK]${RESET} Guardian iniciado com sucesso em ${APP_URL}"
+            return 0
+        fi
+        sleep 0.2
+    done
+
+    echo -e "${RED}[ERRO]${RESET} Falha ao iniciar Guardian. Verifique os logs com: guardian-ctl logs"
+    exit 1
+}
+
+cmd_stop() {
+    echo -e "${CYAN}[INFO]${RESET} Parando Guardian..."
+    if command -v systemctl >/dev/null 2>&1; then
+        systemctl --user stop guardian 2>/dev/null || true
+    fi
+    pkill -f "guardian" 2>/dev/null || true
+    sleep 0.5
+    if ! is_running; then
+        echo -e "${GREEN}[OK]${RESET} Guardian finalizado."
+    else
+        echo -e "${YELLOW}[AVISO]${RESET} Forçando finalização..."
+        pkill -9 -f "guardian" 2>/dev/null || true
+        echo -e "${GREEN}[OK]${RESET} Guardian finalizado."
+    fi
+}
+
+cmd_restart() {
+    cmd_stop
+    sleep 1
+    cmd_start
+}
+
+cmd_open() {
+    if ! is_running; then
+        cmd_start
+    fi
+    local app_bin="${BIN_DIR}/guardian-app"
+    if [[ -x "${app_bin}" ]]; then
+        exec "${app_bin}"
+    else
+        guardian-app || xdg-open "${APP_URL}"
+    fi
+}
+
+cmd_logs() {
+    if command -v journalctl >/dev/null 2>&1 && systemctl --user is-active guardian >/dev/null 2>&1; then
+        exec journalctl --user -u guardian -f
+    elif [[ -f "${LOG_FILE}" ]]; then
+        exec tail -f -n 50 "${LOG_FILE}"
+    else
+        echo -e "${YELLOW}Nenhum log encontrado em ${LOG_FILE}.${RESET}"
+    fi
+}
+
+cmd_config() {
+    if [[ -f "${CONFIG_FILE}" ]]; then
+        echo -e "${BOLD}Configuração (${CONFIG_FILE}):${RESET}"
+        cat "${CONFIG_FILE}"
+    else
+        echo -e "${YELLOW}Arquivo de configuração não encontrado em: ${CONFIG_FILE}${RESET}"
+    fi
+}
+
+cmd_info() {
+    echo -e "${BOLD}${BLUE}=== Informações e Diagnóstico do Guardian SRE ===${RESET}"
+    echo -e "Binário Ativo:      ${CYAN}${BIN_DIR}/guardian${RESET}"
+    if [[ -f "${BIN_DIR}/guardian.bak" ]]; then
+        echo -e "Backup Rollback:    ${GREEN}${BIN_DIR}/guardian.bak${RESET} (disponível para rollback)"
+    else
+        echo -e "Backup Rollback:    ${YELLOW}nenhum backup${RESET}"
+    fi
+    echo -e "Configuração:       ${CYAN}${CONFIG_FILE}${RESET}"
+    echo -e "Targets:            ${CYAN}${DATA_DIR}/targets.json${RESET}"
+    echo -e "Porta HTTP:         ${BOLD}${PORT}${RESET}"
+    echo -e "URL Dashboard:      ${CYAN}${APP_URL}${RESET}"
+    echo ""
+    cmd_version
+}
+
+cmd_version() {
+    local bin_path="${BIN_DIR}/guardian"
+    if [[ -x "${bin_path}" ]]; then
+        "${bin_path}" -version
+    elif command -v guardian >/dev/null 2>&1; then
+        guardian -version
+    else
+        echo "Guardian SRE v3.1.0 (Linux)"
+    fi
+}
+
+get_repo_dir() {
+    local repo_dir=""
+    if [[ -f "${CONFIG_FILE}" ]]; then
+        repo_dir=$(grep -E "^GUARDIAN_REPO_DIR=" "${CONFIG_FILE}" | cut -d'=' -f2 | tr -d ' "' || true)
+    fi
+
+    if [[ -z "${repo_dir}" || ! -d "${repo_dir}" ]]; then
+        for candidate in \
+            "${PWD}" \
+            "${REAL_HOME}/Documentos/Jairo/automação-jira/guardian-infra" \
+            "${REAL_HOME}/guardian-infra"; do
+            if [[ -f "${candidate}/install.sh" ]]; then
+                repo_dir="${candidate}"
+                break
+            fi
+        done
+    fi
+    echo "${repo_dir}"
+}
+
+cmd_update() {
+    echo -e "${BOLD}${CYAN}🔄 Verificando e atualizando versão do Guardian SRE...${RESET}"
+    local repo_dir
+    repo_dir=$(get_repo_dir)
+
+    if [[ -n "${repo_dir}" && -f "${repo_dir}/install.sh" ]]; then
+        echo -e "${GREEN}[OK]${RESET} Repositório localizado em: ${repo_dir}"
+        if [[ "${IS_SYSTEM}" == "true" ]]; then
+            echo -e "${YELLOW}[INFO] Instalação global detectada (/usr/local/bin). Elevando com sudo...${RESET}"
+            sudo "${repo_dir}/install.sh" --system
+        else
+            "${repo_dir}/install.sh" --update
+        fi
+    else
+        echo -e "${RED}[ERRO] Repositório de código-fonte não encontrado.${RESET}"
+        echo -e "Acesse o diretório do projeto e execute: ${BOLD}make update${RESET} ou ${BOLD}./install.sh --update${RESET}"
+        exit 1
+    fi
+}
+
+cmd_rollback() {
+    local bin_path="${BIN_DIR}/guardian"
+    local bak_path="${BIN_DIR}/guardian.bak"
+
+    if [[ ! -f "${bak_path}" ]]; then
+        echo -e "${RED}[ERRO] Nenhum backup da versão anterior foi encontrado em ${bak_path}.${RESET}"
+        exit 1
+    fi
+
+    echo -e "${BOLD}${YELLOW}⏪ Revertendo para versão anterior...${RESET}"
+    cmd_stop
+    mv -f "${bak_path}" "${bin_path}"
+    chmod +x "${bin_path}"
+    cmd_start
+
+    echo ""
+    echo -e "${BOLD}${GREEN}✅ Rollback concluído! Versão restaurada e serviço em execução.${RESET}"
+}
+
+cmd_uninstall() {
+    echo -e "${RED}${BOLD}Atenção: Você solicitou a desinstalação do Guardian SRE.${RESET}"
+    read -r -p "Deseja continuar com a remoção? [s/N]: " resp
+    if [[ "${resp,,}" == "s" || "${resp,,}" == "sim" || "${resp,,}" == "y" ]]; then
+        local repo_dir
+        repo_dir=$(get_repo_dir)
+        if [[ -n "${repo_dir}" && -f "${repo_dir}/scripts/uninstall-desktop.sh" ]]; then
+            "${repo_dir}/scripts/uninstall-desktop.sh"
+        else
+            echo -e "${CYAN}Removendo binários e atalhos locais...${RESET}"
+            pkill -f "guardian" 2>/dev/null || true
+            rm -f "${BIN_DIR}/guardian"* "${REAL_HOME}/.local/share/applications/guardian.desktop"
+            echo -e "${GREEN}[OK] Guardian desinstalado.${RESET}"
+        fi
+    else
+        echo "Operação cancelada."
+    fi
+}
+
+case "${1:-}" in
+    start)       cmd_start ;;
+    stop)        cmd_stop ;;
+    restart)     cmd_restart ;;
+    status)      cmd_status ;;
+    open|gui)    cmd_open ;;
+    logs)        cmd_logs ;;
+    config)      cmd_config ;;
+    info)        cmd_info ;;
+    version|-v|--version) cmd_version ;;
+    update|upgrade)       cmd_update ;;
+    rollback)             cmd_rollback ;;
+    uninstall)            cmd_uninstall ;;
+    *)           usage ;;
+esac

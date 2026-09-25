@@ -90,34 +90,90 @@ flowchart TD
 
 ---
 
-## 4. Como Executar e Instalar no Linux
+## 4. Ciclo de Vida: Instalação, Atualização e Remoção no Linux
 
-### 🐧 Instalação como Aplicativo Nativo de Linux (Recomendado)
+O Guardian conta com um **Gerenciador Central de Ciclo de Vida (`./install.sh`)** para instalação nativa no desktop (Zorin OS, Ubuntu, Debian, GNOME, KDE), atalhos de sistema, serviço de segundo plano (`systemd`) e rotinas automáticas de upgrade e rollback.
 
-O Guardian pode ser instalado diretamente no ambiente desktop do Linux (Zorin OS, Ubuntu, Debian, GNOME, KDE) com atalho no menu de aplicativos, ícone vetorial de alta resolução, serviço de segundo plano (`systemd`) e modo de janela independente:
-
-#### Opção A: Instalação Local do Usuário (Sem necessidade de `sudo`)
+### 🚀 Menu Interativo Central (TUI)
+Para abrir o menu interativo com diagnóstico em tempo real:
 ```bash
-# Compila e instala em ~/.local/bin, adicionando atalho no menu do sistema
+./install.sh
+```
+
+---
+
+### 1️⃣ Instalação Inicial
+```bash
+# Opção A: Instalação local em ~/.local (Recomendado, sem sudo)
 make install
-# ou diretamente:
-./scripts/install-desktop.sh
-```
+# ou: ./install.sh --install
 
-#### Opção B: Instalação via Pacote Debian (.deb)
-```bash
-# Gera o pacote oficial .deb
+# Opção B: Instalação global (/usr/local, requer sudo)
+make install-system
+# ou: sudo ./install.sh --system
+
+# Opção C: Pacote Debian nativo (.deb)
 make deb
-
-# Instala no sistema
-sudo dpkg -i dist/guardian_3.0.0_amd64.deb
+sudo dpkg -i dist/guardian_3.1.0_amd64.deb
 ```
 
-#### 🚀 Formas de Uso após a Instalação:
+---
+
+### 2️⃣ Como Atualizar Quando Gerar uma Nova Versão
+Ao criar novas funcionalidades ou correções no código, você pode atualizar a aplicação instalada na sua máquina com **apenas 1 comando**:
+
+```bash
+# Passo 1 (Opcional): Incrementar a versão semântica (patch, minor ou major)
+make bump-patch     # ex: 3.1.0 -> 3.1.1
+# ou make bump-minor # ex: 3.1.0 -> 3.2.0
+
+# Passo 2: Executar a atualização automática
+make update
+# ou: ./install.sh --update
+# ou de qualquer pasta no terminal: guardian-ctl update
+```
+
+> **O que a atualização automática faz nos bastidores:**
+> 1. Pausa com segurança o serviço ativo para evitar erros de `Text file busy`.
+> 2. Salva um backup da versão anterior em `~/.local/bin/guardian.bak`.
+> 3. Compila o novo binário Go injetando a versão, commit do Git e data do build.
+> 4. Substitui o executável e atualiza atalhos e ícones.
+> 5. **Preserva 100%** de suas configurações (`guardian.env`) e targets registrados (`targets.json`).
+> 6. Reinicia o serviço no `systemd` e valida a saúde da API (`/api/health`).
+
+---
+
+### 3️⃣ Reversão Imediata (Rollback)
+Se a nova versão apresentar alguma incompatibilidade, reverta instantaneamente:
+```bash
+make rollback
+# ou: ./install.sh --rollback
+# ou: guardian-ctl rollback
+```
+
+---
+
+### 4️⃣ Remoção / Desinstalação
+```bash
+# Desinstalação padrão (remove binários e atalhos, preservando dados/configurações)
+make uninstall
+# ou: ./install.sh --uninstall
+# ou: guardian-ctl uninstall
+
+# Desinstalação completa (remove também bancos e arquivos de configuração)
+make purge
+# ou: ./install.sh --purge
+```
+
+---
+
+### 5️⃣ Formas de Uso após a Instalação
 * **Pelo Menu de Aplicativos:** Pressione a tecla `Super/Windows`, digite **Guardian SRE** e clique no ícone para abrir a aplicação em sua janela desktop nativa.
 * **Linha de Comando (CLI):**
-  * `guardian-app` ou `guardian gui`: Abre diretamente a janela de aplicativo desktop.
+  * `guardian-app` ou `guardian-ctl open`: Abre diretamente a janela de aplicativo desktop.
   * `guardian-ctl status`: Exibe status, targets ativos e telemetria.
+  * `guardian-ctl update`: Atualiza para a versão mais recente do repositório.
+  * `guardian-ctl rollback`: Restaura a versão anterior salva em backup.
   * `guardian-ctl start` / `guardian-ctl stop`: Inicia ou para o motor em background.
   * `guardian-ctl logs`: Acompanha os logs em tempo real.
 * **Serviço systemd:**
@@ -127,7 +183,6 @@ sudo dpkg -i dist/guardian_3.0.0_amd64.deb
 ---
 
 ### 💻 Execução Direta via Terminal (Desenvolvimento)
-
 ```bash
 # Compilar binário standalone
 make build

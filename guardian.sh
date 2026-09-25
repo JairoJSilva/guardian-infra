@@ -341,6 +341,12 @@ main() {
     shift 2>/dev/null || true
 
     case "${cmd}" in
+        install)        ./install.sh --install ;;
+        update|upgrade) ./install.sh --update ;;
+        rollback)       ./install.sh --rollback ;;
+        uninstall)      ./install.sh --uninstall ;;
+        status)         ./install.sh --status ;;
+        app|gui)        ./bin/guardian -gui ;;
         menu|m)         cmd_menu ;;
         agents|a)       cmd_agents ;;
         jira|j)         cmd_jira ;;

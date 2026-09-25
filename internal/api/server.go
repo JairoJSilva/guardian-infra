@@ -16,6 +16,7 @@ import (
 	"guardian/internal/providers/k8s"
 	"guardian/internal/storage"
 	"guardian/internal/supervisor"
+	"guardian/internal/version"
 )
 
 type Server struct {
@@ -83,7 +84,8 @@ func (s *Server) registerRoutes() {
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"status":      "UP",
-		"version":     "3.0.0-enterprise-linux",
+		"version":     version.Version,
+		"build":       version.FullVersion(),
 		"mode":        "hybrid-supervisor",
 		"dry_run":     s.cfg.IsDryRun(),
 		"jira_url":    s.cfg.JiraBaseURL,

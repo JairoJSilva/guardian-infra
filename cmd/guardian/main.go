@@ -20,17 +20,16 @@ import (
 	"guardian/internal/providers/k8s"
 	"guardian/internal/storage"
 	"guardian/internal/supervisor"
+	"guardian/internal/version"
 	"guardian/web"
 )
-
-const AppVersion = "v3.0.0-Enterprise-NativeLinux"
 
 func main() {
 	// Subcomandos de conveniência CLI
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
 		case "version", "-v", "--version":
-			fmt.Printf("Guardian Autonomous SRE Platform %s\n", AppVersion)
+			fmt.Printf("Guardian Autonomous SRE Platform %s\n", version.FullVersion())
 			return
 		case "open", "gui", "app":
 			cfg := config.LoadConfig()
@@ -57,7 +56,7 @@ func main() {
 	flag.Parse()
 
 	if *versionFlag {
-		fmt.Printf("Guardian Autonomous SRE Platform %s\n", AppVersion)
+		fmt.Printf("Guardian Autonomous SRE Platform %s\n", version.FullVersion())
 		return
 	}
 
@@ -155,6 +154,7 @@ func printBanner(cfg *config.Config) {
 	fmt.Println("║       GUARDIAN - SUPERVISOR HÍBRIDO (KUBERNETES & DOCKER)        ║")
 	fmt.Println("║               Target Supervisor & Jira Automation                ║")
 	fmt.Println("╚══════════════════════════════════════════════════════════════════╝")
+	fmt.Printf(" [•] Versão          : %s\n", version.FullVersion())
 	fmt.Printf(" [•] Jira Base URL   : %s\n", cfg.JiraBaseURL)
 	fmt.Printf(" [•] Jira Usuário    : %s\n", cfg.JiraUser)
 	fmt.Printf(" [•] Jira Projeto    : %s\n", cfg.JiraProjectKey)

@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+# =============================================================================
+# guardian-app — Launcher de Desktop para o Guardian SRE Platform
+# =============================================================================
+set -e
+
+REAL_HOME="${HOME}"
+if [[ -n "${SNAP_REAL_HOME:-}" ]] && touch "${SNAP_REAL_HOME}/.snap_test_write" 2>/dev/null; then
+    rm -f "${SNAP_REAL_HOME}/.snap_test_write"
+    REAL_HOME="${SNAP_REAL_HOME}"
+fi
+CONFIG_FILE="${REAL_HOME}/.config/guardian/guardian.env"
+DATA_DIR="${REAL_HOME}/.local/share/guardian"
+LOG_DIR="${REAL_HOME}/.local/state/guardian"
+mkdir -p "${DATA_DIR}" "${LOG_DIR}"
+
+# Lê porta configurada ou usa padrão 8092
+PORT=8092
+if [[ -f "${CONFIG_FILE}" ]]; then
+    cfg_port=$(grep -E "^PORT=" "${CONFIG_FILE}" | cut -d'=' -f2 | tr -d ' "' || true)
+    if [[ -n "${cfg_port}" ]]; then
+        PORT="${cfg_port}"
+    fi
+fi
+
+APP_URL="http://localhost:${PORT}"
+HEALTH_URL="${APP_URL}/api/health"
+
+is_server_ready() {
+    curl -s --connect-timeout 1 "${HEALTH_URL}" >/dev/null 2>&1
+}
+
+# 1. Garante que o motor do Guardian está em execução
+if ! is_server_ready; then
+    # Tenta via systemd se o serviço estiver configurado
+    if command -v systemctl >/dev/null 2>&1 && systemctl --user list-unit-files guardian.service >/dev/null 2>&1; then
+        systemctl --user start guardian || true
+    fi
+
+    # Se ainda não respondeu, tenta iniciar o binário diretamente em background
+    if ! is_server_ready; then
+        BIN_PATH=""
+        for candidate in "${REAL_HOME}/.local/bin/guardian" "/usr/local/bin/guardian" "$(command -v guardian 2>/dev/null)"; do
+            if [[ -x "${candidate}" ]]; then
+                BIN_PATH="${candidate}"
+                break
+            fi
+        done
+
+        if [[ -n "${BIN_PATH}" ]]; then
+            nohup "${BIN_PATH}" > "${LOG_DIR}/guardian.log" 2>&1 &
+        fi
+    fi
+
+    # Aguarda o serviço subir (até 6 segundos)
+    for i in {1..30}; do
+        if is_server_ready; then
+            break
+        fi
+        sleep 0.2
+    done
+fi
+
+# Notificação visual no ambiente Linux (se disponível)
+if command -v notify-send >/dev/null 2>&1; then
+    notify-send -i "${REAL_HOME}/.local/share/icons/hicolor/scalable/apps/guardian.svg" \
+        "Guardian SRE" "Plataforma ativa e conectada em ${APP_URL}" 2>/dev/null || true
+fi
+
+# 2. Localiza melhor navegador para abrir em Modo App (janela nativa sem barras)
+CHROME_PROFILE="${REAL_HOME}/.config/guardian/desktop-profile"
+mkdir -p "${CHROME_PROFILE}"
+
+BROWSER_CMD=""
+for b in google-chrome google-chrome-stable chromium chromium-browser brave-browser microsoft-edge microsoft-edge-stable vivaldi; do
+    if command -v "$b" >/dev/null 2>&1; then
+        BROWSER_CMD="$b"
+        break
+    fi
+done
+
+if [[ -n "${BROWSER_CMD}" ]]; then
+    exec "${BROWSER_CMD}" \
+        --app="${APP_URL}" \
+        --user-data-dir="${CHROME_PROFILE}" \
+        --class="guardian" \
+        --name="guardian" \
+        --no-first-run \
+        --no-default-browser-check \
+        >/dev/null 2>&1 &
+    exit 0
+fi
+
+# Fallback: Firefox em nova janela
+if command -v firefox >/dev/null 2>&1; then
+    exec firefox --new-window "${APP_URL}" >/dev/null 2>&1 &
+    exit 0
+fi
+
+# Fallback geral: xdg-open
+if command -v xdg-open >/dev/null 2>&1; then
+    exec xdg-open "${APP_URL}" >/dev/null 2>&1 &
+    exit 0
+fi
+
+# Fallback: sensible-browser
+if command -v sensible-browser >/dev/null 2>&1; then
+    exec sensible-browser "${APP_URL}" >/dev/null 2>&1 &
+    exit 0
+fi
+
+echo "Nenhum navegador encontrado. Acesse manualmente: ${APP_URL}"

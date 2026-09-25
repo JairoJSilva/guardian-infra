@@ -1997,71 +1997,271 @@ flowchart TD
       };
     }
 
+    /**
+     * Interpreta logs brutos + reason code e retorna uma frase de diagnóstico humana.
+     * Reconhece padrões comuns de erro em aplicações K8s/Docker.
+     */
+    function parseLogDiagnosis(evt) {
+      const reason = (evt.reason || '').toUpperCase();
+      const logs   = (evt.logs   || '').toLowerCase();
+      const exit   = evt.exit_code || 0;
+
+      // --- Padrões de diagnóstico por keywords ---
+      const patterns = [
+        // Banco de dados
+        { re: /connection refused|connexão recusada|cannot connect to.*db|dial tcp.*refused|no such host.*postgres|no such host.*mysql|no such host.*mongo/i,
+          msg: 'Falha de conexão com banco de dados — servidor inacessível ou credenciais inválidas' },
+        { re: /too many connections|max_connections|connection pool exhausted/i,
+          msg: 'Pool de conexões do banco esgotado — limite de conexões simultâneas atingido' },
+        { re: /deadlock|lock wait timeout/i,
+          msg: 'Deadlock detectado no banco de dados — transação bloqueada' },
+
+        // OOM / Memória
+        { re: /out of memory|cannot allocate|oom|killed.*memory|memory limit exceeded/i,
+          msg: 'Container encerrado por falta de memória (OOM Kill) — limite de RAM excedido' },
+        { re: /heap space|gc overhead|java.lang.outofmemory/i,
+          msg: 'Estouro de heap JVM — memória Java insuficiente (OutOfMemoryError)' },
+
+        // Crash / Panic
+        { re: /panic:|nil pointer dereference|segmentation fault|sigsegv|fatal error/i,
+          msg: 'Panic / crash crítico na aplicação — ponteiro nulo ou corrupção de memória' },
+        { re: /runtime error|unhandled exception|exception in thread/i,
+          msg: 'Exceção não tratada causou encerramento abrupto do processo' },
+
+        // Rede / DNS
+        { re: /no such host|dns lookup|name resolution|lookup.*failed/i,
+          msg: 'Falha de resolução DNS — hostname de serviço inacessível' },
+        { re: /timeout|context deadline exceeded|read timeout|write timeout/i,
+          msg: 'Timeout de comunicação — serviço dependente não respondeu no prazo' },
+        { re: /connection reset|broken pipe|eof|network unreachable/i,
+          msg: 'Conexão de rede encerrada abruptamente — instabilidade na infraestrutura' },
+
+        // Autenticação / Autorização
+        { re: /unauthorized|403|401|invalid token|jwt.*expired|permission denied/i,
+          msg: 'Falha de autenticação/autorização — credenciais inválidas ou token expirado' },
+
+        // Configuração / Inicialização
+        { re: /missing.*env|env.*not set|required.*env|config.*missing|no such file or directory.*config/i,
+          msg: 'Variável de ambiente ou arquivo de configuração ausente — falha na inicialização' },
+        { re: /port.*already in use|address already in use|bind.*failed/i,
+          msg: 'Porta já está em uso — conflito de binding de socket' },
+        { re: /failed to listen|listen.*error|unable to start/i,
+          msg: 'Falha ao iniciar servidor — verifique portas e permissões' },
+
+        // Redis / Cache
+        { re: /redis.*error|redis.*connection|resp.*error|cache.*unavailable/i,
+          msg: 'Serviço de cache Redis indisponível — possível queda do servidor de cache' },
+
+        // Disco
+        { re: /no space left|disk full|i\/o error|disk.*quota|write.*failed.*disk/i,
+          msg: 'Disco cheio ou erro de I/O — espaço em disco insuficiente no nó' },
+
+        // CrashLoopBackOff específico
+        { re: /back-off|backoff|crashloop/i,
+          msg: 'Container reiniciando repetidamente (CrashLoop) — erro persistente impede execução normal' },
+      ];
+
+      // Testa padrões nos logs
+      for (const p of patterns) {
+        if (p.re.test(logs)) return p.msg;
+      }
+
+      // Fallback por Reason code
+      if (reason === 'OOMKILLED')         return 'Container encerrado pelo kernel por excesso de uso de memória (OOM Kill)';
+      if (reason === 'CRASHLOOPBACKOFF')  return 'Pod em loop de reinicialização — application não consegue se manter em execução';
+      if (reason === 'ERROR' || reason === 'DIE') {
+        if (exit === 1)   return 'Processo encerrado com erro genérico (exit 1) — verifique configuração e dependências';
+        if (exit === 2)   return 'Erro de uso inválido ou argumento incorreto ao iniciar o processo (exit 2)';
+        if (exit === 127) return 'Comando não encontrado no container — binário ausente ou PATH incorreto (exit 127)';
+        if (exit === 128) return 'Processo encerrado por sinal inválido (exit 128)';
+        if (exit === 137) return 'Processo killed externamente — SIGKILL (exit 137), provável OOM ou restart forçado';
+        if (exit === 139) return 'Segmentation Fault — acesso inválido à memória causou término do processo (exit 139)';
+        if (exit === 143) return 'Processo encerrado com SIGTERM (exit 143) — encerramento pelo orquestrador';
+        return `Processo encerrado com exit code ${exit} — investigue logs completos para causa raiz`;
+      }
+
+      return 'Incidente detectado — clique para ver logs e diagnóstico completo';
+    }
+
+    /** Retorna classe CSS de cor para indicar severidade */
+    function severityColor(evt) {
+      return evt.severity === 'CRITICAL' ? 'text-red-400' : 'text-amber-400';
+    }
+
+    /**
+     * Cria um card compacto e clicável para o feed de incidentes.
+     * Logs e detalhes são exibidos no modal ao clicar.
+     */
     function createEventElement(evt) {
       const isK8s = evt.type === 'KUBERNETES';
+      const isCrit = evt.severity === 'CRITICAL';
+
       const typeBadge = isK8s 
         ? `<span class="px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 font-bold text-[10px] font-mono border border-amber-500/35">K8S</span>`
         : `<span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 font-bold text-[10px] font-mono border border-emerald-500/35">DOCKER</span>`;
 
-      const severityBadge = evt.severity === 'CRITICAL'
-        ? `<span class="px-2.5 py-0.5 rounded-full bg-red-500/15 text-red-300 border border-red-500/30 text-[10px] font-bold">Crítico</span>`
-        : `<span class="px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-bold">Alerta</span>`;
+      const severityDot = isCrit
+        ? `<span class="inline-block h-2 w-2 rounded-full bg-red-500 shadow-[0_0_6px_#ef4444] flex-shrink-0"></span>`
+        : `<span class="inline-block h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_6px_#fb923c] flex-shrink-0"></span>`;
 
       const timeStr = new Date(evt.timestamp).toLocaleTimeString('pt-BR');
+      const diagnosis = parseLogDiagnosis(evt);
 
-      let jiraBadge = '';
+      // Badge compacto de status Jira
+      let jiraPill = '';
       if (evt.jira_issue) {
         if (evt.jira_issue.startsWith('DRYRUN-')) {
-          jiraBadge = `
-            <div class="text-[11px] text-amber-300 pt-1.5 flex items-center gap-1.5 font-mono flex-wrap">
-              <span class="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-bold text-[10px]">🟡 SIMULAÇÃO (DRY-RUN)</span>
-              <span>Chamado Simulado: <strong class="text-white">${evt.jira_issue}</strong> (nenhum ticket real criado)</span>
+          jiraPill = `<span class="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/35 text-amber-300 font-bold text-[10px] font-mono whitespace-nowrap">🟡 ${evt.jira_issue}</span>`;
+        } else {
+          jiraPill = `<span class="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/35 text-emerald-300 font-bold text-[10px] font-mono whitespace-nowrap">🟢 ${evt.jira_issue}</span>`;
+        }
+      } else if (evt.jira_error) {
+        jiraPill = `<span class="px-2 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/35 text-rose-300 font-bold text-[10px] font-mono whitespace-nowrap">🔴 Jira Erro</span>`;
+      }
+
+      const borderLeftClass = isCrit ? 'border-l-4 border-l-red-500' : 'border-l-4 border-l-amber-400';
+
+      const card = document.createElement('div');
+      card.className = `px-4 py-3 rounded-xl glass-panel ${borderLeftClass} flex items-center gap-3 cursor-pointer transition-all duration-150 hover:bg-white/[0.06] hover:shadow-lg group`;
+      card.title = 'Clique para ver detalhes completos';
+      card.setAttribute('data-evt-id', evt.id || '');
+      card.innerHTML = `
+        <!-- severity dot -->
+        ${severityDot}
+        <!-- type badge -->
+        ${typeBadge}
+        <!-- main info -->
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-bold font-mono text-[11px] ${isCrit ? 'text-red-300' : 'text-amber-300'}">[${evt.reason}]</span>
+            <span class="font-semibold text-white text-xs truncate max-w-[200px]" title="${evt.entity_name}">${evt.entity_name}</span>
+            <span class="text-slate-500 text-[10px] font-mono">${evt.scope} · ${evt.environment}</span>
+          </div>
+          <p class="text-slate-300 text-[11px] mt-0.5 truncate" title="${diagnosis}">${diagnosis}</p>
+        </div>
+        <!-- right section -->
+        <div class="flex items-center gap-2 flex-shrink-0">
+          ${jiraPill}
+          <span class="text-slate-500 text-[10px] font-mono whitespace-nowrap">${timeStr}</span>
+          <span class="text-slate-600 group-hover:text-amber-300 transition-colors" title="Ver detalhes">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </span>
+        </div>
+      `;
+      card.addEventListener('click', () => openIncidentModal(evt));
+      return card;
+    }
+
+    /** Abre o modal de detalhes de um incidente */
+    function openIncidentModal(evt) {
+      const modal = document.getElementById('incident-detail-modal');
+      if (!modal) return;
+
+      const isCrit = evt.severity === 'CRITICAL';
+      const isK8s  = evt.type === 'KUBERNETES';
+      const diagnosis = parseLogDiagnosis(evt);
+      const timeStr = new Date(evt.timestamp).toLocaleString('pt-BR');
+
+      // Jira section
+      let jiraSection = '';
+      if (evt.jira_issue) {
+        if (evt.jira_issue.startsWith('DRYRUN-')) {
+          jiraSection = `
+            <div class="flex items-center gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
+              <span class="text-lg">🟡</span>
+              <div>
+                <div class="text-amber-300 font-bold text-xs">SIMULAÇÃO — DRY-RUN</div>
+                <div class="text-amber-200 text-[11px] font-mono">${evt.jira_issue} — nenhum ticket real foi criado</div>
+              </div>
             </div>`;
         } else {
           const jiraHref = serverConfig && serverConfig.jira_url ? `${serverConfig.jira_url}/browse/${evt.jira_issue}` : '#';
-          jiraBadge = `
-            <div class="text-[11px] text-emerald-400 pt-1.5 flex items-center gap-1.5 font-mono flex-wrap">
-              <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold text-[10px]">🟢 JIRA OFICIAL</span>
-              <span>Chamado Aberto: <a href="${jiraHref}" target="_blank" class="underline font-bold text-amber-300 hover:text-white">${evt.jira_issue}</a> (Logs anexados)</span>
+          jiraSection = `
+            <div class="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+              <span class="text-lg">🟢</span>
+              <div>
+                <div class="text-emerald-300 font-bold text-xs">CHAMADO JIRA ABERTO</div>
+                <a href="${jiraHref}" target="_blank" class="text-amber-300 font-bold font-mono text-sm underline hover:text-white">${evt.jira_issue}</a>
+                <span class="text-slate-400 text-[11px]"> — Logs anexados ao ticket</span>
+              </div>
             </div>`;
         }
       } else if (evt.jira_error) {
-        jiraBadge = `
-          <div class="text-[11px] text-rose-400 pt-1.5 flex items-center gap-1.5 font-mono flex-wrap">
-            <span class="px-2 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 font-bold text-[10px]">🔴 JIRA NÃO ABERTO</span>
-            <span class="truncate max-w-xl text-slate-300" title="${evt.jira_error}">${evt.jira_error}</span>
+        jiraSection = `
+          <div class="flex items-start gap-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30">
+            <span class="text-lg">🔴</span>
+            <div>
+              <div class="text-rose-300 font-bold text-xs">FALHA AO ABRIR CHAMADO JIRA</div>
+              <div class="text-slate-300 text-[11px] font-mono mt-0.5 break-all">${evt.jira_error}</div>
+            </div>
           </div>`;
       }
 
-      const logSnippet = evt.logs 
-        ? `<div class="mt-2.5 rounded-xl border border-white/10 bg-black/95 overflow-hidden">
-             <div class="px-3 py-1.5 bg-white/5 border-b border-white/10 flex items-center justify-between text-[10px] text-slate-400 font-mono">
-               <span class="flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-red-500/80 inline-block"></span> Tail de Diagnóstico</span>
-               <button onclick="navigator.clipboard.writeText(\`${encodeURIComponent(evt.logs)}\`)" class="text-amber-300 hover:underline">Copiar Log</button>
-             </div>
-             <div class="p-3 text-[11px] text-slate-300 overflow-x-auto max-h-28 whitespace-pre font-mono leading-relaxed">${evt.logs}</div>
+      // Extra details
+      let extraDetails = '';
+      if (evt.details && Object.keys(evt.details).length) {
+        const rows = Object.entries(evt.details).map(([k, v]) =>
+          `<div class="flex gap-2 text-[11px]"><span class="text-slate-400 font-mono min-w-[120px]">${k}</span><span class="text-slate-200 break-all">${JSON.stringify(v)}</span></div>`
+        ).join('');
+        extraDetails = `
+          <div>
+            <div class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-2">Metadados Adicionais</div>
+            <div class="space-y-1 p-3 rounded-xl bg-white/5 border border-white/10">${rows}</div>
+          </div>`;
+      }
+
+      // Logs section
+      const logsSection = evt.logs
+        ? `<div>
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-[10px] text-slate-500 uppercase tracking-widest font-bold flex items-center gap-1.5">
+                <span class="h-2 w-2 rounded-full bg-red-500/80 inline-block"></span> Tail de Diagnóstico (últimas linhas antes do crash)
+              </div>
+              <button
+                onclick="navigator.clipboard.writeText(document.getElementById('modal-log-content').textContent).then(()=>showToast('Log copiado!','success'))"
+                class="text-[10px] text-amber-300 hover:underline font-mono">Copiar Log</button>
+            </div>
+            <div class="rounded-xl border border-white/10 bg-black/90 overflow-auto max-h-64">
+              <pre id="modal-log-content" class="p-4 text-[11px] text-slate-300 font-mono leading-relaxed whitespace-pre-wrap break-all">${evt.logs.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>
+            </div>
            </div>`
-        : '';
+        : `<div class="p-4 text-center text-slate-500 text-xs font-mono">Nenhum log capturado para este evento.</div>`;
 
-      const borderLeftClass = evt.severity === 'CRITICAL' ? 'border-l-4 border-l-red-500' : 'border-l-4 border-l-amber-400';
+      document.getElementById('imd-severity-badge').innerHTML = isCrit
+        ? `<span class="px-3 py-1 rounded-full bg-red-500/20 border border-red-500/40 text-red-300 font-bold text-xs">🔴 CRÍTICO</span>`
+        : `<span class="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-bold text-xs">🟡 ALERTA</span>`;
 
-      const card = document.createElement('div');
-      card.className = `p-4 rounded-2xl glass-panel glass-panel-hover ${borderLeftClass} flex items-start justify-between transition-all`;
-      card.innerHTML = `
-        <div class="space-y-1.5 w-full mr-3">
-          <div class="flex items-center gap-2 flex-wrap">
-            ${typeBadge}
-            <span class="text-red-400 font-bold">[${evt.reason}]</span>
-            <span class="text-slate-400 font-mono">Ambiente: <span class="text-white">${evt.environment}</span> | Escopo: <span class="text-white">${evt.scope}</span></span>
-            <span class="text-slate-500 text-[10px] ml-auto font-mono">${timeStr}</span>
-          </div>
-          <p class="text-slate-200 text-xs">Entidade <span class="text-amber-300 font-bold font-mono">${evt.entity_name}</span> encerrou com Exit Code <span class="text-red-400 font-bold">${evt.exit_code}</span>.</p>
-          ${logSnippet}
-          ${jiraBadge}
-        </div>
-        ${severityBadge}
-      `;
-      return card;
+      document.getElementById('imd-type-badge').innerHTML = isK8s
+        ? `<span class="px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 font-bold text-[10px] font-mono border border-amber-500/35">KUBERNETES</span>`
+        : `<span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 font-bold text-[10px] font-mono border border-emerald-500/35">DOCKER</span>`;
+
+      document.getElementById('imd-reason').textContent = evt.reason || '—';
+      document.getElementById('imd-entity').textContent = evt.entity_name || '—';
+      document.getElementById('imd-scope').textContent = evt.scope || '—';
+      document.getElementById('imd-environment').textContent = evt.environment || '—';
+      document.getElementById('imd-image').textContent = evt.image || '—';
+      document.getElementById('imd-exit-code').textContent = evt.exit_code != null ? evt.exit_code : '—';
+      document.getElementById('imd-timestamp').textContent = timeStr;
+      document.getElementById('imd-diagnosis').textContent = diagnosis;
+      document.getElementById('imd-jira').innerHTML = jiraSection || '<span class="text-slate-500 text-xs">Nenhum chamado associado</span>';
+      document.getElementById('imd-extra-details').innerHTML = extraDetails;
+      document.getElementById('imd-logs').innerHTML = logsSection;
+
+      const borderEl = document.getElementById('imd-border');
+      borderEl.className = isCrit ? 'border-l-4 border-l-red-500' : 'border-l-4 border-l-amber-400';
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+
+    /** Fecha o modal de detalhes de incidente */
+    function closeIncidentModal() {
+      const modal = document.getElementById('incident-detail-modal');
+      if (!modal) return;
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.body.style.overflow = '';
     }
 
     async function simulateIncident(type) {
@@ -2332,5 +2532,80 @@ flowchart TD
       document.getElementById('target-modal').classList.remove('flex');
     }
   </script>
+
+  <!-- ==================== INCIDENT DETAIL MODAL ==================== -->
+  <div id="incident-detail-modal" class="hidden fixed inset-0 z-50 items-center justify-center p-4" style="background:rgba(3,4,8,0.85);backdrop-filter:blur(8px)">
+    <div class="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl border border-white/10 shadow-2xl" style="background:rgba(10,12,22,0.98);overflow:hidden">
+      <!-- Header -->
+      <div id="imd-border" class="border-l-4 border-l-red-500 flex items-start justify-between gap-3 px-6 py-4 border-b border-white/10 flex-shrink-0">
+        <div class="space-y-1.5">
+          <div class="flex items-center gap-2 flex-wrap">
+            <div id="imd-severity-badge"></div>
+            <div id="imd-type-badge"></div>
+            <span class="text-slate-400 text-[10px] font-mono" id="imd-timestamp"></span>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-white font-bold text-sm font-mono" id="imd-reason"></span>
+            <span class="text-amber-300 font-semibold text-sm" id="imd-entity"></span>
+          </div>
+        </div>
+        <button onclick="closeIncidentModal()" class="text-slate-400 hover:text-white transition-colors flex-shrink-0 p-1 rounded-lg hover:bg-white/10" title="Fechar">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="overflow-y-auto flex-1 px-6 py-5 space-y-5">
+
+        <!-- Diagnosis box -->
+        <div class="flex items-start gap-3 p-4 rounded-xl" style="background:rgba(251,133,0,0.08);border:1px solid rgba(251,133,0,0.25)">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.347.347-.099.1A5.99 5.99 0 0112 18a5.99 5.99 0 01-4.69-2.24l-.1-.099-.347-.348z"/></svg>
+          <div>
+            <div class="text-[10px] text-amber-400 font-bold uppercase tracking-widest mb-1">Diagnóstico Interpretado</div>
+            <p class="text-amber-100 text-sm leading-relaxed" id="imd-diagnosis"></p>
+          </div>
+        </div>
+
+        <!-- Metadata grid -->
+        <div>
+          <div class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-3">Informações do Incidente</div>
+          <div class="grid grid-cols-2 gap-x-6 gap-y-2.5 text-xs">
+            <div><span class="text-slate-500 font-mono">Escopo / Namespace</span><div class="text-white font-semibold mt-0.5" id="imd-scope"></div></div>
+            <div><span class="text-slate-500 font-mono">Ambiente / Cluster</span><div class="text-white font-semibold mt-0.5" id="imd-environment"></div></div>
+            <div><span class="text-slate-500 font-mono">Imagem</span><div class="text-slate-200 font-mono text-[11px] mt-0.5 break-all" id="imd-image"></div></div>
+            <div><span class="text-slate-500 font-mono">Exit Code</span><div class="text-red-300 font-bold font-mono mt-0.5" id="imd-exit-code"></div></div>
+          </div>
+        </div>
+
+        <!-- Jira -->
+        <div>
+          <div class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-2">Chamado de Suporte</div>
+          <div id="imd-jira"></div>
+        </div>
+
+        <!-- Extra details -->
+        <div id="imd-extra-details"></div>
+
+        <!-- Logs -->
+        <div id="imd-logs"></div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="px-6 py-3 border-t border-white/10 flex items-center justify-end gap-3 flex-shrink-0" style="background:rgba(10,12,22,0.8)">
+        <button onclick="closeIncidentModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white glass-panel hover:bg-white/10 transition-all">Fechar</button>
+      </div>
+    </div>
+  </div>
+  <!-- Fechar modal clicando fora -->
+  <script>
+    document.getElementById('incident-detail-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeIncidentModal();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeIncidentModal();
+    });
+  </script>
+
 </body>
 </html>
