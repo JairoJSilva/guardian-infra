@@ -67,6 +67,10 @@ O script realizará as seguintes validações:
 
 ---
 
+<p align="center">
+  <img src="../imagens/guardian-incidents.jpg" alt="Preview de Chamado de Incidente Formatado no Jira" width="100%" />
+</p>
+
 ## 4. 📄 Estrutura Padrão do Chamado Gerado
 
 Cada chamado gerado pelo Guardian no Jira segue um formato visual rigoroso, garantindo que a equipe de suporte e plantão tenha todas as respostas imediatas:
