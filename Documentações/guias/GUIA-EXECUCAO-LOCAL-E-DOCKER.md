@@ -38,7 +38,11 @@ O script [`guardian.sh`](file:///home/jairosjunior/Documentos/Jairo/automação-
 ./guardian.sh stop
 ```
 
-Após iniciar, abra o navegador em: **`http://localhost:8080`**.
+Após iniciar, abra o navegador em: **`http://localhost:8080`** (ou **`8092`**).
+
+<p align="center">
+  <img src="../imagens/guardian-dashboard.jpg" alt="Painel Web e SRE Command Center" width="100%" />
+</p>
 
 ---
 
