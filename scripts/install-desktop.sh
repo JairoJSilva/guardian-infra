@@ -76,7 +76,7 @@ if [[ "${ACTION}" == "rollback" ]]; then
     if command -v systemctl >/dev/null 2>&1; then
         systemctl --user stop guardian 2>/dev/null || true
     fi
-    pkill -f "guardian" 2>/dev/null || true
+    pkill -x guardian 2>/dev/null || pkill -f "/bin/guardian" 2>/dev/null || true
     sleep 0.5
 
     mv "${BIN_DIR}/guardian.bak" "${BIN_DIR}/guardian"
@@ -116,7 +116,7 @@ if [[ "${WAS_RUNNING}" == "true" ]]; then
     if command -v systemctl >/dev/null 2>&1; then
         systemctl --user stop guardian 2>/dev/null || true
     fi
-    pkill -f "guardian" 2>/dev/null || true
+    pkill -x guardian 2>/dev/null || pkill -f "/bin/guardian" 2>/dev/null || true
     sleep 1
 fi
 

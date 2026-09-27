@@ -10,8 +10,9 @@ if [[ -n "${SNAP_REAL_HOME:-}" ]] && touch "${SNAP_REAL_HOME}/.snap_test_write" 
     REAL_HOME="${SNAP_REAL_HOME}"
 fi
 
-SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [[ "${SELF_DIR}" == "/usr/local/bin" || "${SELF_DIR}" == "/usr/bin" ]]; then
+RESOLVED_BIN="$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")"
+SELF_DIR="$(cd "$(dirname "${RESOLVED_BIN}")" && pwd)"
+if [[ "${EUID}" -eq 0 && ( "${SELF_DIR}" == "/usr/local/bin" || "${SELF_DIR}" == "/usr/bin" ) ]]; then
     IS_SYSTEM=true
     BIN_DIR="${SELF_DIR}"
     CONFIG_FILE="/etc/guardian/guardian.env"
@@ -130,13 +131,13 @@ cmd_stop() {
     if command -v systemctl >/dev/null 2>&1; then
         systemctl --user stop guardian 2>/dev/null || true
     fi
-    pkill -f "guardian" 2>/dev/null || true
+    pkill -x guardian 2>/dev/null || pkill -f "/bin/guardian" 2>/dev/null || true
     sleep 0.5
     if ! is_running; then
         echo -e "${GREEN}[OK]${RESET} Guardian finalizado."
     else
         echo -e "${YELLOW}[AVISO]${RESET} Forçando finalização..."
-        pkill -9 -f "guardian" 2>/dev/null || true
+        pkill -9 -x guardian 2>/dev/null || pkill -9 -f "/bin/guardian" 2>/dev/null || true
         echo -e "${GREEN}[OK]${RESET} Guardian finalizado."
     fi
 }
@@ -274,7 +275,7 @@ cmd_uninstall() {
             "${repo_dir}/scripts/uninstall-desktop.sh"
         else
             echo -e "${CYAN}Removendo binários e atalhos locais...${RESET}"
-            pkill -f "guardian" 2>/dev/null || true
+            pkill -x guardian 2>/dev/null || pkill -f "/bin/guardian" 2>/dev/null || true
             rm -f "${BIN_DIR}/guardian"* "${REAL_HOME}/.local/share/applications/guardian.desktop"
             echo -e "${GREEN}[OK] Guardian desinstalado.${RESET}"
         fi
