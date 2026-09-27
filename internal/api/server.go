@@ -22,6 +22,7 @@ import (
 type Server struct {
 	cfg             *config.Config
 	storage         *storage.Storage
+	integStorage    *storage.IntegrationStorage
 	supervisor      *supervisor.Supervisor
 	notifier        *actions.Notifier
 	k8sDiscovery    *k8s.K8sDiscovery
@@ -32,6 +33,7 @@ type Server struct {
 func NewServer(
 	cfg *config.Config,
 	store *storage.Storage,
+	integStore *storage.IntegrationStorage,
 	superv *supervisor.Supervisor,
 	notif *actions.Notifier,
 	k8sDisc *k8s.K8sDiscovery,
@@ -40,6 +42,7 @@ func NewServer(
 	s := &Server{
 		cfg:             cfg,
 		storage:         store,
+		integStorage:    integStore,
 		supervisor:      superv,
 		notifier:        notif,
 		k8sDiscovery:    k8sDisc,
@@ -73,6 +76,8 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/health", s.handleHealth)
 	s.mux.HandleFunc("/api/targets", s.handleTargets)
 	s.mux.HandleFunc("/api/targets/", s.handleTargetByID)
+	s.mux.HandleFunc("/api/integrations", s.handleIntegrations)
+	s.mux.HandleFunc("/api/integrations/", s.handleIntegrationByID)
 	s.mux.HandleFunc("/api/discovery/environments", s.handleDiscoveryEnvironments)
 	s.mux.HandleFunc("/api/discovery/docker/inspect", s.handleDockerInspect)
 	s.mux.HandleFunc("/api/events/live", s.handleLiveEvents)
@@ -354,6 +359,157 @@ func (s *Server) handleSimulate(w http.ResponseWriter, r *http.Request) {
 		"message": "Incidente simulado disparado com sucesso!",
 		"event":   event,
 	})
+}
+
+func (s *Server) handleIntegrations(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		list := s.integStorage.ListSafe()
+		respondJSON(w, http.StatusOK, list)
+
+	case http.MethodPost:
+		var item domain.TicketingIntegration
+		if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
+			respondError(w, http.StatusBadRequest, "Payload inválido: "+err.Error())
+			return
+		}
+		item.Name = strings.TrimSpace(item.Name)
+		item.BaseURL = strings.TrimSpace(item.BaseURL)
+		if item.Name == "" || item.BaseURL == "" {
+			respondError(w, http.StatusBadRequest, "Nome e URL Base são obrigatórios")
+			return
+		}
+		if item.Type != domain.ProviderJira && item.Type != domain.ProviderGLPI && item.Type != domain.ProviderMovidesk {
+			item.Type = domain.ProviderJira
+		}
+		if item.AuthType == "" {
+			item.AuthType = "BASIC"
+		}
+		if item.ID == "" {
+			item.ID = fmt.Sprintf("portal-%s-%d", strings.ToLower(string(item.Type)), time.Now().UnixNano()%1000000)
+		}
+		item.CreatedAt = time.Now()
+		item.UpdatedAt = time.Now()
+
+		if err := s.integStorage.Save(&item); err != nil {
+			respondError(w, http.StatusInternalServerError, "Erro ao salvar integração: "+err.Error())
+			return
+		}
+		respondJSON(w, http.StatusCreated, item.ToSafe())
+
+	default:
+		respondError(w, http.StatusMethodNotAllowed, "Método não permitido")
+	}
+}
+
+func (s *Server) handleIntegrationByID(w http.ResponseWriter, r *http.Request) {
+	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+	if len(parts) < 3 {
+		respondError(w, http.StatusBadRequest, "ID da integração ausente")
+		return
+	}
+	id := parts[2]
+
+	if id == "test" {
+		s.handleTestIntegration(w, r)
+		return
+	}
+
+	switch r.Method {
+	case http.MethodGet:
+		item, err := s.integStorage.Get(id)
+		if err != nil {
+			respondError(w, http.StatusNotFound, err.Error())
+			return
+		}
+		respondJSON(w, http.StatusOK, item.ToSafe())
+
+	case http.MethodPut:
+		existing, err := s.integStorage.Get(id)
+		if err != nil {
+			respondError(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		var update domain.TicketingIntegration
+		if err := json.NewDecoder(r.Body).Decode(&update); err != nil {
+			respondError(w, http.StatusBadRequest, "Payload inválido: "+err.Error())
+			return
+		}
+
+		if strings.TrimSpace(update.Name) != "" {
+			existing.Name = strings.TrimSpace(update.Name)
+		}
+		if strings.TrimSpace(update.BaseURL) != "" {
+			existing.BaseURL = strings.TrimSpace(update.BaseURL)
+		}
+		if update.Type != "" {
+			existing.Type = update.Type
+		}
+		if update.AuthType != "" {
+			existing.AuthType = update.AuthType
+		}
+		existing.Username = strings.TrimSpace(update.Username)
+		existing.ProjectKey = strings.TrimSpace(update.ProjectKey)
+		existing.DefaultType = strings.TrimSpace(update.DefaultType)
+		existing.Enabled = update.Enabled
+
+		secret := strings.TrimSpace(update.TokenSecret)
+		if secret != "" && secret != "••••••••" {
+			existing.TokenSecret = secret
+		}
+
+		if err := s.integStorage.Save(existing); err != nil {
+			respondError(w, http.StatusInternalServerError, "Erro ao atualizar integração: "+err.Error())
+			return
+		}
+		respondJSON(w, http.StatusOK, existing.ToSafe())
+
+	case http.MethodDelete:
+		if err := s.integStorage.Delete(id); err != nil {
+			respondError(w, http.StatusNotFound, err.Error())
+			return
+		}
+		respondJSON(w, http.StatusOK, map[string]string{"message": "Portal de chamados removido com sucesso", "id": id})
+
+	default:
+		respondError(w, http.StatusMethodNotAllowed, "Método não permitido")
+	}
+}
+
+func (s *Server) handleTestIntegration(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		respondError(w, http.StatusMethodNotAllowed, "Método não permitido")
+		return
+	}
+
+	var req domain.TicketingIntegration
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondError(w, http.StatusBadRequest, "Payload inválido: "+err.Error())
+		return
+	}
+
+	// Se veio um ID existente e a senha está em branco ou mascarada, resgata o segredo salvo
+	if req.ID != "" && (req.TokenSecret == "" || req.TokenSecret == "••••••••") {
+		if saved, err := s.integStorage.Get(req.ID); err == nil {
+			req.TokenSecret = saved.TokenSecret
+			if req.Username == "" {
+				req.Username = saved.Username
+			}
+			if req.BaseURL == "" {
+				req.BaseURL = saved.BaseURL
+			}
+			if req.Type == "" {
+				req.Type = saved.Type
+			}
+			if req.AuthType == "" {
+				req.AuthType = saved.AuthType
+			}
+		}
+	}
+
+	result := actions.TestIntegration(r.Context(), &req)
+	respondJSON(w, http.StatusOK, result)
 }
 
 func respondJSON(w http.ResponseWriter, status int, data interface{}) {

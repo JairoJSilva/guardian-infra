@@ -43,24 +43,6 @@
 
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Mermaid.js -->
-  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-  <script>
-    mermaid.initialize({
-      startOnLoad: false,
-      theme: 'dark',
-      themeVariables: {
-        darkMode: true,
-        background: '#121212',
-        primaryColor: '#FFBF00',
-        primaryTextColor: '#E0E0E0',
-        primaryBorderColor: '#FFBF00',
-        lineColor: '#FFBF00',
-        secondaryColor: '#2F2F2F',
-        tertiaryColor: '#181818'
-      }
-    });
-  </script>
 
   <style>
     /* ==================== NOVA IDENTIDADE VISUAL GUARDIAN SRE ==================== */
@@ -242,10 +224,6 @@
       background: #FFBF00;
     }
 
-    .mermaid svg {
-      max-width: 100%;
-      height: auto;
-    }
 
     /* Sidebar Transitions */
     #sidebar {
@@ -360,17 +338,10 @@
             Engenharia
           </div>
 
-          <button onclick="navigateTo('docs')" id="nav-docs" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-xs transition-all text-[#888888] hover:text-[#E0E0E0] hover:bg-white/5 border border-transparent">
-            <div class="flex items-center gap-3">
-              <i data-lucide="layers" class="w-4 h-4 shrink-0"></i>
-              <span class="nav-text">Arquitetura &amp; Spec</span>
-            </div>
-          </button>
-
           <button onclick="navigateTo('settings')" id="nav-settings" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-xs transition-all text-[#888888] hover:text-[#E0E0E0] hover:bg-white/5 border border-transparent">
             <div class="flex items-center gap-3">
               <i data-lucide="settings" class="w-4 h-4 shrink-0"></i>
-              <span class="nav-text">Configurações &amp; Jira</span>
+              <span class="nav-text">Configurações &amp; Portais</span>
             </div>
           </button>
         </div>
@@ -867,125 +838,15 @@
         </div>
 
       </section>
-
-      <!-- ==================== VIEW 6: ARQUITETURA & SPEC ==================== -->
-      <section id="view-docs" class="hidden space-y-8">
-        
-        <div class="rounded-2xl glass-panel border border-[#2F2F2F] p-6 sm:p-8 space-y-6">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFBF00]/10 text-[#FFBF00] text-xs font-semibold border border-[#FFBF00]/30 font-mono">
-            <i data-lucide="layers" class="w-3.5 h-3.5"></i> ESPECIFICAÇÃO DE ARQUITETURA UNIFICADA
-          </div>
-          
-          <h2 class="text-2xl sm:text-3xl font-black text-[#E0E0E0] tracking-tight">
-            <span class="text-title-gradient">Guardian Platform Architecture</span>
-          </h2>
-          <p class="text-[#888888] text-xs sm:text-sm leading-relaxed max-w-4xl">
-            O Guardian adota um modelo descentralizado baseado no conceito de <strong>Target Cirúrgico</strong>. Cada alvo definido pelo operador aloca dinamicamente goroutines em Go que conectam nos provedores pertinentes sem interferir no restante da infraestrutura.
-          </p>
-
-          <div class="overflow-x-auto rounded-xl border border-[#2F2F2F] glass-panel">
-            <table class="w-full text-left text-xs font-mono">
-              <thead class="bg-[#181818] text-[#888888] uppercase border-b border-[#2F2F2F]">
-                <tr>
-                  <th class="p-3.5 text-[#888888]">Componente</th>
-                  <th class="p-3.5 text-[#FFBF00]">Kubernetes Engine</th>
-                  <th class="p-3.5 text-[#FFBF00]">Docker Engine</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-[#2F2F2F] text-[#E0E0E0]">
-                <tr>
-                  <td class="p-3.5 font-semibold text-[#888888]">Descoberta</td>
-                  <td class="p-3.5">Leitura de <code>~/.kube/config</code> com highlight de contexto ativo</td>
-                  <td class="p-3.5">Conexão via Unix Socket ou TCP remoto</td>
-                </tr>
-                <tr>
-                  <td class="p-3.5 font-semibold text-[#888888]">Granularidade</td>
-                  <td class="p-3.5"><strong class="text-[#E0E0E0]">Namespace</strong> (ex: producao, billing)</td>
-                  <td class="p-3.5"><strong class="text-[#E0E0E0]">Stack Compose / Containers</strong></td>
-                </tr>
-                <tr>
-                  <td class="p-3.5 font-semibold text-[#888888]">Mecanismo</td>
-                  <td class="p-3.5">client-go Informers &amp; Pod Watcher</td>
-                  <td class="p-3.5">Docker Engine Events Stream (die, oom)</td>
-                </tr>
-                <tr>
-                  <td class="p-3.5 font-semibold text-[#888888]">Diagnóstico</td>
-                  <td class="p-3.5 text-[#FFBF00]">Logs do Pod anterior (<code>--previous</code>)</td>
-                  <td class="p-3.5 text-[#FFBF00]">Logs do Container (<code>--tail=50</code>)</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- MERMAID DIAGRAM -->
-        <div class="space-y-3">
-          <h3 class="text-lg font-bold text-[#E0E0E0] flex items-center gap-2">
-            <i data-lucide="git-branch" class="w-4 h-4 text-[#FFBF00]"></i>
-            Fluxo de Goroutines &amp; EventBus
-          </h3>
-          <div class="p-6 rounded-2xl glass-panel border border-[#2F2F2F] flex justify-center overflow-x-auto">
-            <div class="mermaid w-full">
-flowchart TD
-    subgraph UI ["Camada de Apresentação (Web UI & SSE Realtime)"]
-        Dashboard["Dashboard & Metrics Overview"]
-        Modal["Configuração Dinâmica de Targets"]
-        LiveFeed["Live Stream de Incidentes (SSE)"]
-    end
-
-    subgraph GuardianCore ["Guardian Core Engine (Go Concurrency)"]
-        API["REST API & SSE Broadcaster"]
-        Supervisor["Dynamic Target Supervisor"]
-        
-        subgraph Providers ["Provedores Concorrentes"]
-            K8sProvider["K8s Provider (client-go Informers)"]
-            DockerProvider["Docker Pool (Unix Socket & TCP Remote)"]
-        end
-
-        EventBus["Unified Incident EventBus"]
-        
-        subgraph ActionPipeline ["Pipeline de Automação & Resposta"]
-            Deduplicator["Anti-Spam Deduplicator (Cooldown 60m)"]
-            JiraAction["Jira REST Client (Diagnóstico & Logs)"]
-            Notifier["SSE Broadcaster em Tempo Real"]
-        end
-    end
-
-    subgraph TargetInfra ["Infraestrutura Supervisionada"]
-        K8sCluster["Clusters Kubernetes (EKS, AKS, GKE, Kind, Minikube)"]
-        DockerServers["Docker Daemons (Local Socket & TCP Remoto)"]
-    end
-
-    Modal -->|POST /api/targets| API
-    API --> Supervisor
-    Supervisor -->|Inicia Worker| K8sProvider
-    Supervisor -->|Inicia Worker| DockerProvider
-    
-    K8sProvider -->|Watch Namespaces| K8sCluster
-    DockerProvider -->|Stream Events| DockerServers
-
-    K8sProvider -->|Falha / CrashLoop| EventBus
-    DockerProvider -->|Container Die / OOM| EventBus
-
-    EventBus --> Deduplicator
-    Deduplicator --> JiraAction
-    Deduplicator --> Notifier
-    Notifier --> LiveFeed
-            </div>
-          </div>
-        </div>
-
-      </section>
-
-      <!-- ==================== VIEW 7: CONFIGURAÇÕES & JIRA ==================== -->
+      <!-- ==================== VIEW 6: CONFIGURAÇÕES & PORTAIS DE CHAMADOS ==================== -->
       <section id="view-settings" class="hidden space-y-6">
         
         <div>
           <h2 class="text-2xl font-bold text-[#E0E0E0] tracking-tight flex items-center gap-2.5">
-            <i data-lucide="settings" class="w-6 h-6 text-[#FFBF00]"></i>
-            Configurações do Engine &amp; Integração Jira
+            <i data-lucide="life-buoy" class="w-6 h-6 text-[#FFBF00]"></i>
+            Configurações &amp; Portais de Chamados (ITSM)
           </h2>
-          <p class="text-xs text-[#888888] mt-1">Parâmetros ativos carregados do arquivo de ambiente ou flags de inicialização.</p>
+          <p class="text-xs text-[#888888] mt-1">Gerencie dinamicamente os provedores de tickets (Jira, GLPI, Movidesk) e parâmetros operacionais do Guardian.</p>
         </div>
 
         <!-- CONTROLE INTERATIVO DO MODO OPERACIONAL -->
@@ -999,7 +860,7 @@ flowchart TD
                 <span id="cfg-mode-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-[#FFBF00]/20 text-[#FFBF00] border border-[#FFBF00]/30 font-mono font-bold">MODO SIMULAÇÃO</span>
               </div>
               <p id="cfg-mode-description" class="text-xs text-[#E0E0E0] leading-relaxed max-w-2xl">
-                O modo atual é <b>Simulação (Dry-Run Ativo)</b>. Incidentes e falhas são interceptados e analisados em tempo real, mas <b>nenhum chamado oficial é gerado no Jira</b>. Ideal para testes e homologação.
+                O modo atual é <b>Simulação (Dry-Run Ativo)</b>. Incidentes e falhas são interceptados e analisados em tempo real, mas <b>nenhum chamado oficial é gerado nos portais</b>. Ideal para testes e homologação.
               </p>
             </div>
             
@@ -1010,39 +871,40 @@ flowchart TD
           </div>
         </div>
 
+        <!-- SEÇÃO: PORTAIS DE CHAMADOS & ITSM -->
+        <div class="p-6 rounded-2xl glass-panel border border-[#2F2F2F] space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#2F2F2F]">
+            <div>
+              <h3 class="text-base font-bold text-[#E0E0E0] font-mono uppercase tracking-wider flex items-center gap-2">
+                <i data-lucide="send" class="w-4 h-4 text-[#FFBF00]"></i> Portais de Chamados Cadastrados
+              </h3>
+              <p class="text-xs text-[#888888] mt-1">Configure múltiplos provedores para abertura cirúrgica de chamados por target sem necessidade de editar arquivos .env ou reiniciar o servidor.</p>
+            </div>
+            <button type="button" onclick="openIntegrationModal()" class="px-4 py-2.5 rounded-xl btn-glass-primary text-[#121212] font-bold text-xs flex items-center gap-2 transition-all shrink-0 shadow-lg shadow-[#FFBF00]/15">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>Novo Portal de Chamados</span>
+            </button>
+          </div>
+
+          <!-- LISTA DINÂMICA DE PORTAIS -->
+          <div id="integrations-list" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="col-span-full text-center py-8 text-xs text-[#888888] font-mono">
+              <i data-lucide="loader" class="w-5 h-5 mx-auto animate-spin mb-2 text-[#FFBF00]"></i>
+              Carregando portais configurados...
+            </div>
+          </div>
+        </div>
+
+        <!-- DETALHES DE AMBIENTE & ANTI-SPAM -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           
           <div class="p-6 rounded-2xl glass-panel border border-[#2F2F2F] space-y-4">
             <h3 class="text-sm font-bold text-[#E0E0E0] font-mono uppercase tracking-wider flex items-center gap-2">
-              <i data-lucide="send" class="w-4 h-4 text-[#FFBF00]"></i> Parâmetros do Jira
+              <i data-lucide="shield" class="w-4 h-4 text-[#FFBF00]"></i> Status do Engine &amp; Versão
             </h3>
             <div class="space-y-3 font-mono text-xs">
               <div class="flex items-center justify-between pb-2 border-b border-[#2F2F2F]">
-                <span class="text-[#888888]">Jira Base URL:</span>
-                <span id="cfg-jira-url" class="text-[#E0E0E0] truncate max-w-xs">-</span>
-              </div>
-              <div class="flex items-center justify-between pb-2 border-b border-[#2F2F2F]">
-                <span class="text-[#888888]">Projeto Padrão:</span>
-                <span id="cfg-jira-proj" class="text-[#FFBF00] font-bold">-</span>
-              </div>
-              <div class="flex items-center justify-between pb-2 border-b border-[#2F2F2F]">
-                <span class="text-[#888888]">Modo Dry-Run:</span>
-                <span id="cfg-dry-run" class="text-[#FFBF00] font-bold">-</span>
-              </div>
-              <div class="flex items-center justify-between pb-2 border-b border-[#2F2F2F]">
-                <span class="text-[#888888]">Janela de Cooldown:</span>
-                <span class="text-[#E0E0E0]">60 minutos (deduplicação anti-spam)</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="p-6 rounded-2xl glass-panel border border-[#2F2F2F] space-y-4">
-            <h3 class="text-sm font-bold text-[#E0E0E0] font-mono uppercase tracking-wider flex items-center gap-2">
-              <i data-lucide="shield" class="w-4 h-4 text-[#FFBF00]"></i> Status do Sistema &amp; Versão
-            </h3>
-            <div class="space-y-3 font-mono text-xs">
-              <div class="flex items-center justify-between pb-2 border-b border-[#2F2F2F]">
-                <span class="text-[#888888]">Versão:</span>
+                <span class="text-[#888888]">Versão da Plataforma:</span>
                 <span id="cfg-version" class="text-[#FFBF00] font-bold">2.0.0-enterprise</span>
               </div>
               <div class="flex items-center justify-between pb-2 border-b border-[#2F2F2F]">
@@ -1054,8 +916,32 @@ flowchart TD
                 <span id="cfg-time" class="text-[#888888]">-</span>
               </div>
               <div class="flex items-center justify-between pb-2 border-b border-[#2F2F2F]">
-                <span class="text-[#888888]">Arquivo de Exemplo:</span>
-                <span class="text-[#FFBF00]">.env.example</span>
+                <span class="text-[#888888]">Modo Dry-Run Ativo:</span>
+                <span id="cfg-dry-run" class="text-[#FFBF00] font-bold">-</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-6 rounded-2xl glass-panel border border-[#2F2F2F] space-y-4">
+            <h3 class="text-sm font-bold text-[#E0E0E0] font-mono uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="sliders" class="w-4 h-4 text-[#FFBF00]"></i> Governança &amp; Anti-Spam
+            </h3>
+            <div class="space-y-3 font-mono text-xs">
+              <div class="flex items-center justify-between pb-2 border-b border-[#2F2F2F]">
+                <span class="text-[#888888]">Janela de Cooldown:</span>
+                <span class="text-[#FFBF00] font-bold">60 minutos</span>
+              </div>
+              <div class="flex items-center justify-between pb-2 border-b border-[#2F2F2F]">
+                <span class="text-[#888888]">Deduplicação:</span>
+                <span class="text-[#E0E0E0]">Fingerprint SHA-256 (Anti-Spam)</span>
+              </div>
+              <div class="flex items-center justify-between pb-2 border-b border-[#2F2F2F]">
+                <span class="text-[#888888]">Persistência de Portais:</span>
+                <span class="text-[#E0E0E0]">integrations.json</span>
+              </div>
+              <div class="flex items-center justify-between pb-2 border-b border-[#2F2F2F]">
+                <span class="text-[#888888]">Persistência de Targets:</span>
+                <span class="text-[#E0E0E0]">targets.json</span>
               </div>
             </div>
           </div>
@@ -1075,8 +961,6 @@ flowchart TD
       </div>
       <div class="flex items-center gap-4 text-[11px]">
         <a href="https://github.com/JairoJSilva/guardian-infra" target="_blank" rel="noopener" class="text-[#888888] hover:text-[#FFBF00] transition-colors">GitHub</a>
-        <span>•</span>
-        <button onclick="navigateTo('docs')" class="text-[#888888] hover:text-[#FFBF00] transition-colors">Arquitetura</button>
       </div>
     </footer>
 
@@ -1159,20 +1043,26 @@ flowchart TD
           </div>
         </div>
 
-        <!-- JIRA -->
+        <!-- AUTOMAÇÃO DE CHAMADOS / PORTAIS -->
         <div class="space-y-3 pt-3 border-t border-[#2F2F2F]">
           <div class="flex items-center justify-between">
             <span class="text-xs font-semibold text-[#E0E0E0] font-mono flex items-center gap-1.5">
-              <i data-lucide="send" class="w-3.5 h-3.5 text-[#FFBF00]"></i> Automação Jira
+              <i data-lucide="life-buoy" class="w-3.5 h-3.5 text-[#FFBF00]"></i> Automação de Chamados (ITSM)
             </span>
             <div class="flex items-center gap-2">
-              <span class="text-[10px] text-[#888888] font-mono">Projeto Jira:</span>
+              <span class="text-[10px] text-[#888888] font-mono">Sobrescrever Projeto:</span>
               <input type="text" id="target-jira-project" placeholder="OPS" class="w-24 px-2.5 py-1 rounded-lg glass-input text-[#E0E0E0] text-[11px] font-mono uppercase placeholder:text-[#888888]">
             </div>
           </div>
+          <div>
+            <label class="block text-[11px] text-[#888888] font-mono mb-1">Portal de Chamados Destino:</label>
+            <select id="target-integration-select" class="w-full px-3 py-2 rounded-xl glass-input text-[#E0E0E0] font-mono text-xs cursor-pointer">
+              <!-- Populado dinamicamente via loadIntegrations() -->
+            </select>
+          </div>
           <label class="flex items-center gap-2.5 text-xs text-[#E0E0E0] cursor-pointer">
             <input type="checkbox" id="target-jira-toggle" checked class="rounded border-[#2F2F2F] bg-[#121212] text-[#FFBF00] focus:ring-0">
-            <span>Abrir chamados automaticamente no Jira anexando logs do crash</span>
+            <span>Abrir chamados automaticamente no portal anexando logs do crash</span>
           </label>
         </div>
 
@@ -1180,6 +1070,114 @@ flowchart TD
           <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl btn-glass-secondary text-[#888888] hover:text-[#E0E0E0] font-medium text-xs">Cancelar</button>
           <button type="submit" class="px-5 py-2.5 rounded-xl btn-glass-primary text-[#121212] font-bold text-xs shadow-lg shadow-[#FFBF00]/30">Alocar e Ativar Target</button>
         </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: CONFIGURAR PORTAL DE CHAMADOS ==================== -->
+  <div id="modal-integration" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="bg-[#181818] border border-[#2F2F2F] w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      
+      <div class="p-6 border-b border-[#2F2F2F] flex items-center justify-between">
+        <div>
+          <h3 id="modal-integration-title" class="text-lg font-bold text-[#E0E0E0] flex items-center gap-2">
+            <i data-lucide="life-buoy" class="w-5 h-5 text-[#FFBF00]"></i> Cadastrar Portal de Chamados
+          </h3>
+          <p class="text-xs text-[#888888]">Integre o Guardian ao seu ITSM/Helpdesk para abertura cirúrgica de incidentes.</p>
+        </div>
+        <button onclick="closeIntegrationModal()" class="text-[#888888] hover:text-[#E0E0E0] p-1.5 rounded-xl hover:bg-white/5 transition-all">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="integration-form" onsubmit="handleSaveIntegration(event)" class="p-6 space-y-4 text-sm max-h-[80vh] overflow-y-auto">
+        <input type="hidden" id="integ-id" value="">
+
+        <!-- TIPO DE PROVEDOR -->
+        <div>
+          <label class="block text-xs font-semibold text-[#E0E0E0] mb-2 font-mono">Tipo de Provedor</label>
+          <div class="grid grid-cols-3 gap-2.5">
+            <button type="button" id="btn-integ-jira" onclick="selectIntegType('JIRA')" class="p-3 rounded-xl border border-[#FFBF00]/60 bg-[#FFBF00]/15 text-[#FFBF00] font-semibold text-xs flex flex-col items-center justify-center gap-1 transition-all">
+              <i data-lucide="send" class="w-4 h-4"></i> Jira
+            </button>
+            <button type="button" id="btn-integ-glpi" onclick="selectIntegType('GLPI')" class="p-3 rounded-xl border border-[#2F2F2F] bg-[#2F2F2F]/40 text-[#888888] font-semibold text-xs flex flex-col items-center justify-center gap-1 hover:border-[#FFBF00]/40 hover:text-[#FFBF00] transition-all">
+              <i data-lucide="database" class="w-4 h-4"></i> GLPI
+            </button>
+            <button type="button" id="btn-integ-movidesk" onclick="selectIntegType('MOVIDESK')" class="p-3 rounded-xl border border-[#2F2F2F] bg-[#2F2F2F]/40 text-[#888888] font-semibold text-xs flex flex-col items-center justify-center gap-1 hover:border-[#FFBF00]/40 hover:text-[#FFBF00] transition-all">
+              <i data-lucide="headphones" class="w-4 h-4"></i> Movidesk
+            </button>
+          </div>
+        </div>
+
+        <!-- NOME AMIGÁVEL -->
+        <div>
+          <label class="block text-xs font-semibold text-[#E0E0E0] mb-1 font-mono">Nome do Portal</label>
+          <input type="text" id="integ-name" required placeholder="Ex: Jira Produção Cloud ou GLPI N1" class="w-full px-4 py-2.5 rounded-xl glass-input text-[#E0E0E0] placeholder:text-[#888888] text-xs">
+        </div>
+
+        <!-- URL BASE -->
+        <div>
+          <label id="lbl-integ-url" class="block text-xs font-semibold text-[#E0E0E0] mb-1 font-mono">URL Base do Serviço</label>
+          <input type="url" id="integ-url" required placeholder="https://seu-dominio.atlassian.net" class="w-full px-4 py-2.5 rounded-xl glass-input text-[#E0E0E0] placeholder:text-[#888888] text-xs font-mono">
+        </div>
+
+        <!-- CREDENCIAIS: USUÁRIO E TOKEN/SENHA -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label id="lbl-integ-user" class="block text-xs font-semibold text-[#E0E0E0] mb-1 font-mono">Usuário / E-mail / App-Token</label>
+            <input type="text" id="integ-user" placeholder="usuario@empresa.com" class="w-full px-4 py-2.5 rounded-xl glass-input text-[#E0E0E0] placeholder:text-[#888888] text-xs font-mono">
+          </div>
+          <div>
+            <label id="lbl-integ-secret" class="block text-xs font-semibold text-[#E0E0E0] mb-1 font-mono">API Token / Senha</label>
+            <div class="relative">
+              <input type="password" id="integ-secret" placeholder="••••••••" class="w-full px-4 py-2.5 pr-10 rounded-xl glass-input text-[#E0E0E0] placeholder:text-[#888888] text-xs font-mono">
+              <button type="button" onclick="toggleSecretVisibility('integ-secret', 'icon-integ-secret')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-[#888888] hover:text-[#E0E0E0]">
+                <i id="icon-integ-secret" data-lucide="eye" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <p id="hint-integ-secret" class="text-[10px] text-[#888888] mt-0.5 hidden">Deixe em branco para manter a senha/token atual.</p>
+          </div>
+        </div>
+
+        <!-- PARÂMETROS DO TICKET: PROJETO / CATEGORIA / TIPO -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label id="lbl-integ-project" class="block text-xs font-semibold text-[#E0E0E0] mb-1 font-mono">Chave do Projeto / Fila</label>
+            <input type="text" id="integ-project" placeholder="Ex: OPS ou 12" class="w-full px-4 py-2.5 rounded-xl glass-input text-[#E0E0E0] placeholder:text-[#888888] text-xs font-mono">
+          </div>
+          <div>
+            <label id="lbl-integ-type" class="block text-xs font-semibold text-[#E0E0E0] mb-1 font-mono">Tipo de Issue Padrão</label>
+            <input type="text" id="integ-default-type" placeholder="Ex: Bug ou Incidente" class="w-full px-4 py-2.5 rounded-xl glass-input text-[#E0E0E0] placeholder:text-[#888888] text-xs font-mono">
+          </div>
+        </div>
+
+        <!-- STATUS ATIVO / INATIVO -->
+        <div class="flex items-center gap-2 pt-1">
+          <input type="checkbox" id="integ-enabled" checked class="w-4 h-4 rounded text-[#FFBF00] bg-[#181818] border-[#2F2F2F] focus:ring-[#FFBF00]/30 focus:ring-offset-0">
+          <label for="integ-enabled" class="text-xs text-[#E0E0E0] select-none cursor-pointer font-mono">Habilitar este portal para abertura automática de chamados</label>
+        </div>
+
+        <!-- FEEDBACK DO TESTE DE CONEXÃO -->
+        <div id="integ-test-feedback" class="hidden p-3 rounded-xl text-xs font-mono border"></div>
+
+        <!-- AÇÕES -->
+        <div class="pt-3 border-t border-[#2F2F2F] flex flex-col sm:flex-row items-center justify-between gap-3">
+          <button type="button" onclick="testCurrentIntegrationForm()" id="btn-test-integ" class="w-full sm:w-auto px-4 py-2.5 rounded-xl btn-glass-secondary text-[#E0E0E0] font-bold text-xs flex items-center justify-center gap-2 hover:border-[#FFBF00]/40">
+            <i data-lucide="activity" class="w-4 h-4 text-[#FFBF00]"></i>
+            <span id="btn-test-integ-text">Testar Conexão</span>
+          </button>
+          
+          <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+            <button type="button" onclick="closeIntegrationModal()" class="px-4 py-2.5 rounded-xl text-xs font-semibold text-[#888888] hover:text-[#E0E0E0] hover:bg-white/5 transition-all">
+              Cancelar
+            </button>
+            <button type="submit" id="btn-save-integ" class="px-5 py-2.5 rounded-xl btn-glass-primary text-[#121212] font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#FFBF00]/15">
+              <i data-lucide="check" class="w-4 h-4"></i>
+              <span>Salvar Portal</span>
+            </button>
+          </div>
+        </div>
+
       </form>
     </div>
   </div>
@@ -1214,14 +1212,14 @@ flowchart TD
 
     window.addEventListener('DOMContentLoaded', async () => {
       lucide.createIcons();
-      // mermaid.run é executado sob demanda apenas ao abrir a view 'docs'
 
       // Disparo em paralelo não-bloqueante para carregamento instantâneo (<50ms)
       await Promise.allSettled([
         loadHealth(),
         loadTargets(),
         loadHistory(),
-        loadEnvironments()
+        loadEnvironments(),
+        loadIntegrations()
       ]);
 
       initSSE();
@@ -1230,21 +1228,20 @@ flowchart TD
 
       // Suporte a hash na URL
       const hash = window.location.hash.replace('#', '');
-      if (['dashboard', 'targets', 'topology', 'incidents', 'chaos', 'docs', 'settings'].includes(hash)) {
+      if (['dashboard', 'targets', 'topology', 'incidents', 'chaos', 'settings'].includes(hash)) {
         navigateTo(hash);
       }
     });
 
     // ==================== NAVEGAÇÃO ENTRE TELAS ====================
-    const views = ['dashboard', 'targets', 'topology', 'incidents', 'chaos', 'docs', 'settings'];
+    const views = ['dashboard', 'targets', 'topology', 'incidents', 'chaos', 'settings'];
     const breadcrumbTitles = {
       'dashboard': 'Dashboard & KPIs',
       'targets': 'Targets & Watchers',
       'topology': 'Topologia de Clusters',
       'incidents': 'Live Incident Stream',
       'chaos': 'Chaos & Simulação',
-      'docs': 'Arquitetura & Spec',
-      'settings': 'Configurações & Jira'
+      'settings': 'Configurações & Portais'
     };
 
     function navigateTo(viewId) {
@@ -1269,10 +1266,6 @@ flowchart TD
 
       const breadcrumbEl = document.getElementById('topbar-breadcrumb');
       if (breadcrumbEl) breadcrumbEl.textContent = breadcrumbTitles[viewId] || viewId;
-
-      if (viewId === 'docs') {
-        setTimeout(() => mermaid.run({ querySelector: '.mermaid' }), 100);
-      }
 
       lucide.createIcons();
     }
@@ -1300,6 +1293,16 @@ flowchart TD
       lucide.createIcons();
     }
 
+    function escapeHTML(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
     // ==================== INTEGRAÇÕES API GO ====================
     async function loadHealth() {
       try {
@@ -1309,18 +1312,24 @@ flowchart TD
           if (serverConfig.project_key) {
             const input = document.getElementById('target-jira-project');
             if (input) input.placeholder = serverConfig.project_key;
-            document.getElementById('kpi-jira-proj-key').textContent = `Proj: ${serverConfig.project_key}`;
-            document.getElementById('topbar-jira-text').textContent = `Jira: ${serverConfig.project_key}`;
-            document.getElementById('cfg-jira-proj').textContent = serverConfig.project_key;
+            const kpiProj = document.getElementById('kpi-jira-proj-key');
+            if (kpiProj) kpiProj.textContent = `Proj: ${serverConfig.project_key}`;
+            const topbarJira = document.getElementById('topbar-jira-text');
+            if (topbarJira) topbarJira.textContent = `Jira: ${serverConfig.project_key}`;
+            const cfgProj = document.getElementById('cfg-jira-proj');
+            if (cfgProj) cfgProj.textContent = serverConfig.project_key;
           }
-          if (serverConfig.jira_url) {
-            document.getElementById('cfg-jira-url').textContent = serverConfig.jira_url;
+          const cfgUrl = document.getElementById('cfg-jira-url');
+          if (cfgUrl && serverConfig.jira_url) {
+            cfgUrl.textContent = serverConfig.jira_url;
           }
           if (serverConfig.time) {
-            document.getElementById('cfg-time').textContent = new Date(serverConfig.time).toLocaleString('pt-BR');
+            const cfgTime = document.getElementById('cfg-time');
+            if (cfgTime) cfgTime.textContent = new Date(serverConfig.time).toLocaleString('pt-BR');
           }
           if (serverConfig.version) {
-            document.getElementById('cfg-version').textContent = serverConfig.version;
+            const cfgVer = document.getElementById('cfg-version');
+            if (cfgVer) cfgVer.textContent = serverConfig.version;
           }
 
           updateDryRunUI(serverConfig.dry_run);
@@ -2493,6 +2502,8 @@ flowchart TD
 
       const rawJiraProj = document.getElementById('target-jira-project').value.trim();
       const jiraProject = (rawJiraProj || (serverConfig && serverConfig.project_key) || "OPS").toUpperCase();
+      const integSelect = document.getElementById('target-integration-select');
+      const integrationId = integSelect ? integSelect.value : "";
 
       const payload = {
         name: name,
@@ -2506,6 +2517,7 @@ flowchart TD
           poll_interval_seconds: 15
         },
         actions: {
+          integration_id: integrationId,
           create_jira_issue: jiraEnabled,
           jira_project_key: jiraProject,
           contrato: ""
@@ -2542,6 +2554,7 @@ flowchart TD
           projInput.value = serverConfig.project_key;
         }
       }
+      updateTargetIntegrationOptions();
       document.getElementById('target-modal').classList.remove('hidden');
       document.getElementById('target-modal').classList.add('flex');
     }
@@ -2549,6 +2562,446 @@ flowchart TD
     function closeModal() {
       document.getElementById('target-modal').classList.add('hidden');
       document.getElementById('target-modal').classList.remove('flex');
+    }
+
+    // ==================== GERENCIAMENTO DE PORTAIS DE CHAMADOS (ITSM) ====================
+    let registeredIntegrations = [];
+    let currentIntegType = 'JIRA';
+
+    async function loadIntegrations() {
+      const container = document.getElementById('integrations-list');
+      try {
+        const res = await fetch('/api/integrations');
+        if (res.ok) {
+          registeredIntegrations = await res.json();
+          renderIntegrationsList(registeredIntegrations);
+          updateTargetIntegrationOptions();
+        } else {
+          if (container) {
+            container.innerHTML = `<div class="col-span-full p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 text-xs font-mono">Erro ao carregar portais cadastrados.</div>`;
+          }
+        }
+      } catch (e) {
+        console.warn("Falha ao carregar integrações:", e);
+        if (container) {
+          container.innerHTML = `<div class="col-span-full p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 text-xs font-mono">Erro de conexão ao carregar portais.</div>`;
+        }
+      }
+    }
+
+    function renderIntegrationsList(list) {
+      const container = document.getElementById('integrations-list');
+      if (!container) return;
+
+      if (!list || list.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full p-8 rounded-2xl glass-panel border border-dashed border-[#2F2F2F] text-center space-y-3">
+            <div class="w-12 h-12 rounded-2xl bg-white/5 mx-auto flex items-center justify-center text-[#888888]">
+              <i data-lucide="life-buoy" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <p class="text-sm font-bold text-[#E0E0E0]">Nenhum portal cadastrado</p>
+              <p class="text-xs text-[#888888] max-w-md mx-auto mt-1">Cadastre instâncias do Jira, GLPI ou Movidesk para direcionar automaticamente os chamados de incidentes.</p>
+            </div>
+            <button type="button" onclick="openIntegrationModal()" class="px-4 py-2 rounded-xl btn-glass-primary text-[#121212] font-bold text-xs inline-flex items-center gap-2">
+              <i data-lucide="plus" class="w-4 h-4"></i> Cadastrar Primeiro Portal
+            </button>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = list.map(item => {
+        let typeBadgeClass = 'bg-[#FFBF00]/15 text-[#FFBF00] border-[#FFBF00]/30';
+        let iconName = 'send';
+        if (item.type === 'GLPI') {
+          typeBadgeClass = 'bg-orange-500/15 text-orange-400 border-orange-500/30';
+          iconName = 'database';
+        } else if (item.type === 'MOVIDESK') {
+          typeBadgeClass = 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30';
+          iconName = 'headphones';
+        }
+
+        const isEnabled = item.enabled;
+        const statusBadge = isEnabled
+          ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-mono font-bold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Ativo</span>`
+          : `<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#888888]/15 text-[#888888] border border-[#888888]/30 font-mono">Inativo</span>`;
+
+        return `
+          <div class="p-5 rounded-2xl glass-panel border border-[#2F2F2F] hover:border-[#FFBF00]/30 transition-all flex flex-col justify-between space-y-4">
+            <div class="space-y-3">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-10 h-10 rounded-xl bg-white/5 border border-[#2F2F2F] flex items-center justify-center text-[#FFBF00] shrink-0">
+                    <i data-lucide="${iconName}" class="w-5 h-5"></i>
+                  </div>
+                  <div class="min-w-0">
+                    <h4 class="text-sm font-bold text-[#E0E0E0] tracking-tight truncate">${escapeHTML(item.name)}</h4>
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <span class="text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold ${typeBadgeClass}">${item.type}</span>
+                      <span class="text-[10px] text-[#888888] font-mono truncate max-w-[170px]" title="${escapeHTML(item.base_url)}">${escapeHTML(item.base_url)}</span>
+                    </div>
+                  </div>
+                </div>
+                ${statusBadge}
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 text-[11px] font-mono p-3 rounded-xl bg-[#121212]/50 border border-[#2F2F2F]">
+                <div>
+                  <span class="text-[#888888]">Usuário / App:</span>
+                  <div class="text-[#E0E0E0] truncate">${item.username ? escapeHTML(item.username) : '<span class="text-[#888888]">-</span>'}</div>
+                </div>
+                <div>
+                  <span class="text-[#888888]">Projeto / Fila:</span>
+                  <div class="text-[#FFBF00] font-bold truncate">${item.project_key ? escapeHTML(item.project_key) : '<span class="text-[#888888]">Padrão</span>'}</div>
+                </div>
+                <div>
+                  <span class="text-[#888888]">Tipo de Chamado:</span>
+                  <div class="text-[#E0E0E0] truncate">${item.default_type ? escapeHTML(item.default_type) : '<span class="text-[#888888]">Bug / Incidente</span>'}</div>
+                </div>
+                <div>
+                  <span class="text-[#888888]">Segredo / Token:</span>
+                  <div class="text-[#888888]">${item.has_secret ? '••••••••' : 'Não informado'}</div>
+                </div>
+              </div>
+
+              <!-- STATUS DO TESTE AO VIVO -->
+              <div id="card-test-status-${item.id}" class="hidden p-2.5 rounded-xl text-[11px] font-mono border"></div>
+            </div>
+
+            <div class="pt-3 border-t border-[#2F2F2F] flex items-center justify-between gap-2">
+              <button type="button" onclick="testIntegrationFromCard('${item.id}')" id="btn-card-test-${item.id}" class="px-3 py-1.5 rounded-lg btn-glass-secondary text-xs text-[#E0E0E0] hover:text-[#FFBF00] flex items-center gap-1.5 transition-all">
+                <i data-lucide="zap" class="w-3.5 h-3.5 text-[#FFBF00]"></i>
+                <span>Testar Conexão</span>
+              </button>
+
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="openIntegrationModal('${item.id}')" class="p-2 rounded-lg text-[#888888] hover:text-[#E0E0E0] hover:bg-white/5 transition-all" title="Editar Portal">
+                  <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                </button>
+                <button type="button" onclick="deleteIntegration('${item.id}', '${escapeHTML(item.name)}')" class="p-2 rounded-lg text-[#888888] hover:text-red-400 hover:bg-red-500/10 transition-all" title="Excluir Portal">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function updateTargetIntegrationOptions() {
+      const select = document.getElementById('target-integration-select');
+      if (!select) return;
+
+      if (!registeredIntegrations || registeredIntegrations.length === 0) {
+        select.innerHTML = `<option value="">Padrão do Sistema (Automático)</option>`;
+        return;
+      }
+
+      select.innerHTML = `
+        <option value="">Automático (Primeiro portal ativo do sistema)</option>
+        ${registeredIntegrations.map(it => `
+          <option value="${it.id}">
+            [${it.type}] ${escapeHTML(it.name)} ${it.project_key ? `(${it.project_key})` : ''} ${!it.enabled ? '(Inativo)' : ''}
+          </option>
+        `).join('')}
+      `;
+    }
+
+    function openIntegrationModal(editId = null) {
+      const modal = document.getElementById('modal-integration');
+      const title = document.getElementById('modal-integration-title');
+      const hintSecret = document.getElementById('hint-integ-secret');
+      const feedback = document.getElementById('integ-test-feedback');
+      if (feedback) feedback.classList.add('hidden');
+
+      if (editId) {
+        const item = registeredIntegrations.find(it => it.id === editId);
+        if (!item) return;
+        title.innerHTML = `<i data-lucide="pencil" class="w-5 h-5 text-[#FFBF00]"></i> Editar Portal de Chamados`;
+        document.getElementById('integ-id').value = item.id;
+        document.getElementById('integ-name').value = item.name || '';
+        document.getElementById('integ-url').value = item.base_url || '';
+        document.getElementById('integ-user').value = item.username || '';
+        document.getElementById('integ-secret').value = '';
+        document.getElementById('integ-secret').placeholder = '•••••••• (Inalterado)';
+        document.getElementById('integ-project').value = item.project_key || '';
+        document.getElementById('integ-default-type').value = item.default_type || '';
+        document.getElementById('integ-enabled').checked = item.enabled !== false;
+        selectIntegType(item.type || 'JIRA');
+        if (hintSecret) hintSecret.classList.remove('hidden');
+      } else {
+        title.innerHTML = `<i data-lucide="life-buoy" class="w-5 h-5 text-[#FFBF00]"></i> Cadastrar Portal de Chamados`;
+        document.getElementById('integ-id').value = '';
+        document.getElementById('integ-name').value = '';
+        document.getElementById('integ-url').value = '';
+        document.getElementById('integ-user').value = '';
+        document.getElementById('integ-secret').value = '';
+        document.getElementById('integ-secret').placeholder = '••••••••';
+        document.getElementById('integ-project').value = '';
+        document.getElementById('integ-default-type').value = '';
+        document.getElementById('integ-enabled').checked = true;
+        selectIntegType('JIRA');
+        if (hintSecret) hintSecret.classList.add('hidden');
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function closeIntegrationModal() {
+      const modal = document.getElementById('modal-integration');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+      const feedback = document.getElementById('integ-test-feedback');
+      if (feedback) feedback.classList.add('hidden');
+    }
+
+    function selectIntegType(type) {
+      currentIntegType = type;
+      const btnJira = document.getElementById('btn-integ-jira');
+      const btnGlpi = document.getElementById('btn-integ-glpi');
+      const btnMovidesk = document.getElementById('btn-integ-movidesk');
+
+      const activeClass = 'p-3 rounded-xl border border-[#FFBF00]/60 bg-[#FFBF00]/15 text-[#FFBF00] font-semibold text-xs flex flex-col items-center justify-center gap-1 shadow-lg shadow-[#FFBF00]/10 transition-all';
+      const inactiveClass = 'p-3 rounded-xl border border-[#2F2F2F] bg-[#2F2F2F]/40 text-[#888888] font-semibold text-xs flex flex-col items-center justify-center gap-1 hover:border-[#FFBF00]/40 hover:text-[#FFBF00] transition-all';
+
+      if (btnJira) btnJira.className = type === 'JIRA' ? activeClass : inactiveClass;
+      if (btnGlpi) btnGlpi.className = type === 'GLPI' ? activeClass : inactiveClass;
+      if (btnMovidesk) btnMovidesk.className = type === 'MOVIDESK' ? activeClass : inactiveClass;
+
+      const lblUrl = document.getElementById('lbl-integ-url');
+      const inpUrl = document.getElementById('integ-url');
+      const lblUser = document.getElementById('lbl-integ-user');
+      const inpUser = document.getElementById('integ-user');
+      const lblSecret = document.getElementById('lbl-integ-secret');
+      const lblProj = document.getElementById('lbl-integ-project');
+      const inpProj = document.getElementById('integ-project');
+      const lblType = document.getElementById('lbl-integ-type');
+      const inpType = document.getElementById('integ-default-type');
+
+      if (type === 'JIRA') {
+        if (lblUrl) lblUrl.textContent = 'URL Base do Jira';
+        if (inpUrl && !inpUrl.value) inpUrl.placeholder = 'https://seu-jira.atlassian.net';
+        if (lblUser) lblUser.textContent = 'Usuário / E-mail';
+        if (inpUser) inpUser.placeholder = 'usuario@empresa.com';
+        if (lblSecret) lblSecret.textContent = 'API Token / Senha';
+        if (lblProj) lblProj.textContent = 'Chave do Projeto Padrão';
+        if (inpProj) inpProj.placeholder = 'Ex: OPS';
+        if (lblType) lblType.textContent = 'Tipo de Issue Padrão';
+        if (inpType && !inpType.value) inpType.value = 'Bug';
+      } else if (type === 'GLPI') {
+        if (lblUrl) lblUrl.textContent = 'URL da API REST GLPI';
+        if (inpUrl && !inpUrl.value) inpUrl.placeholder = 'https://glpi.empresa.com/apirest.php';
+        if (lblUser) lblUser.textContent = 'App-Token GLPI (Opcional)';
+        if (inpUser) inpUser.placeholder = 'Ex: a1b2c3d4e5...';
+        if (lblSecret) lblSecret.textContent = 'User-Token GLPI / Senha';
+        if (lblProj) lblProj.textContent = 'ID da Categoria ITIL';
+        if (inpProj) inpProj.placeholder = 'Ex: 12';
+        if (lblType) lblType.textContent = 'Tipo de Chamado';
+        if (inpType && !inpType.value) inpType.value = 'Incidente';
+      } else if (type === 'MOVIDESK') {
+        if (lblUrl) lblUrl.textContent = 'Endpoint da API Movidesk';
+        if (inpUrl && !inpUrl.value) inpUrl.placeholder = 'https://api.movidesk.com/public/v1';
+        if (lblUser) lblUser.textContent = 'E-mail do Solicitante';
+        if (inpUser) inpUser.placeholder = 'sre@empresa.com';
+        if (lblSecret) lblSecret.textContent = 'Token da API Movidesk';
+        if (lblProj) lblProj.textContent = 'ID do Serviço / Categoria';
+        if (inpProj) inpProj.placeholder = 'Ex: Servicos-Infra';
+        if (lblType) lblType.textContent = 'Tipo de Ticket (1=Interno, 2=Público)';
+        if (inpType && !inpType.value) inpType.value = '1';
+      }
+    }
+
+    async function testCurrentIntegrationForm() {
+      const feedback = document.getElementById('integ-test-feedback');
+      const btnText = document.getElementById('btn-test-integ-text');
+      const id = document.getElementById('integ-id').value.trim();
+      const name = document.getElementById('integ-name').value.trim() || 'Teste';
+      const baseURL = document.getElementById('integ-url').value.trim();
+      const username = document.getElementById('integ-user').value.trim();
+      const secret = document.getElementById('integ-secret').value.trim();
+
+      if (!baseURL) {
+        alert('Por favor informe a URL Base antes de testar a conexão!');
+        document.getElementById('integ-url').focus();
+        return;
+      }
+
+      if (btnText) btnText.textContent = 'Testando...';
+      if (feedback) {
+        feedback.className = 'p-3 rounded-xl text-xs font-mono border border-[#FFBF00]/40 bg-[#FFBF00]/10 text-[#FFBF00] flex items-center gap-2';
+        feedback.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin shrink-0"></i> <span>Enviando requisição de handshake para o portal...</span>`;
+        feedback.classList.remove('hidden');
+        lucide.createIcons();
+      }
+
+      try {
+        const payload = {
+          id: id,
+          name: name,
+          type: currentIntegType,
+          base_url: baseURL,
+          username: username,
+          token_secret: secret
+        };
+
+        const res = await fetch('/api/integrations/test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          feedback.className = 'p-3 rounded-xl text-xs font-mono border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 flex items-start gap-2';
+          feedback.innerHTML = `
+            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
+            <div>
+              <p class="font-bold">${data.message}</p>
+              ${data.latency_ms ? `<p class="text-[10px] text-emerald-400/80 mt-0.5">Latência: ${data.latency_ms}ms</p>` : ''}
+            </div>
+          `;
+        } else {
+          feedback.className = 'p-3 rounded-xl text-xs font-mono border border-red-500/40 bg-red-500/10 text-red-400 flex items-start gap-2';
+          feedback.innerHTML = `
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-red-400 shrink-0 mt-0.5"></i>
+            <div>
+              <p class="font-bold">Falha no Teste de Conexão:</p>
+              <p class="text-[11px] mt-0.5">${data.message || 'Erro desconhecido'}</p>
+            </div>
+          `;
+        }
+      } catch (err) {
+        feedback.className = 'p-3 rounded-xl text-xs font-mono border border-red-500/40 bg-red-500/10 text-red-400 flex items-center gap-2';
+        feedback.innerHTML = `<i data-lucide="x-circle" class="w-4 h-4 text-red-400 shrink-0"></i> <span>Erro ao conectar ao Guardian API: ${err.message}</span>`;
+      } finally {
+        if (btnText) btnText.textContent = 'Testar Conexão';
+        lucide.createIcons();
+      }
+    }
+
+    async function testIntegrationFromCard(id) {
+      const statusEl = document.getElementById(`card-test-status-${id}`);
+      if (statusEl) {
+        statusEl.className = 'p-2.5 rounded-xl text-[11px] font-mono border border-[#FFBF00]/40 bg-[#FFBF00]/10 text-[#FFBF00] flex items-center gap-2';
+        statusEl.innerHTML = `<i data-lucide="loader" class="w-3.5 h-3.5 animate-spin"></i> Validando conexão...`;
+        statusEl.classList.remove('hidden');
+        lucide.createIcons();
+      }
+
+      try {
+        const res = await fetch('/api/integrations/test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: id })
+        });
+        const data = await res.json();
+        if (data.success) {
+          statusEl.className = 'p-2.5 rounded-xl text-[11px] font-mono border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 flex items-center gap-2';
+          statusEl.innerHTML = `<i data-lucide="check-circle" class="w-3.5 h-3.5 shrink-0"></i> <span>${data.message} (${data.latency_ms}ms)</span>`;
+        } else {
+          statusEl.className = 'p-2.5 rounded-xl text-[11px] font-mono border border-red-500/40 bg-red-500/10 text-red-400 flex items-start gap-2';
+          statusEl.innerHTML = `<i data-lucide="alert-triangle" class="w-3.5 h-3.5 shrink-0 mt-0.5"></i> <span>${data.message}</span>`;
+        }
+      } catch (err) {
+        if (statusEl) {
+          statusEl.className = 'p-2.5 rounded-xl text-[11px] font-mono border border-red-500/40 bg-red-500/10 text-red-400';
+          statusEl.textContent = `Erro: ${err.message}`;
+        }
+      } finally {
+        lucide.createIcons();
+      }
+    }
+
+    async function handleSaveIntegration(e) {
+      e.preventDefault();
+      const id = document.getElementById('integ-id').value.trim();
+      const name = document.getElementById('integ-name').value.trim();
+      const baseURL = document.getElementById('integ-url').value.trim();
+      const username = document.getElementById('integ-user').value.trim();
+      const secret = document.getElementById('integ-secret').value.trim();
+      const projectKey = document.getElementById('integ-project').value.trim();
+      const defaultType = document.getElementById('integ-default-type').value.trim();
+      const enabled = document.getElementById('integ-enabled').checked;
+
+      const payload = {
+        name: name,
+        type: currentIntegType,
+        base_url: baseURL,
+        auth_type: 'BASIC',
+        username: username,
+        token_secret: secret,
+        project_key: projectKey,
+        default_type: defaultType,
+        enabled: enabled
+      };
+
+      try {
+        let res;
+        if (id) {
+          res = await fetch(`/api/integrations/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        } else {
+          res = await fetch('/api/integrations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
+
+        if (res.ok) {
+          closeIntegrationModal();
+          await loadIntegrations();
+        } else {
+          const err = await res.json();
+          alert('Erro ao salvar portal: ' + (err.error || 'Falha na requisição'));
+        }
+      } catch (err) {
+        alert('Erro ao conectar à API: ' + err.message);
+      }
+    }
+
+    async function deleteIntegration(id, name) {
+      if (!confirm(`Deseja realmente remover o portal "${name}"?\nOs targets configurados voltarão a utilizar o portal padrão.`)) {
+        return;
+      }
+      try {
+        const res = await fetch(`/api/integrations/${id}`, {
+          method: 'DELETE'
+        });
+        if (res.ok) {
+          await loadIntegrations();
+        } else {
+          const err = await res.json();
+          alert('Erro ao remover portal: ' + (err.error || 'Falha'));
+        }
+      } catch (err) {
+        alert('Erro ao conectar à API: ' + err.message);
+      }
+    }
+
+    function toggleSecretVisibility(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        input.type = 'password';
+        if (icon) icon.setAttribute('data-lucide', 'eye');
+      }
+      lucide.createIcons();
     }
   </script>
 

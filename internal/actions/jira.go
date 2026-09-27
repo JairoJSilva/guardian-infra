@@ -114,6 +114,10 @@ func (j *JiraClient) resolveIssueType(projectKey string) string {
 }
 
 func (j *JiraClient) CreateIncidentIssue(event *domain.IncidentEvent, target *domain.Target) (string, error) {
+	return j.CreateIncidentIssueWithIntegration(event, target, nil)
+}
+
+func (j *JiraClient) CreateIncidentIssueWithIntegration(event *domain.IncidentEvent, target *domain.Target, integ *domain.TicketingIntegration) (string, error) {
 	summary := fmt.Sprintf("[%s] %s em %s (%s)", event.Type, event.EntityName, event.Reason, event.Scope)
 	if len(summary) > 250 {
 		summary = summary[:247] + "..."
@@ -122,6 +126,33 @@ func (j *JiraClient) CreateIncidentIssue(event *domain.IncidentEvent, target *do
 	description := j.buildDescription(event, target)
 
 	projectKey := j.cfg.JiraProjectKey
+	baseURL := j.cfg.JiraBaseURL
+	user := j.cfg.JiraUser
+	pass := j.cfg.JiraPassword
+	authType := "BASIC"
+	issueType := j.cfg.JiraIssueType
+
+	if integ != nil {
+		if integ.ProjectKey != "" {
+			projectKey = integ.ProjectKey
+		}
+		if integ.BaseURL != "" {
+			baseURL = config.CleanURL(integ.BaseURL)
+		}
+		if integ.Username != "" {
+			user = integ.Username
+		}
+		if integ.TokenSecret != "" {
+			pass = integ.TokenSecret
+		}
+		if integ.AuthType != "" {
+			authType = integ.AuthType
+		}
+		if integ.DefaultType != "" {
+			issueType = integ.DefaultType
+		}
+	}
+
 	if target != nil && target.Actions.JiraProjectKey != "" {
 		projectKey = target.Actions.JiraProjectKey
 	}
@@ -137,7 +168,10 @@ func (j *JiraClient) CreateIncidentIssue(event *domain.IncidentEvent, target *do
 		priorityName = "Média"
 	}
 
-	issueTypeName := j.resolveIssueType(projectKey)
+	issueTypeName := issueType
+	if issueTypeName == "" {
+		issueTypeName = j.resolveIssueType(projectKey)
+	}
 
 	fields := map[string]interface{}{
 		"project": map[string]string{
@@ -165,9 +199,9 @@ func (j *JiraClient) CreateIncidentIssue(event *domain.IncidentEvent, target *do
 		}
 	}
 
-	if j.cfg.JiraUser != "" {
+	if user != "" {
 		fields["reporter"] = map[string]string{
-			"name": j.cfg.JiraUser,
+			"name": user,
 		}
 	}
 
@@ -187,18 +221,22 @@ func (j *JiraClient) CreateIncidentIssue(event *domain.IncidentEvent, target *do
 		return mockKey, nil
 	}
 
-	if j.cfg.JiraUser == "" || j.cfg.JiraPassword == "" {
-		return "", fmt.Errorf("credenciais do Jira não configuradas (.env JIRA_USER e JIRA_PASSWORD)")
+	if (authType == "BASIC" && (user == "" || pass == "")) || (authType == "BEARER" && pass == "") {
+		return "", fmt.Errorf("credenciais do portal não configuradas")
 	}
 
-	url := fmt.Sprintf("%s/rest/api/2/issue", j.cfg.JiraBaseURL)
+	url := fmt.Sprintf("%s/rest/api/2/issue", baseURL)
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(payloadBytes))
 	if err != nil {
 		return "", fmt.Errorf("falha ao criar requisição HTTP: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-	req.SetBasicAuth(j.cfg.JiraUser, j.cfg.JiraPassword)
+	if authType == "BEARER" || user == "" {
+		req.Header.Set("Authorization", "Bearer "+pass)
+	} else {
+		req.SetBasicAuth(user, pass)
+	}
 
 	resp, err := j.httpClient.Do(req)
 	if err != nil {
@@ -217,7 +255,7 @@ func (j *JiraClient) CreateIncidentIssue(event *domain.IncidentEvent, target *do
 		return "", fmt.Errorf("falha ao decodificar resposta do Jira: %w", err)
 	}
 
-	log.Printf("[Jira] [✓] Chamado criado com sucesso: %s (URL: %s/browse/%s)", jiraResp.Key, j.cfg.JiraBaseURL, jiraResp.Key)
+	log.Printf("[Jira] [✓] Chamado criado com sucesso: %s (URL: %s/browse/%s)", jiraResp.Key, baseURL, jiraResp.Key)
 	return jiraResp.Key, nil
 }
 

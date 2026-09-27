@@ -28,7 +28,71 @@ type MonitoringRules struct {
 	PollIntervalSeconds int  `json:"poll_interval_seconds"`
 }
 
+type ProviderType string
+
+const (
+	ProviderJira     ProviderType = "JIRA"
+	ProviderGLPI     ProviderType = "GLPI"
+	ProviderMovidesk ProviderType = "MOVIDESK"
+)
+
+type TicketingIntegration struct {
+	ID          string       `json:"id"`
+	Name        string       `json:"name"`
+	Type        ProviderType `json:"type"` // JIRA, GLPI, MOVIDESK
+	BaseURL     string       `json:"base_url"`
+	AuthType    string       `json:"auth_type"` // BASIC, BEARER, API_KEY
+	Username    string       `json:"username,omitempty"`
+	TokenSecret string       `json:"token_secret,omitempty"`
+	ProjectKey  string       `json:"project_key,omitempty"`  // Jira Project / Categoria / Fila
+	DefaultType string       `json:"default_type,omitempty"` // Bug, Incident, etc.
+	Enabled     bool         `json:"enabled"`
+	CreatedAt   time.Time    `json:"created_at"`
+	UpdatedAt   time.Time    `json:"updated_at"`
+}
+
+type TicketingIntegrationSafe struct {
+	ID          string       `json:"id"`
+	Name        string       `json:"name"`
+	Type        ProviderType `json:"type"`
+	BaseURL     string       `json:"base_url"`
+	AuthType    string       `json:"auth_type"`
+	Username    string       `json:"username,omitempty"`
+	HasSecret   bool         `json:"has_secret"`
+	SecretMask  string       `json:"secret_mask"`
+	ProjectKey  string       `json:"project_key,omitempty"`
+	DefaultType string       `json:"default_type,omitempty"`
+	Enabled     bool         `json:"enabled"`
+	CreatedAt   time.Time    `json:"created_at"`
+	UpdatedAt   time.Time    `json:"updated_at"`
+}
+
+func (t *TicketingIntegration) ToSafe() *TicketingIntegrationSafe {
+	mask := ""
+	hasSecret := false
+	if t.TokenSecret != "" {
+		hasSecret = true
+		mask = "••••••••"
+	}
+	return &TicketingIntegrationSafe{
+		ID:          t.ID,
+		Name:        t.Name,
+		Type:        t.Type,
+		BaseURL:     t.BaseURL,
+		AuthType:    t.AuthType,
+		Username:    t.Username,
+		HasSecret:   hasSecret,
+		SecretMask:  mask,
+		ProjectKey:  t.ProjectKey,
+		DefaultType: t.DefaultType,
+		Enabled:     t.Enabled,
+		CreatedAt:   t.CreatedAt,
+		UpdatedAt:   t.UpdatedAt,
+	}
+}
+
 type ActionConfig struct {
+	IntegrationID   string `json:"integration_id,omitempty"` // ID do portal de chamados selecionado
 	CreateJiraIssue bool   `json:"create_jira_issue"`
 	JiraProjectKey  string `json:"jira_project_key"`
 	Contrato        string `json:"contrato"`

@@ -84,10 +84,15 @@ func main() {
 
 	printBanner(cfg)
 
-	// 1. Inicializa Persistência de Targets
+	// 1. Inicializa Persistência de Targets e Portais ITSM
 	store, err := storage.NewStorage(cfg.StoragePath)
 	if err != nil {
-		log.Fatalf("Erro ao inicializar storage: %v", err)
+		log.Fatalf("Erro ao inicializar storage de targets: %v", err)
+	}
+
+	integStore, err := storage.NewIntegrationStorage(cfg.IntegrationsPath, cfg)
+	if err != nil {
+		log.Fatalf("Erro ao inicializar storage de integrações: %v", err)
 	}
 
 	// 2. Inicializa Pipeline de Ações
@@ -103,11 +108,11 @@ func main() {
 	dockerDisc := docker.NewDockerDiscovery(dockerPool, store)
 
 	// 4. Inicializa Supervisor de Targets Híbrido
-	superv := supervisor.NewSupervisor(k8sPool, dockerPool, store, dedup, jira, notifier)
+	superv := supervisor.NewSupervisor(k8sPool, dockerPool, store, integStore, dedup, jira, notifier)
 	superv.Start()
 
 	// 5. Inicializa Servidor HTTP e Rotas da API
-	apiServer := api.NewServer(cfg, store, superv, notifier, k8sDisc, dockerDisc)
+	apiServer := api.NewServer(cfg, store, integStore, superv, notifier, k8sDisc, dockerDisc)
 
 	// Servir UI Web estática embutida (web.Assets)
 	mainMux := http.NewServeMux()

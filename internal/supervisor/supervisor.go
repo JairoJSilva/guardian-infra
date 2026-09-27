@@ -21,6 +21,7 @@ type Supervisor struct {
 	k8sPool      *k8s.ClientPool
 	dockerPool   *docker.DockerPool
 	storage      *storage.Storage
+	integStorage *storage.IntegrationStorage
 	deduplicator *actions.Deduplicator
 	jiraClient   *actions.JiraClient
 	notifier     *actions.Notifier
@@ -32,6 +33,7 @@ func NewSupervisor(
 	k8sPool *k8s.ClientPool,
 	dockerPool *docker.DockerPool,
 	store *storage.Storage,
+	integStore *storage.IntegrationStorage,
 	dedup *actions.Deduplicator,
 	jira *actions.JiraClient,
 	notif *actions.Notifier,
@@ -43,6 +45,7 @@ func NewSupervisor(
 		k8sPool:      k8sPool,
 		dockerPool:   dockerPool,
 		storage:      store,
+		integStorage: integStore,
 		deduplicator: dedup,
 		jiraClient:   jira,
 		notifier:     notif,
@@ -89,12 +92,23 @@ func (s *Supervisor) processEvent(event *domain.IncidentEvent) {
 
 	target, _ := s.storage.Get(event.TargetID)
 
-	// Abertura de chamado no Jira se configurado
+	// Abertura de chamado no portal ITSM se configurado
 	if target == nil || target.Actions.CreateJiraIssue {
-		log.Printf("[Supervisor] 🎫 Abertura de chamado Jira disparada para incidente: %s", event.EntityName)
-		key, err := s.jiraClient.CreateIncidentIssue(event, target)
+		log.Printf("[Supervisor] 🎫 Abertura de chamado disparada para incidente: %s", event.EntityName)
+
+		var integ *domain.TicketingIntegration
+		if s.integStorage != nil {
+			if target != nil && target.Actions.IntegrationID != "" {
+				integ, _ = s.integStorage.Get(target.Actions.IntegrationID)
+			}
+			if integ == nil {
+				integ = s.integStorage.GetDefault()
+			}
+		}
+
+		key, err := s.jiraClient.CreateIncidentIssueWithIntegration(event, target, integ)
 		if err != nil {
-			log.Printf("[Supervisor] ❌ Falha ao criar chamado no Jira: %v", err)
+			log.Printf("[Supervisor] ❌ Falha ao criar chamado no portal: %v", err)
 			event.JiraError = err.Error()
 		} else {
 			event.JiraIssue = key
@@ -103,8 +117,8 @@ func (s *Supervisor) processEvent(event *domain.IncidentEvent) {
 			}
 		}
 	} else {
-		log.Printf("[Supervisor] ℹ️ Abertura de Jira desativada na configuração do target: %s", target.Name)
-		event.JiraError = "Jira desativado na configuração deste Target"
+		log.Printf("[Supervisor] ℹ️ Abertura de chamados desativada na configuração do target: %s", target.Name)
+		event.JiraError = "Abertura de chamados desativada na configuração deste Target"
 	}
 
 	// Transmissão para Live Feed em tempo real

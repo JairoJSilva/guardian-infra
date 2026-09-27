@@ -34,6 +34,7 @@ type Config struct {
 	DockerSocketPath string
 	StoragePath      string
 	CachePath        string
+	IntegrationsPath string
 }
 
 func (c *Config) IsDryRun() bool {
@@ -154,6 +155,22 @@ func resolveCachePath() string {
 	return "guardian_cache.json"
 }
 
+func resolveIntegrationsPath() string {
+	if envPath := os.Getenv("GUARDIAN_INTEGRATIONS_FILE"); envPath != "" {
+		return envPath
+	}
+	if _, err := os.Stat("integrations.json"); err == nil {
+		return "integrations.json"
+	}
+	home := getEffectiveUserHome()
+	if home != "" {
+		dir := filepath.Join(home, ".local", "share", "guardian")
+		_ = os.MkdirAll(dir, 0755)
+		return filepath.Join(dir, "integrations.json")
+	}
+	return "integrations.json"
+}
+
 func LoadConfig() *Config {
 	loadEnvFiles()
 
@@ -203,6 +220,7 @@ func LoadConfig() *Config {
 		DockerSocketPath:          dockerSock,
 		StoragePath:               resolveStoragePath(),
 		CachePath:                 resolveCachePath(),
+		IntegrationsPath:          resolveIntegrationsPath(),
 	}
 }
 
