@@ -281,9 +281,13 @@ func (c *Config) ResolveContract(hint string) JiraContract {
 }
 
 func resolveKubeConfigPath() string {
-	// 1. Variável de ambiente KUBECONFIG explícita
+	// 1. Variável de ambiente KUBECONFIG explícita (apenas se o arquivo realmente existir)
 	if envKube := os.Getenv("KUBECONFIG"); strings.TrimSpace(envKube) != "" {
-		return strings.TrimSpace(envKube)
+		p := strings.TrimSpace(envKube)
+		if fi, err := os.Stat(p); err == nil && !fi.IsDir() {
+			_ = os.Setenv("KUBECONFIG", p)
+			return p
+		}
 	}
 
 	// 2. Se executado com sudo, tentar primeiro o kubeconfig do usuário real que invocou o sudo
@@ -326,10 +330,11 @@ func resolveKubeConfigPath() string {
 		}
 	}
 
-	// 5. Fallback padrão
+	res := "/root/.kube/config"
 	if homeDir != "" {
-		return filepath.Join(homeDir, ".kube", "config")
+		res = filepath.Join(homeDir, ".kube", "config")
 	}
-	return "/root/.kube/config"
+	_ = os.Setenv("KUBECONFIG", res)
+	return res
 }
 

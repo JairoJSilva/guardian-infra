@@ -88,10 +88,11 @@ func (d *K8sDiscovery) DiscoverEnvironments() []domain.EnvironmentInfo {
 		}
 	}
 
-	// Atualiza o caminho no pool se um arquivo alternativo funcional foi encontrado
-	if actualPath != d.kubeConfigPath {
+	// Atualiza o caminho no pool e no ambiente se um arquivo alternativo funcional foi encontrado
+	if actualPath != "" {
 		d.kubeConfigPath = actualPath
 		d.pool.kubeConfigPath = actualPath
+		_ = os.Setenv("KUBECONFIG", actualPath)
 	}
 
 	type ctxResult struct {

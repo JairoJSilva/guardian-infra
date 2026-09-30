@@ -42,8 +42,8 @@ func (p *ClientPool) GetClientForContext(contextName string) (*kubernetes.Client
 		return nil, fmt.Errorf("falha ao carregar restConfig para contexto %s: %w", contextName, err)
 	}
 
-	// Timeout de requisição rápido para evitar travamento da interface
-	restConfig.Timeout = 2 * time.Second
+	// Timeout adequado para clusters locais e remotos (GKE, EKS, AKS) com latência de rede e plugins exec
+	restConfig.Timeout = 12 * time.Second
 
 	clientset, err := kubernetes.NewForConfig(restConfig)
 	if err != nil {

@@ -1033,6 +1033,10 @@
               <button type="button" onclick="toggleAllScopes(true)" class="text-[10px] text-[#FFBF00] hover:underline font-mono">Selecionar Todos</button>
               <span class="text-[#2F2F2F] text-[10px]">|</span>
               <button type="button" onclick="toggleAllScopes(false)" class="text-[10px] text-[#888888] hover:underline font-mono">Limpar</button>
+              <span class="text-[#2F2F2F] text-[10px]">|</span>
+              <button type="button" onclick="refreshCurrentScopes()" title="Recarregar namespaces do cluster" class="text-[10px] text-[#888888] hover:text-[#FFBF00] font-mono flex items-center gap-1">
+                <i id="btn-refresh-scopes" data-lucide="refresh-cw" class="w-2.5 h-2.5"></i> Atualizar
+              </button>
             </div>
           </div>
           <div id="scope-checkboxes" class="p-3.5 rounded-xl glass-input max-h-36 overflow-y-auto space-y-2 border border-[#2F2F2F]">
@@ -2463,7 +2467,7 @@
     function renderScopesList(scopes, defaultChecked = false) {
       const container = document.getElementById('scope-checkboxes');
       if (!scopes || !scopes.length) {
-        container.innerHTML = `<div class="text-xs text-[#888888] font-mono">Nenhum escopo/container disponível.</div>`;
+        container.innerHTML = `<div class="text-xs text-[#888888] font-mono py-3 text-center">Nenhum namespace detectado no cluster. <button type="button" onclick="refreshCurrentScopes()" class="text-[#FFBF00] hover:underline font-bold ml-1">Tentar novamente</button></div>`;
         updateScopeCount();
         return;
       }
@@ -2575,6 +2579,20 @@
       }
     }
 
+    async function refreshCurrentScopes() {
+      const icon = document.getElementById('btn-refresh-scopes');
+      if (icon) icon.classList.add('animate-spin');
+      try {
+        await loadEnvironments(false);
+        updateScopeOptions();
+      } catch (e) {
+        console.warn("Erro ao recarregar scopes:", e);
+      } finally {
+        if (icon) icon.classList.remove('animate-spin');
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+
     function openModal() {
       if (serverConfig && serverConfig.project_key) {
         const projInput = document.getElementById('target-jira-project');
@@ -2582,6 +2600,7 @@
           projInput.value = serverConfig.project_key;
         }
       }
+      selectType(currentType);
       updateTargetIntegrationOptions();
       document.getElementById('target-modal').classList.remove('hidden');
       document.getElementById('target-modal').classList.add('flex');
