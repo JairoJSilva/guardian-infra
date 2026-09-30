@@ -133,7 +133,13 @@ type IncidentEvent struct {
 
 // Fingerprint gera um hash único para deduplicação anti-spam de incidentes
 func (e *IncidentEvent) Fingerprint() string {
-	raw := fmt.Sprintf("%s:%s:%s:%s:%s", e.Type, e.Environment, e.Scope, e.EntityName, e.Reason)
+	return FingerprintRaw(string(e.Type), e.Environment, e.Scope, e.EntityName, e.Reason)
+}
+
+// FingerprintRaw gera o mesmo hash sem precisar de um IncidentEvent completo.
+// Usado pelo modo seeding do watcher para pré-registrar pods já existentes.
+func FingerprintRaw(envType, environment, scope, entityName, reason string) string {
+	raw := fmt.Sprintf("%s:%s:%s:%s:%s", envType, environment, scope, entityName, reason)
 	h := sha256.Sum256([]byte(raw))
 	return fmt.Sprintf("%x", h[:8])
 }

@@ -83,6 +83,16 @@ func (s *Supervisor) eventLoop() {
 func (s *Supervisor) processEvent(event *domain.IncidentEvent) {
 	fingerprint := event.Fingerprint()
 
+	// Eventos de baseline (seeding) — registra no deduplicador para suprimir
+	// alertas de pods já existentes no momento em que o target foi criado.
+	// Não dispara Jira, não aparece no feed da UI.
+	if event.Severity == "SEED" {
+		if !s.deduplicator.IsInCooldown(fingerprint) {
+			s.deduplicator.Record(fingerprint)
+		}
+		return
+	}
+
 	// Anti-Spam / Deduplicação: Simulações intencionais não devem ser bloqueadas pelo cooldown
 	isSimulation := event.TargetID == "target-simulated" || strings.HasPrefix(event.ID, "evt-sim-")
 	if !isSimulation && s.deduplicator.IsInCooldown(fingerprint) {
@@ -112,13 +122,16 @@ func (s *Supervisor) processEvent(event *domain.IncidentEvent) {
 			event.JiraError = err.Error()
 		} else {
 			event.JiraIssue = key
-			if !isSimulation {
-				s.deduplicator.Record(fingerprint)
-			}
 		}
 	} else {
 		log.Printf("[Supervisor] ℹ️ Abertura de chamados desativada na configuração do target: %s", target.Name)
 		// Abertura desativada intencionalmente — não é um erro, não preenche JiraError
+	}
+
+	// Registra fingerprint sempre após processar (independente do Jira),
+	// para que polls subsequentes do mesmo pod sejam suprimidos pelo cooldown.
+	if !isSimulation {
+		s.deduplicator.Record(fingerprint)
 	}
 
 	// Transmissão para Live Feed em tempo real

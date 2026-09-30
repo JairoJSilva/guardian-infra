@@ -15,8 +15,9 @@ import (
 )
 
 type K8sWatcher struct {
-	pool   *ClientPool
-	target *domain.Target
+	pool    *ClientPool
+	target  *domain.Target
+	seeding bool // quando true, o scan popula o dedup sem disparar eventos
 }
 
 func NewK8sWatcher(pool *ClientPool, target *domain.Target) *K8sWatcher {
@@ -37,8 +38,13 @@ func (w *K8sWatcher) Watch(ctx context.Context, out chan<- *domain.IncidentEvent
 
 	log.Printf("[K8sWatcher] [Target: %s] Iniciando monitoramento K8s no contexto '%s' para os namespaces %v...", w.target.Name, w.target.Endpoint, w.target.Scopes)
 
-	// Scan inicial
+	// Scan inicial em modo seeding: registra o estado atual do cluster como baseline
+	// sem disparar eventos — evita flood de alertas de pods já evicted/failed no momento
+	// em que o target é criado.
+	w.seeding = true
 	w.scan(ctx, out)
+	w.seeding = false
+	log.Printf("[K8sWatcher] [Target: %s] Baseline do cluster registrado. Monitoramento ativo iniciado.", w.target.Name)
 
 	for {
 		select {
@@ -72,12 +78,35 @@ func (w *K8sWatcher) scan(ctx context.Context, out chan<- *domain.IncidentEvent)
 }
 
 func (w *K8sWatcher) inspectPod(ctx context.Context, clientset *kubernetes.Clientset, pod *corev1.Pod, ns string, out chan<- *domain.IncidentEvent) {
-	// Se o pod inteiro estiver em status Failed
+	// Se o pod inteiro estiver em status Failed (inclui Evicted)
 	if pod.Status.Phase == corev1.PodFailed {
 		reason := "PodFailed"
 		if pod.Status.Reason != "" {
 			reason = pod.Status.Reason
 		}
+
+		// Gera o fingerprint do evento para registro no deduplicador
+		fp := domain.FingerprintRaw(string(domain.EnvKubernetes), w.target.Endpoint, ns, pod.Name, reason)
+
+		// Modo seeding: apenas registra o fingerprint como baseline, sem emitir evento.
+		// Evita flood de 200+ alertas de pods já evicted quando o target é criado.
+		if w.seeding {
+			log.Printf("[K8sWatcher] [Baseline] Pod já evicted/failed ignorado (seed): %s/%s (%s)", ns, pod.Name, reason)
+			out <- &domain.IncidentEvent{
+				ID:         fmt.Sprintf("evt-seed-%s", fp),
+				Type:       domain.EnvKubernetes,
+				TargetID:   w.target.ID,
+				Environment: w.target.Endpoint,
+				Scope:      ns,
+				EntityName: pod.Name,
+				Reason:     reason,
+				ExitCode:   1,
+				Timestamp:  time.Now(),
+				Severity:   "SEED", // marcador especial para o supervisor ignorar
+			}
+			return
+		}
+
 		event := &domain.IncidentEvent{
 			ID:          fmt.Sprintf("evt-k8s-%d", time.Now().UnixNano()),
 			Type:        domain.EnvKubernetes,
@@ -140,6 +169,29 @@ func (w *K8sWatcher) inspectPod(ctx context.Context, clientset *kubernetes.Clien
 		}
 
 		if !isFailed {
+			continue
+		}
+
+		// Modo seeding: emite evento marcado como SEED para o supervisor registrar
+		// o fingerprint como baseline, sem broadcast e sem abertura de chamado.
+		if w.seeding {
+			fp := domain.FingerprintRaw(string(domain.EnvKubernetes), w.target.Endpoint, ns, pod.Name, reason)
+			log.Printf("[K8sWatcher] [Baseline] Container com falha ignorado (seed): %s/%s container=%s (%s)", ns, pod.Name, cs.Name, reason)
+			select {
+			case out <- &domain.IncidentEvent{
+				ID:          fmt.Sprintf("evt-seed-%s", fp),
+				Type:        domain.EnvKubernetes,
+				TargetID:    w.target.ID,
+				Environment: w.target.Endpoint,
+				Scope:       ns,
+				EntityName:  pod.Name,
+				Reason:      reason,
+				ExitCode:    exitCode,
+				Timestamp:   time.Now(),
+				Severity:    "SEED",
+			}:
+			default:
+			}
 			continue
 		}
 
