@@ -94,9 +94,23 @@ fi
 
 banner
 
-# 1. Carrega Metadados de Versão
+# 1. Carrega Metadados de Versão e faz bump automático de patch em modo update
 VERSION=$(cat "${SCRIPT_DIR}/VERSION" 2>/dev/null || echo "3.1.0")
-GIT_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "release")
+
+if [[ "${ACTION}" == "update" ]]; then
+    # Extrai major.minor.patch e incrementa patch
+    MAJOR=$(echo "${VERSION}" | cut -d. -f1)
+    MINOR=$(echo "${VERSION}" | cut -d. -f2)
+    PATCH=$(echo "${VERSION}" | cut -d. -f3)
+    NEW_PATCH=$(( PATCH + 1 ))
+    NEW_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
+
+    echo "${NEW_VERSION}" > "${SCRIPT_DIR}/VERSION"
+    VERSION="${NEW_VERSION}"
+    echo -e "${CYAN}[Version] Versão incrementada automaticamente: ${BOLD}v${MAJOR}.${MINOR}.${PATCH}${RESET}${CYAN} → ${BOLD}${GREEN}v${VERSION}${RESET}"
+fi
+
+GIT_COMMIT=$(git -C "${SCRIPT_DIR}" rev-parse --short HEAD 2>/dev/null || echo "release")
 BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 LDFLAGS="-s -w -X 'guardian/internal/version.Version=${VERSION}' -X 'guardian/internal/version.GitCommit=${GIT_COMMIT}' -X 'guardian/internal/version.BuildDate=${BUILD_DATE}'"
 
@@ -226,6 +240,37 @@ if [[ "${HEALTHY}" == "true" ]]; then
     echo -e "${GREEN}[OK] API e Supervisor ativos e respondendo na porta 8092.${RESET}"
 else
     echo -e "${YELLOW}[AVISO] Serviço em inicialização. Você pode acompanhar o status com 'guardian-ctl status'.${RESET}"
+fi
+
+# 10. Commit e Tag Git automáticos após update bem-sucedido
+if [[ "${ACTION}" == "update" ]]; then
+    echo ""
+    echo -e "${CYAN}[Version] Registrando versão v${VERSION} no repositório git...${RESET}"
+    TAG_NAME="v${VERSION}"
+
+    # Commit do arquivo VERSION (ignora se não houver nada novo para commitar)
+    if ! git -C "${SCRIPT_DIR}" diff --quiet HEAD -- VERSION 2>/dev/null; then
+        git -C "${SCRIPT_DIR}" add VERSION
+        git -C "${SCRIPT_DIR}" commit -m "chore(release): bump version to v${VERSION} [auto]" \
+            --no-verify 2>/dev/null || true
+        echo -e "${GREEN}[OK]${RESET} Commit de versão criado."
+    fi
+
+    # Cria tag anotada (se ainda não existir)
+    if ! git -C "${SCRIPT_DIR}" tag -l | grep -qx "${TAG_NAME}"; then
+        git -C "${SCRIPT_DIR}" tag -a "${TAG_NAME}" \
+            -m "Guardian SRE ${TAG_NAME} — build automático em ${BUILD_DATE}" 2>/dev/null || true
+        echo -e "${GREEN}[OK]${RESET} Tag ${BOLD}${TAG_NAME}${RESET} criada localmente."
+
+        # Push da tag para o remote (silencioso se falhar — pode não ter acesso ao remote no momento)
+        if git -C "${SCRIPT_DIR}" push origin "${TAG_NAME}" 2>/dev/null; then
+            echo -e "${GREEN}[OK]${RESET} Tag ${BOLD}${TAG_NAME}${RESET} publicada no remote."
+        else
+            echo -e "${YELLOW}[AVISO]${RESET} Tag criada localmente mas não publicada no remote (sem acesso ou remote não configurado)."
+        fi
+    else
+        echo -e "${YELLOW}[AVISO]${RESET} Tag ${TAG_NAME} já existe — nenhuma ação necessária."
+    fi
 fi
 
 echo ""
