@@ -2095,16 +2095,44 @@
       }
 
       // Fallback por Reason code
-      if (reason === 'OOMKILLED')         return 'Container encerrado pelo kernel por excesso de uso de memória (OOM Kill)';
-      if (reason === 'CRASHLOOPBACKOFF')  return 'Pod em loop de reinicialização — application não consegue se manter em execução';
+      if (reason === 'OOMKILLED')        return 'Container encerrado pelo kernel por excesso de uso de memória (OOM Kill) — aumente o memory limit do pod ou investigue vazamento de memória';
+      if (reason === 'CRASHLOOPBACKOFF') return 'Pod em loop de reinicialização — a aplicação não consegue se manter em execução; verifique configuração e dependências';
+
+      // Eviction — expulsão pelo kubelet por pressão de recursos no nó
+      if (reason === 'EVICTED') {
+        if (exit === 137) return 'Pod evicted por pressão de memória no nó (SIGKILL) — o kubelet matou o pod para liberar RAM; verifique consumo de memória dos nós e os limits do pod';
+        return 'Pod evicted pelo kubelet — o nó estava sob pressão de recursos (memória, disco ou PID). O pod foi expulso para proteger o nó. Verifique: kubectl describe node <nó> | grep -A5 Conditions';
+      }
+
+      // Preemption — pod de menor prioridade removido para dar lugar a outro
+      if (reason === 'PREEMPTING' || reason === 'PREEMPTED') {
+        return 'Pod removido por preempção — um pod de maior prioridade precisou do recurso e o scheduler expulsou este pod. Verifique PriorityClasses no cluster';
+      }
+
+      // Nó perdido / não responsivo
+      if (reason === 'NODELOST' || reason === 'NODENOTREADY' || reason === 'NODEPRESSURE') {
+        return 'Nó do cluster não está responsivo ou sob pressão crítica — o pod foi terminado pelo orquestrador. Investigue a saúde do nó (kubectl get nodes)';
+      }
+
+      // Completed — pod finalizou normalmente (não é erro)
+      if (reason === 'COMPLETED' || reason === 'SUCCEEDED') {
+        return 'Pod finalizou sua execução normalmente (job completado). Não é um erro — o processo encerrou com sucesso (exit 0)';
+      }
+
+      // Falha de imagem
+      if (reason === 'ERRIMAGEPULL' || reason === 'IMAGEPULLBACKOFF') {
+        return 'Falha ao baixar a imagem do container — verifique se a imagem existe no registry, as credenciais de acesso e a conectividade com o registry';
+      }
+
+      // Erro de processo genérico / Docker
       if (reason === 'ERROR' || reason === 'DIE') {
         if (exit === 1)   return 'Processo encerrado com erro genérico (exit 1) — verifique configuração e dependências';
         if (exit === 2)   return 'Erro de uso inválido ou argumento incorreto ao iniciar o processo (exit 2)';
         if (exit === 127) return 'Comando não encontrado no container — binário ausente ou PATH incorreto (exit 127)';
         if (exit === 128) return 'Processo encerrado por sinal inválido (exit 128)';
-        if (exit === 137) return 'Processo killed externamente — SIGKILL (exit 137), provável OOM ou restart forçado';
+        if (exit === 137) return 'Processo killed externamente — SIGKILL (exit 137), provável OOM ou restart forçado pelo kubelet';
         if (exit === 139) return 'Segmentation Fault — acesso inválido à memória causou término do processo (exit 139)';
-        if (exit === 143) return 'Processo encerrado com SIGTERM (exit 143) — encerramento pelo orquestrador';
+        if (exit === 143) return 'Processo encerrado com SIGTERM (exit 143) — encerramento solicitado pelo orquestrador';
         return `Processo encerrado com exit code ${exit} — investigue logs completos para causa raiz`;
       }
 

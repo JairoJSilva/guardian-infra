@@ -118,7 +118,7 @@ func (s *Supervisor) processEvent(event *domain.IncidentEvent) {
 		}
 	} else {
 		log.Printf("[Supervisor] ℹ️ Abertura de chamados desativada na configuração do target: %s", target.Name)
-		event.JiraError = "Abertura de chamados desativada na configuração deste Target"
+		// Abertura desativada intencionalmente — não é um erro, não preenche JiraError
 	}
 
 	// Transmissão para Live Feed em tempo real
