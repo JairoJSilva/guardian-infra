@@ -131,13 +131,13 @@ cmd_stop() {
     if command -v systemctl >/dev/null 2>&1; then
         systemctl --user stop guardian 2>/dev/null || true
     fi
-    pkill -x guardian 2>/dev/null || pkill -f "/bin/guardian" 2>/dev/null || true
+    pkill -x guardian 2>/dev/null || true
     sleep 0.5
     if ! is_running; then
         echo -e "${GREEN}[OK]${RESET} Guardian finalizado."
     else
         echo -e "${YELLOW}[AVISO]${RESET} Forçando finalização..."
-        pkill -9 -x guardian 2>/dev/null || pkill -9 -f "/bin/guardian" 2>/dev/null || true
+        pkill -9 -x guardian 2>/dev/null || true
         echo -e "${GREEN}[OK]${RESET} Guardian finalizado."
     fi
 }

@@ -263,6 +263,8 @@ func (j *JiraClient) buildDescription(event *domain.IncidentEvent, target *domai
 	var sb strings.Builder
 
 	sb.WriteString("h2. (!) Incidente Detectado pelo Guardian (Supervisor Híbrido)\n\n")
+
+	// 1. Tabela de Metadados
 	sb.WriteString("|| Parâmetro || Detalhes da Ocorrência ||\n")
 	sb.WriteString(fmt.Sprintf("| *Tipo de Ambiente* | %s |\n", event.Type))
 	sb.WriteString(fmt.Sprintf("| *Host / Cluster* | %s |\n", event.Environment))
@@ -280,7 +282,48 @@ func (j *JiraClient) buildDescription(event *domain.IncidentEvent, target *domai
 	}
 	sb.WriteString("\n")
 
-	sb.WriteString("h3. (i) Diagnóstico & Últimos Logs do Container antes da queda:\n")
+	// 2. Painel: Análise Prévia da Causa Raiz (RCA Preliminar)
+	if event.RootCause != "" || event.AnalysisCategory != "" {
+		categoryTitle := event.AnalysisCategory
+		if categoryTitle == "" {
+			categoryTitle = "Diagnóstico Automatizado SRE"
+		}
+		sb.WriteString(fmt.Sprintf("{panel:title=🔍 Análise Prévia da Causa Raiz: %s|borderStyle=solid|borderColor=#FFAB00|titleBGColor=#FFF0D2|bgColor=#FCFDFD}\n", categoryTitle))
+		if event.AnalysisSummary != "" {
+			sb.WriteString(fmt.Sprintf("*Diagnóstico Direto:* %s\n\n", event.AnalysisSummary))
+		}
+		if event.RootCause != "" {
+			sb.WriteString(fmt.Sprintf("*Análise Técnica Detalhada:*\n%s\n", event.RootCause))
+		}
+		sb.WriteString("{panel}\n\n")
+	}
+
+	// 3. Painel: Sugestão de Correção & Ajustes Recomendados (Ação Humana)
+	if event.SuggestedFix != "" || len(event.ActionSteps) > 0 || len(event.SuggestedCommands) > 0 {
+		sb.WriteString("{panel:title=💡 Sugestão de Correção & Ajuste (Ação Manual Recomendada)|borderStyle=solid|borderColor=#0052CC|titleBGColor=#DEEBFF|bgColor=#FCFDFD}\n")
+		if event.SuggestedFix != "" {
+			sb.WriteString(fmt.Sprintf("*Recomendação Técnica:*\n%s\n\n", event.SuggestedFix))
+		}
+		if len(event.ActionSteps) > 0 {
+			sb.WriteString("*Passo a Passo Sugerido para o Operador:*\n")
+			for _, step := range event.ActionSteps {
+				sb.WriteString(fmt.Sprintf("# %s\n", step))
+			}
+			sb.WriteString("\n")
+		}
+		if len(event.SuggestedCommands) > 0 {
+			sb.WriteString("*Comandos Úteis para Diagnóstico e Resolução:*\n")
+			sb.WriteString("{code:bash}\n")
+			for _, cmd := range event.SuggestedCommands {
+				sb.WriteString(cmd + "\n")
+			}
+			sb.WriteString("{code}\n")
+		}
+		sb.WriteString("{panel}\n\n")
+	}
+
+	// 4. Logs de Diagnóstico
+	sb.WriteString("h3. (i) Tail de Diagnóstico (últimos logs antes do encerramento):\n")
 	sb.WriteString("{code:bash}\n")
 	if strings.TrimSpace(event.Logs) != "" {
 		sb.WriteString(event.Logs)
@@ -289,6 +332,10 @@ func (j *JiraClient) buildDescription(event *domain.IncidentEvent, target *domai
 	}
 	sb.WriteString("\n{code}\n\n")
 
-	sb.WriteString("----\n_Chamado aberto automaticamente pelo GuardianOps v2.0 Architecture._\n")
+	// 5. Rodapé Informativo
+	sb.WriteString("----\n")
+	sb.WriteString("{color:#707070}⚠️ *Modo SRE Informativo:* O Guardian atua exclusivamente como assistente de observabilidade e diagnóstico. Nenhuma alteração ou ajuste é aplicado automaticamente na infraestrutura sem intervenção humana.{color}\n")
+	sb.WriteString("_Chamado aberto automaticamente pelo Guardian SRE Platform._\n")
+
 	return sb.String()
 }

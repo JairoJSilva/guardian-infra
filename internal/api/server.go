@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"guardian/internal/actions"
+	"guardian/internal/analyzer"
 	"guardian/internal/config"
 	"guardian/internal/domain"
 	"guardian/internal/providers/docker"
@@ -350,6 +351,15 @@ func (s *Server) handleSimulate(w http.ResponseWriter, r *http.Request) {
 		Logs:        req.Logs,
 		Timestamp:   time.Now(),
 		Severity:    req.Severity,
+	}
+
+	if analysis := analyzer.AnalyzeIncident(event); analysis != nil {
+		event.AnalysisCategory = analysis.Category
+		event.AnalysisSummary = analysis.Summary
+		event.RootCause = analysis.RootCause
+		event.SuggestedFix = analysis.SuggestedFix
+		event.ActionSteps = analysis.ActionSteps
+		event.SuggestedCommands = analysis.SuggestedCommands
 	}
 
 	s.supervisor.InjectSimulatedIncident(event)

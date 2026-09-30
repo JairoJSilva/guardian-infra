@@ -129,6 +129,14 @@ type IncidentEvent struct {
 	JiraIssue   string                 `json:"jira_issue,omitempty"`
 	JiraError   string                 `json:"jira_error,omitempty"`
 	Severity    string                 `json:"severity,omitempty"` // CRITICAL, WARNING, INFO
+
+	// Análise Prévia e Sugestões SRE para Ação Humana
+	AnalysisCategory  string   `json:"analysis_category,omitempty"`
+	AnalysisSummary   string   `json:"analysis_summary,omitempty"`
+	RootCause         string   `json:"root_cause,omitempty"`
+	SuggestedFix      string   `json:"suggested_fix,omitempty"`
+	ActionSteps       []string `json:"action_steps,omitempty"`
+	SuggestedCommands []string `json:"suggested_commands,omitempty"`
 }
 
 // Fingerprint gera um hash único para deduplicação anti-spam de incidentes

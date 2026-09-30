@@ -2165,7 +2165,7 @@
         : `<span class="inline-block h-2 w-2 rounded-full bg-[#FFBF00] shadow-[0_0_6px_#FFBF00] flex-shrink-0"></span>`;
 
       const timeStr = new Date(evt.timestamp).toLocaleTimeString('pt-BR');
-      const diagnosis = parseLogDiagnosis(evt);
+      const diagnosis = evt.analysis_summary || parseLogDiagnosis(evt);
 
       // Badge compacto de status Jira
       let jiraPill = '';
@@ -2302,10 +2302,45 @@
       document.getElementById('imd-image').textContent = evt.image || '—';
       document.getElementById('imd-exit-code').textContent = evt.exit_code != null ? evt.exit_code : '—';
       document.getElementById('imd-timestamp').textContent = timeStr;
-      document.getElementById('imd-diagnosis').textContent = diagnosis;
       document.getElementById('imd-jira').innerHTML = jiraSection || '<span class="text-[#888888] text-xs">Nenhum chamado associado</span>';
       document.getElementById('imd-extra-details').innerHTML = extraDetails;
       document.getElementById('imd-logs').innerHTML = logsSection;
+
+      // Análise Prévia da Causa Raiz e Sugestões SRE
+      const catBadge = document.getElementById('imd-category-badge');
+      const rootCauseEl = document.getElementById('imd-root-cause');
+      const fixEl = document.getElementById('imd-suggested-fix');
+      const stepsEl = document.getElementById('imd-action-steps');
+      const cmdsWrapper = document.getElementById('imd-commands-wrapper');
+      const cmdsEl = document.getElementById('imd-commands');
+
+      const category = evt.analysis_category || (isK8s ? 'KUBERNETES' : 'DOCKER');
+      const rootCause = evt.root_cause || evt.analysis_summary || diagnosis;
+      const suggestedFix = evt.suggested_fix || 'Inspecione os logs prévios e valide as dependências de rede e ambiente da aplicação.';
+      const actionSteps = evt.action_steps || [];
+      const commands = evt.suggested_commands || [];
+
+      if (catBadge) catBadge.textContent = category;
+      if (rootCauseEl) rootCauseEl.textContent = rootCause;
+      if (fixEl) fixEl.textContent = suggestedFix;
+
+      if (stepsEl) {
+        if (actionSteps.length > 0) {
+          stepsEl.innerHTML = actionSteps.map(step => `<div class="flex items-start gap-2"><span class="text-blue-400 font-bold">•</span><span>${step}</span></div>`).join('');
+          stepsEl.classList.remove('hidden');
+        } else {
+          stepsEl.classList.add('hidden');
+        }
+      }
+
+      if (cmdsWrapper && cmdsEl) {
+        if (commands.length > 0) {
+          cmdsEl.textContent = commands.join('\n');
+          cmdsWrapper.classList.remove('hidden');
+        } else {
+          cmdsWrapper.classList.add('hidden');
+        }
+      }
 
       const borderEl = document.getElementById('imd-border');
       borderEl.className = isCrit ? 'border-l-4 border-l-red-500' : 'border-l-4 border-l-[#FFBF00]';
@@ -2322,6 +2357,15 @@
       modal.classList.add('hidden');
       modal.classList.remove('flex');
       document.body.style.overflow = '';
+    }
+
+    function copySreCommands() {
+      const cmdsEl = document.getElementById('imd-commands');
+      if (cmdsEl && cmdsEl.textContent) {
+        navigator.clipboard.writeText(cmdsEl.textContent).then(() => {
+          showToast('Comandos de resolução copiados com sucesso!', 'success');
+        });
+      }
     }
 
     async function simulateIncident(type) {
@@ -3076,12 +3120,38 @@
       <!-- Body -->
       <div class="overflow-y-auto flex-1 px-6 py-5 space-y-5">
 
-        <!-- Diagnosis box -->
-        <div class="flex items-start gap-3 p-4 rounded-2xl bg-[#FFBF00]/10 border border-[#FFBF00]/25">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#FFBF00] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.347.347-.099.1A5.99 5.99 0 0112 18a5.99 5.99 0 01-4.69-2.24l-.1-.099-.347-.348z"/></svg>
-          <div>
-            <div class="text-[10px] text-[#FFBF00] font-bold uppercase tracking-widest mb-1">Diagnóstico Interpretado</div>
-            <p class="text-[#E0E0E0] text-sm leading-relaxed" id="imd-diagnosis"></p>
+        <!-- SRE Root Cause Analysis -->
+        <div id="imd-rca-box" class="p-4 rounded-2xl bg-[#FFBF00]/10 border border-[#FFBF00]/30 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-[#FFBF00] flex items-center gap-1.5 uppercase tracking-wider font-mono">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              Análise Prévia da Causa Raiz
+            </span>
+            <span id="imd-category-badge" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#FFBF00]/20 text-[#FFBF00] border border-[#FFBF00]/40"></span>
+          </div>
+          <p class="text-xs text-[#E0E0E0] leading-relaxed" id="imd-root-cause"></p>
+        </div>
+
+        <!-- SRE Actionable Suggestions -->
+        <div id="imd-suggestion-box" class="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/30 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-blue-400 flex items-center gap-1.5 uppercase tracking-wider font-mono">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.347.347-.099.1A5.99 5.99 0 0112 18a5.99 5.99 0 01-4.69-2.24l-.1-.099-.347-.348z"/></svg>
+              Sugestão de Correção & Ajuste (Ação Manual Recomendada)
+            </span>
+            <span class="text-[10px] text-[#888888] font-mono">Sem ação automática</span>
+          </div>
+          <p class="text-xs text-[#E0E0E0] leading-relaxed" id="imd-suggested-fix"></p>
+          <div id="imd-action-steps" class="space-y-1 text-xs text-[#CCCCCC]"></div>
+          <div id="imd-commands-wrapper" class="space-y-1.5 pt-1">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-mono text-blue-300 font-bold uppercase">Comandos para Troubleshooting / Resolução:</span>
+              <button type="button" onclick="copySreCommands()" class="text-[10px] text-blue-400 hover:underline font-mono">Copiar Comandos</button>
+            </div>
+            <pre id="imd-commands" class="p-3 rounded-xl bg-black/60 border border-blue-500/20 text-blue-200 font-mono text-[11px] overflow-x-auto whitespace-pre-wrap leading-relaxed"></pre>
+          </div>
+          <div class="text-[10px] text-[#888888] italic border-t border-blue-500/20 pt-2">
+            ⚠️ O Guardian atua exclusivamente em modo informativo e não aplica modificações no cluster ou container sem intervenção humana.
           </div>
         </div>
 

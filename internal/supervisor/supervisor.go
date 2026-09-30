@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"guardian/internal/actions"
+	"guardian/internal/analyzer"
 	"guardian/internal/domain"
 	"guardian/internal/providers/docker"
 	"guardian/internal/providers/k8s"
@@ -101,6 +102,16 @@ func (s *Supervisor) processEvent(event *domain.IncidentEvent) {
 	}
 
 	target, _ := s.storage.Get(event.TargetID)
+
+	// Análise Prévia e Sugestões SRE (Modo Diagnóstico & Ação Humana)
+	if analysis := analyzer.AnalyzeIncident(event); analysis != nil {
+		event.AnalysisCategory = analysis.Category
+		event.AnalysisSummary = analysis.Summary
+		event.RootCause = analysis.RootCause
+		event.SuggestedFix = analysis.SuggestedFix
+		event.ActionSteps = analysis.ActionSteps
+		event.SuggestedCommands = analysis.SuggestedCommands
+	}
 
 	// Abertura de chamado no portal ITSM se configurado
 	if target == nil || target.Actions.CreateJiraIssue {
