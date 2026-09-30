@@ -28,7 +28,7 @@ func NewK8sDiscovery(pool *ClientPool, kubeConfigPath string) *K8sDiscovery {
 	return &K8sDiscovery{
 		pool:           pool,
 		kubeConfigPath: kubeConfigPath,
-		cacheTTL:       60 * time.Second,
+		cacheTTL:       30 * time.Second, // reduzido de 60s; agora o discovery é confiável com timeout de 10s
 	}
 }
 
@@ -188,11 +188,15 @@ func (d *K8sDiscovery) discoverNamespacesForContext(ctxName string) []string {
 		return nil
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	// Timeout generoso para clusters remotos (GKE, AKS, EKS) com latência de rede.
+	// O valor anterior de 2s causava timeout em clusters GCP e retornava apenas
+	// o fallback ["default", "kube-system"] em vez dos namespaces reais.
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	nsList, err := clientset.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
 	if err != nil {
+		fmt.Printf("[K8sDiscovery] ⚠️ Falha ao listar namespaces para contexto '%s': %v\n", ctxName, err)
 		return nil
 	}
 
