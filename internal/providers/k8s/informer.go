@@ -226,7 +226,7 @@ func (w *K8sWatcher) inspectPod(ctx context.Context, clientset *kubernetes.Clien
 }
 
 func (w *K8sWatcher) fetchPodLogs(ctx context.Context, clientset *kubernetes.Clientset, podName, ns, containerName string) string {
-	tailLines := int64(50)
+	tailLines := int64(100)
 	opts := &corev1.PodLogOptions{
 		Container: containerName,
 		TailLines: &tailLines,

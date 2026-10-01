@@ -1,11 +1,19 @@
 package analyzer
 
 import (
+	"os"
 	"strings"
 	"testing"
 
 	"guardian/internal/domain"
 )
+
+func TestMain(m *testing.M) {
+	// Desabilita IA nos testes unitários das regras heurísticas determinísticas
+	_ = os.Setenv("GUARDIAN_USE_AI", "false")
+	code := m.Run()
+	os.Exit(code)
+}
 
 func TestAnalyzeIncident_OOM(t *testing.T) {
 	evt := &domain.IncidentEvent{

@@ -1,7 +1,9 @@
 package analyzer
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 
@@ -30,6 +32,15 @@ func AnalyzeIncident(event *domain.IncidentEvent) *AnalysisResult {
 		}
 	}
 
+	// 0. ANÁLISE POR IA VIA ANTIGRAVITY LOCAL (Modo Estritamente Leitura / RCA)
+	if IsAIAnalysisEnabled() && strings.TrimSpace(event.Logs) != "" {
+		if aiRes, err := AnalyzeWithAntigravity(context.Background(), event); err == nil && aiRes != nil {
+			return aiRes
+		} else if err != nil {
+			log.Printf("[Analyzer] ℹ️ Análise via Antigravity indisponível (%v). Prosseguindo com regras heurísticas de fallback.", err)
+		}
+	}
+
 	reasonUpper := strings.ToUpper(strings.TrimSpace(event.Reason))
 	logsLower := strings.ToLower(event.Logs)
 	isK8s := event.Type == domain.EnvKubernetes
@@ -49,7 +60,12 @@ func AnalyzeIncident(event *domain.IncidentEvent) *AnalysisResult {
 		return analyzeOOM(isK8s, scope, entity, event)
 	}
 
-	// 3. FALHA DE CONEXÃO COM BANCO DE DADOS
+	// 3. FALHA DE MIGRAÇÃO / SCHEMA DE BANCO DE DADOS (Flyway / Liquibase / DDL)
+	if matchAny(logsLower, "flywaysqlscriptexception", "migration.*failed", "relation.*does not exist", "table.*does not exist", "column.*does not exist", "flyway") {
+		return analyzeDatabaseMigrationFailure(isK8s, scope, entity, logsLower)
+	}
+
+	// 4. FALHA DE CONEXÃO COM BANCO DE DADOS
 	if matchAny(logsLower,
 		"connection refused", "dial tcp.*5432", "dial tcp.*3306", "dial tcp.*1521", "dial tcp.*27017", "dial tcp.*1433",
 		"cannot connect to postgres", "cannot connect to mysql", "could not connect to server: connection refused",
@@ -148,6 +164,55 @@ func analyzeEvicted(scope, entity string, event *domain.IncidentEvent) *Analysis
 			"kubectl get nodes -o wide",
 			fmt.Sprintf("kubectl delete pod %s -n %s", entity, scope),
 			fmt.Sprintf("kubectl get pods -n %s --field-selector=status.phase=Failed", scope),
+		},
+	}
+}
+
+func analyzeDatabaseMigrationFailure(isK8s bool, scope, entity, logsLower string) *AnalysisResult {
+	framework := "Migration / DDL"
+	if strings.Contains(logsLower, "flyway") {
+		framework = "Flyway Migration"
+	} else if strings.Contains(logsLower, "liquibase") {
+		framework = "Liquibase Migration"
+	}
+
+	missingRelation := "tabela ou coluna"
+	if strings.Contains(logsLower, "relation") && strings.Contains(logsLower, "does not exist") {
+		missingRelation = "tabela inexistente (relation does not exist)"
+	} else if strings.Contains(logsLower, "column") && strings.Contains(logsLower, "does not exist") {
+		missingRelation = "coluna inexistente (column does not exist)"
+	}
+
+	if isK8s {
+		return &AnalysisResult{
+			Category:     fmt.Sprintf("BANCO DE DADOS (%s / %s)", framework, missingRelation),
+			Summary:      "Aplicação falhou durante a inicialização ao executar migrações de esquema de banco de dados.",
+			RootCause:    fmt.Sprintf("O processo de migração (%s) falhou no Pod '%s' (namespace '%s'). Um script SQL de migração tentou operar em um objeto de banco que não existe no esquema configurado ou possui dependência ausente.", framework, entity, scope),
+			SuggestedFix: "Inspecione os logs com '--previous' para identificar o script SQL da falha. Verifique se as migrações anteriores foram executadas, garanta a criação prévia da tabela/coluna no banco e execute 'flyway repair' se necessário para desobstruir o baseline.",
+			ActionSteps: []string{
+				fmt.Sprintf("1. Extraia o stacktrace do script SQL com falha: kubectl logs %s -n %s --previous --tail=100", entity, scope),
+				"2. Identifique a versão do arquivo de migração (ex: V...__nome.sql) e a instrução SQL que falhou.",
+				"3. Valide no banco de dados se a tabela/esquema prévio existe e se o usuário possui permissão de DDL.",
+				"4. Caso o histórico de migrações esteja marcado como falho, avalie executar 'repair' no banco ou gerar hotfix na pipeline.",
+			},
+			SuggestedCommands: []string{
+				fmt.Sprintf("kubectl logs %s -n %s --previous --tail=100 | grep -i -C 5 'migration'", entity, scope),
+				fmt.Sprintf("kubectl describe pod %s -n %s | grep -i 'Image:'", entity, scope),
+			},
+		}
+	}
+
+	return &AnalysisResult{
+		Category:     fmt.Sprintf("BANCO DE DADOS (%s / %s)", framework, missingRelation),
+		Summary:      "Container falhou ao executar migração de banco de dados no startup.",
+		RootCause:    fmt.Sprintf("O container '%s' encerrou com erro ao aplicar scripts de migração (%s).", entity, framework),
+		SuggestedFix: "Verifique o histórico de migrações no banco de dados e confirme a integridade dos scripts SQL montados no container.",
+		ActionSteps: []string{
+			fmt.Sprintf("1. Analise os logs do container: docker logs --tail 80 %s", entity),
+			"2. Valide o esquema do banco de dados referenciado.",
+		},
+		SuggestedCommands: []string{
+			fmt.Sprintf("docker logs --tail 80 %s", entity),
 		},
 	}
 }
